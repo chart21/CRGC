@@ -3,7 +3,7 @@
 typedef struct {
 	int leftParentID;
 	int rightParentID;
-    int outPutID;
+    int outputID;
     bool truthTable[2][2];
 }TransformedGate;
 
@@ -11,7 +11,7 @@ typedef struct {
 typedef struct {
 	int leftParentID;
 	int rightParentID;
-    int outPutID;
+    int outputID;
     std::string gateType;
 }BristolGate;
 
@@ -26,12 +26,12 @@ typedef struct {
 }CircuitDetails;
 
 typedef struct {
-CircuitDetails *details;
+CircuitDetails details;
 TransformedGate* gates;
 }TransformedCircuit;
 
 typedef struct {
-CircuitDetails* details;
+CircuitDetails details;
 TransformedGate* gates;
 }BristolCircuit;
 

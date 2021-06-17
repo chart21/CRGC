@@ -46,12 +46,12 @@ void swapRightParent(bool (&arr)[2][2])
 }
 
 
-CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol")
+CircuitDetails getBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol")
     {
         std::ifstream f(filepath);
         std::string line;
         int counter = 0;
-        CircuitDetails* details = new CircuitDetails;
+        CircuitDetails details;
         //CircuitDetails details = {0,0,0,0,0,0};
         if(circuitFormat == "bristol")
         {   
@@ -62,21 +62,21 @@ CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circu
                 if(counter == 0)
                 {
                     
-                    (*details).numGates = std::stoi(gateElements[0]);
-                    (*details).numWires = std::stoi(gateElements[1]);
+                    details.numGates = std::stoi(gateElements[0]);
+                    details.numWires = std::stoi(gateElements[1]);
                 }
 
 
                 else if(counter == 1)
                 {
-                    (*details).bitlengthInputA = std::stoi(gateElements[1]);
-                    (*details).bitlengthInputB = std::stoi(gateElements[2]);
+                    details.bitlengthInputA = std::stoi(gateElements[1]);
+                    details.bitlengthInputB = std::stoi(gateElements[2]);
                 }
             
                 else if (counter == 2)
                 {                
-                    (*details).numOutputs = std::stoi(gateElements[0]);
-                    (*details).bitlengthOutputs = std::stoi(gateElements[1]);
+                    details.numOutputs = std::stoi(gateElements[0]);
+                    details.bitlengthOutputs = std::stoi(gateElements[1]);
                 }
                 else if (counter > 2)
                     break;
@@ -86,7 +86,7 @@ CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circu
         }
         else if(circuitFormat == "emp")
         {   
-            (*details).numOutputs = 1;
+            details.numOutputs = 1;
             while (std::getline(f, line, '\n'))
             {
                 std::vector<std::string> gateElements;
@@ -94,16 +94,16 @@ CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circu
                 if(counter == 0)
                 {
                     
-                    (*details).numGates = std::stoi(gateElements[0]);
-                    (*details).numWires = std::stoi(gateElements[1]);
+                    details.numGates = std::stoi(gateElements[0]);
+                    details.numWires = std::stoi(gateElements[1]);
                 }
 
 
                 else if(counter == 1)
                 {
-                    (*details).bitlengthInputA = std::stoi(gateElements[0]);
-                    (*details).bitlengthInputB = std::stoi(gateElements[1]);
-                    (*details).bitlengthOutputs = std::stoi(gateElements[2]);
+                    details.bitlengthInputA = std::stoi(gateElements[0]);
+                    details.bitlengthInputB = std::stoi(gateElements[1]);
+                    details.bitlengthOutputs = std::stoi(gateElements[2]);
                 }        
 
                 else if (counter > 1)
@@ -121,21 +121,21 @@ CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circu
                 if(counter == 0)
                 {
                     
-                    (*details).numGates = std::stoi(gateElements[0]);
-                    (*details).numWires = std::stoi(gateElements[1]);
+                    details.numGates = std::stoi(gateElements[0]);
+                    details.numWires = std::stoi(gateElements[1]);
                 }
 
 
                 else if(counter == 1)
                 {
-                    (*details).bitlengthInputA = std::stoi(gateElements[0]);
-                    (*details).bitlengthInputB = std::stoi(gateElements[1]);
+                    details.bitlengthInputA = std::stoi(gateElements[0]);
+                    details.bitlengthInputB = std::stoi(gateElements[1]);
                 }
             
                 else if (counter == 2)
                 {
-                    (*details).numOutputs = std::stoi(gateElements[0]);
-                    (*details).bitlengthOutputs = std::stoi(gateElements[1]);
+                    details.numOutputs = std::stoi(gateElements[0]);
+                    details.bitlengthOutputs = std::stoi(gateElements[1]);
                     
                 }
                 else if (counter > 2)
@@ -147,12 +147,12 @@ CircuitDetails* getBristolCircuitDetails(std::string filepath, std::string circu
     return details;
     }
 
-TransformedCircuit readBristolCircuitExNot(std::string filepath, CircuitDetails* details)
+TransformedCircuit* readBristolCircuitExNot(std::string filepath, CircuitDetails details)
 {
-    TransformedGate gates[(*details).numGates];
-    int exchangeGate[(*details).numWires];
-    bool flipped[(*details).numWires];
-    for (int i = 0; i < (*details).numWires; i++)
+    TransformedGate gates[details.numGates];
+    int exchangeGate[details.numWires];
+    bool flipped[details.numWires];
+    for (int i = 0; i < details.numWires; i++)
     {
         exchangeGate[i] = i;
         flipped[i] = false;        
@@ -175,7 +175,7 @@ TransformedCircuit readBristolCircuitExNot(std::string filepath, CircuitDetails*
             int output = std::stoi(gateElements[3]);
             std::string gateType = gateElements[4];
 
-            if(output < (*details).numWires - (*details).numOutputs - (*details).bitlengthOutputs)
+            if(output < details.numWires - details.numOutputs - details.bitlengthOutputs)
             {
                 exchangeGate[output] = exchangeGate[parent];
                 flipped[output] = ! flipped[output];
@@ -221,14 +221,14 @@ TransformedCircuit readBristolCircuitExNot(std::string filepath, CircuitDetails*
     }
 
     int deleteCounter = 0;
-    int adjustedWire[(*details).numWires];
-    for(int i = 0; i <(*details).numWires;i++)
+    int adjustedWire[details.numWires];
+    for(int i = 0; i <details.numWires;i++)
     {
         if(exchangeGate[i] != i)
         {
             deleteCounter++;
-            (*details).numWires--;
-            (*details).numGates--;
+            details.numWires--;
+            details.numGates--;
             
         }
         adjustedWire[i] = i - deleteCounter;
@@ -237,18 +237,17 @@ TransformedCircuit readBristolCircuitExNot(std::string filepath, CircuitDetails*
     {
         g.leftParentID = adjustedWire[g.leftParentID];
         g.rightParentID = adjustedWire[g.rightParentID];
-        g.outPutID = adjustedWire[g.outPutID];
+        g.outputID = adjustedWire[g.outputID];
     }
 
-    TransformedGate* transformedGates = new TransformedGate[(*details).numGates];
-    for(int i =0;i< (*details).numGates; i++)
+    TransformedGate* transformedGates = new TransformedGate[details.numGates];    
+    for(int i =0;i< details.numGates; i++)
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
 
-    
-    TransformedCircuit circuit = {details, transformedGates};
+    TransformedCircuit* circuit = new TransformedCircuit;    
+    *circuit = {details, transformedGates};
 
-
-
+    return circuit;
 }
