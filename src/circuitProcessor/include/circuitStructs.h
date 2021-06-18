@@ -1,38 +1,46 @@
+#ifndef circuitStructs
+#define circuitStructs
+
+
+
+
+
 #include <string>
 
-typedef struct {
+struct TransformedGate{
 	int leftParentID;
 	int rightParentID;
     int outputID;
     bool truthTable[2][2];
-}TransformedGate;
+};
 
 
-typedef struct {
+struct BristolGate{
 	int leftParentID;
 	int rightParentID;
     int outputID;
     std::string gateType;
-}BristolGate;
+};
 
 
-typedef struct {
+struct CircuitDetails{
 	int numWires;
 	int numGates;
     int numOutputs;
     int bitlengthInputA;
     int bitlengthInputB;    
     int bitlengthOutputs;
-}CircuitDetails;
+};
 
-typedef struct {
+struct TransformedCircuit{
 CircuitDetails details;
 TransformedGate* gates;
-}TransformedCircuit;
+};
 
-typedef struct {
+struct BristolCircuit{
 CircuitDetails details;
 TransformedGate* gates;
-}BristolCircuit;
+};
 
 
+#endif

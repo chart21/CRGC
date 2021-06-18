@@ -1,4 +1,5 @@
 #include "include/circuitStructs.h"
+#include "include/circuitReader.h"
 #include <fstream>
 #include<vector>
 
@@ -27,7 +28,7 @@ void swapLeftParent(bool (&arr)[2][2])
     arr[0][0] = arr[1][0];
     arr[1][0] = temp;
 
-    auto temp = arr[0][1];
+    temp = arr[0][1];
     arr[0][1] = arr[1][1];
     arr[1][1] = temp;
 
@@ -39,14 +40,14 @@ void swapRightParent(bool (&arr)[2][2])
     arr[0][0] = arr[0][1];
     arr[0][1] = temp;
 
-    auto temp = arr[1][0];
+    temp = arr[1][0];
     arr[1][0] = arr[1][1];
     arr[1][1] = temp;
 
 }
 
 
-CircuitDetails getBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol")
+CircuitDetails getBristolCircuitDetails(std::string filepath, std::string circuitFormat)
     {
         std::ifstream f(filepath);
         std::string line;
@@ -186,7 +187,7 @@ TransformedCircuit* readBristolCircuitExNot(std::string filepath, CircuitDetails
 
                 if (flipped[parent] == 1)                            
                     swapLeftParent(truthTable);
-                gates[gateCounter] = {exchangeGate[parent], exchangeGate[parent], output, truthTable};
+                gates[gateCounter] = TransformedGate{exchangeGate[parent], exchangeGate[parent], output, { {truthTable[0][0], truthTable[0][1]},{truthTable[1][0], truthTable[1][1]} } };
                 gateCounter++;
             }
 
@@ -213,7 +214,7 @@ TransformedCircuit* readBristolCircuitExNot(std::string filepath, CircuitDetails
             if(flipped[rightParent] == 1)
                 swapRightParent(truthTable);
 
-            gates[gateCounter] = {exchangeGate[leftParent], exchangeGate[rightParent], output, truthTable};
+            gates[gateCounter] = TransformedGate{exchangeGate[leftParent], exchangeGate[rightParent], output, { {truthTable[0][0], truthTable[0][1]},{truthTable[1][0], truthTable[1][1]} } };
             gateCounter++;
             }
 

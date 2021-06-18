@@ -1,0 +1,2 @@
+/bin/ar qc libcircuitEvaluator.a  CMakeFiles/circuitEvaluator.dir/circuitEvaluator.cpp.o
+/bin/ranlib libcircuitEvaluator.a

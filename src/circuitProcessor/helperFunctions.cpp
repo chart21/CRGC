@@ -1,7 +1,9 @@
+#include "include/helperFunctions.h"
 #include <iostream>
 #include <random>
 #include <functional>
 #include <bitset>
+
 bool* generateRandomInput(size_t bitlength)
 {
     auto gen = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());

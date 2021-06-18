@@ -1,8 +1,9 @@
 #include "include/circuitStructs.h"
+#include "include/circuitEvaluator.h"
 #include <iostream>
 #define output(i,j)   output[(i)*(*circuit).details.bitlengthOutputs + (j)] //making 2D array index more natural
 
-bool* evaluateTransformedCircuitN(TransformedCircuit *circuit, bool* inputA[], bool* inputB[])
+bool* evaluateTransformedCircuitN(TransformedCircuit *circuit, bool* inputA, bool* inputB)
 {
     bool evaluation[(*circuit).details.numWires]; 
     for (int i = 0; i < (*circuit).details.numGates; i++)

@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitReader.cpp
+include/circuitStructs.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
+include/circuitReader.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitReader.h
+fstream
+-
+vector
+-
+
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitReader.h
+circuitStructs.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
+fstream
+-
+vector
+-
+
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
+string
+-
+

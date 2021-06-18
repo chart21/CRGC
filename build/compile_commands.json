@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9   -I/home/christopher/Documents/C-RGCG/src/circuitProcessor  -g   -o CMakeFiles/generator.dir/src/generator-main.cpp.o -c /home/christopher/Documents/C-RGCG/src/generator-main.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/generator-main.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitEvaluator.dir/circuitEvaluator.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitEvaluator.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitEvaluator.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitReader.dir/circuitReader.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitReader.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitReader.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/helperFunctions.dir/helperFunctions.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/helperFunctions.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/helperFunctions.cpp"
+}
+]

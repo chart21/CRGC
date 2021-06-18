@@ -1,0 +1,2 @@
+/bin/ar qc libcircuitReader.a  CMakeFiles/circuitReader.dir/circuitReader.cpp.o
+/bin/ranlib libcircuitReader.a
