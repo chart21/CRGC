@@ -11,6 +11,8 @@ include/circuitStructs.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
 include/circuitReader.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitReader.h
+include/helperFunctions.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
 fstream
 -
 vector
@@ -26,5 +28,15 @@ vector
 
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
 string
+-
+
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
+iostream
+-
+random
+-
+functional
+-
+bitset
 -
 

@@ -3,4 +3,5 @@
 
 src/circuitProcessor/CMakeFiles/helperFunctions.dir/helperFunctions.cpp.o: ../src/circuitProcessor/helperFunctions.cpp
 src/circuitProcessor/CMakeFiles/helperFunctions.dir/helperFunctions.cpp.o: ../src/circuitProcessor/include/helperFunctions.h
+src/circuitProcessor/CMakeFiles/helperFunctions.dir/helperFunctions.cpp.o: ../src/circuitProcessor/include/randomBoolGenerator.h
 

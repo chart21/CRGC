@@ -521,6 +521,19 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
+# Target rules for targets named circuitFlipper
+
+# Build rule for target.
+circuitFlipper: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 circuitFlipper
+.PHONY : circuitFlipper
+
+# fast build rule for target.
+circuitFlipper/fast:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build
+.PHONY : circuitFlipper/fast
+
+#=============================================================================
 # Target rules for targets named circuitEvaluator
 
 # Build rule for target.
@@ -626,6 +639,7 @@ help:
 	@echo "... ContinuousMemCheck"
 	@echo "... ContinuousTest"
 	@echo "... ContinuousSubmit"
+	@echo "... circuitFlipper"
 	@echo "... circuitEvaluator"
 	@echo "... circuitReader"
 	@echo "... helperFunctions"

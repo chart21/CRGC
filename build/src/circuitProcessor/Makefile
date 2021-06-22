@@ -144,6 +144,21 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+src/circuitProcessor/CMakeFiles/circuitFlipper.dir/rule:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitFlipper.dir/rule
+.PHONY : src/circuitProcessor/CMakeFiles/circuitFlipper.dir/rule
+
+# Convenience name for target.
+circuitFlipper: src/circuitProcessor/CMakeFiles/circuitFlipper.dir/rule
+
+.PHONY : circuitFlipper
+
+# fast build rule for target.
+circuitFlipper/fast:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build
+.PHONY : circuitFlipper/fast
+
+# Convenience name for target.
 src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/rule:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/rule
 .PHONY : src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/rule
@@ -215,6 +230,33 @@ circuitEvaluator.cpp.s:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/build.make src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/circuitEvaluator.cpp.s
 .PHONY : circuitEvaluator.cpp.s
 
+circuitFlipper.o: circuitFlipper.cpp.o
+
+.PHONY : circuitFlipper.o
+
+# target to build an object file
+circuitFlipper.cpp.o:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.o
+.PHONY : circuitFlipper.cpp.o
+
+circuitFlipper.i: circuitFlipper.cpp.i
+
+.PHONY : circuitFlipper.i
+
+# target to preprocess a source file
+circuitFlipper.cpp.i:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.i
+.PHONY : circuitFlipper.cpp.i
+
+circuitFlipper.s: circuitFlipper.cpp.s
+
+.PHONY : circuitFlipper.s
+
+# target to generate assembly for a file
+circuitFlipper.cpp.s:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.s
+.PHONY : circuitFlipper.cpp.s
+
 circuitReader.o: circuitReader.cpp.o
 
 .PHONY : circuitReader.o
@@ -278,6 +320,7 @@ help:
 	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... package"
+	@echo "... circuitFlipper"
 	@echo "... circuitEvaluator"
 	@echo "... circuitReader"
 	@echo "... edit_cache"
@@ -286,6 +329,9 @@ help:
 	@echo "... circuitEvaluator.o"
 	@echo "... circuitEvaluator.i"
 	@echo "... circuitEvaluator.s"
+	@echo "... circuitFlipper.o"
+	@echo "... circuitFlipper.i"
+	@echo "... circuitFlipper.s"
 	@echo "... circuitReader.o"
 	@echo "... circuitReader.i"
 	@echo "... circuitReader.s"

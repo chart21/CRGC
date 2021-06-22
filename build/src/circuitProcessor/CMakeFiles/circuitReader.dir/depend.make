@@ -4,4 +4,5 @@
 src/circuitProcessor/CMakeFiles/circuitReader.dir/circuitReader.cpp.o: ../src/circuitProcessor/circuitReader.cpp
 src/circuitProcessor/CMakeFiles/circuitReader.dir/circuitReader.cpp.o: ../src/circuitProcessor/include/circuitReader.h
 src/circuitProcessor/CMakeFiles/circuitReader.dir/circuitReader.cpp.o: ../src/circuitProcessor/include/circuitStructs.h
+src/circuitProcessor/CMakeFiles/circuitReader.dir/circuitReader.cpp.o: ../src/circuitProcessor/include/helperFunctions.h
 

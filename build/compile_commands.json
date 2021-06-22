@@ -6,6 +6,11 @@
 },
 {
   "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitFlipper.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitFlipper.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
   "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitEvaluator.dir/circuitEvaluator.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitEvaluator.cpp",
   "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitEvaluator.cpp"
 },

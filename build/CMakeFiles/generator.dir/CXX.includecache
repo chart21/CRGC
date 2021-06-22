@@ -12,6 +12,14 @@ circuitStructs.h
 iostream
 -
 
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitFlipper.h
+circuitStructs.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
+randomBoolGenerator.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/randomBoolGenerator.h
+helperFunctions.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
+
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitReader.h
 circuitStructs.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
@@ -34,6 +42,10 @@ functional
 bitset
 -
 
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/randomBoolGenerator.h
+random
+-
+
 /home/christopher/Documents/C-RGCG/src/generator-main.cpp
 iostream
 -
@@ -43,4 +55,8 @@ circuitProcessor/include/circuitEvaluator.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitEvaluator.h
 circuitProcessor/include/helperFunctions.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
+circuitProcessor/include/circuitFlipper.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitFlipper.h
+chrono
+-
 

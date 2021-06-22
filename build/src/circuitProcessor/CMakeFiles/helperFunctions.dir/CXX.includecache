@@ -9,9 +9,13 @@
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/helperFunctions.cpp
 include/helperFunctions.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
+include/randomBoolGenerator.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/randomBoolGenerator.h
 iostream
 -
 random
+-
+stdlib.h
 -
 functional
 -
@@ -26,5 +30,9 @@ random
 functional
 -
 bitset
+-
+
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/randomBoolGenerator.h
+random
 -
 
