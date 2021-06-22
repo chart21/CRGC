@@ -8,6 +8,7 @@ CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/inclu
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitObfuscator.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitReader.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitStructs.h
+CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitWriter.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/helperFunctions.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/randomBoolGenerator.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/generator-main.cpp

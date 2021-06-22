@@ -56,6 +56,14 @@ vector
 string
 -
 
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitWriter.h
+circuitStructs.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h
+iostream
+-
+fstream
+-
+
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
 iostream
 -
@@ -89,6 +97,8 @@ circuitProcessor/include/circuitDetails.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitDetails.h
 circuitProcessor/include/circuitIntegrityBreaker.h
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitIntegrityBreaker.h
+circuitProcessor/include/circuitWriter.h
+/home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitWriter.h
 chrono
 -
 
