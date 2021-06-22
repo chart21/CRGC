@@ -521,6 +521,32 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
+# Target rules for targets named circuitDetails
+
+# Build rule for target.
+circuitDetails: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 circuitDetails
+.PHONY : circuitDetails
+
+# fast build rule for target.
+circuitDetails/fast:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitDetails.dir/build.make src/circuitProcessor/CMakeFiles/circuitDetails.dir/build
+.PHONY : circuitDetails/fast
+
+#=============================================================================
+# Target rules for targets named circuitObfuscator
+
+# Build rule for target.
+circuitObfuscator: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 circuitObfuscator
+.PHONY : circuitObfuscator
+
+# fast build rule for target.
+circuitObfuscator/fast:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build
+.PHONY : circuitObfuscator/fast
+
+#=============================================================================
 # Target rules for targets named circuitFlipper
 
 # Build rule for target.
@@ -639,6 +665,8 @@ help:
 	@echo "... ContinuousMemCheck"
 	@echo "... ContinuousTest"
 	@echo "... ContinuousSubmit"
+	@echo "... circuitDetails"
+	@echo "... circuitObfuscator"
 	@echo "... circuitFlipper"
 	@echo "... circuitEvaluator"
 	@echo "... circuitReader"

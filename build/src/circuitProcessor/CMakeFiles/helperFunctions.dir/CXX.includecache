@@ -21,6 +21,8 @@ functional
 -
 bitset
 -
+chrono
+-
 
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/helperFunctions.h
 iostream
@@ -30,6 +32,8 @@ random
 functional
 -
 bitset
+-
+chrono
 -
 
 /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/randomBoolGenerator.h

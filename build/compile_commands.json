@@ -6,6 +6,16 @@
 },
 {
   "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitDetails.dir/circuitDetails.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitDetails.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitDetails.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitObfuscator.dir/circuitObfuscator.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitObfuscator.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitObfuscator.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
   "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitFlipper.cpp",
   "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitFlipper.cpp"
 },

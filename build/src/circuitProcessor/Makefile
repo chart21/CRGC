@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/christopher/Documents/C-RGCG/build
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target package_source
-package_source:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
-	cd /home/christopher/Documents/C-RGCG/build && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/christopher/Documents/C-RGCG/build/CPackSourceConfig.cmake
-.PHONY : package_source
-
-# Special rule for the target package_source
-package_source/fast: package_source
-
-.PHONY : package_source/fast
-
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -88,6 +77,17 @@ package: preinstall
 package/fast: package
 
 .PHONY : package/fast
+
+# Special rule for the target package_source
+package_source:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Run CPack packaging tool for source..."
+	cd /home/christopher/Documents/C-RGCG/build && /usr/bin/cpack --config ./CPackSourceConfig.cmake /home/christopher/Documents/C-RGCG/build/CPackSourceConfig.cmake
+.PHONY : package_source
+
+# Special rule for the target package_source
+package_source/fast: package_source
+
+.PHONY : package_source/fast
 
 # Special rule for the target edit_cache
 edit_cache:
@@ -142,6 +142,36 @@ preinstall/fast:
 depend:
 	cd /home/christopher/Documents/C-RGCG/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
+
+# Convenience name for target.
+src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule
+.PHONY : src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule
+
+# Convenience name for target.
+circuitDetails: src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule
+
+.PHONY : circuitDetails
+
+# fast build rule for target.
+circuitDetails/fast:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitDetails.dir/build.make src/circuitProcessor/CMakeFiles/circuitDetails.dir/build
+.PHONY : circuitDetails/fast
+
+# Convenience name for target.
+src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/rule:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/rule
+.PHONY : src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/rule
+
+# Convenience name for target.
+circuitObfuscator: src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/rule
+
+.PHONY : circuitObfuscator
+
+# fast build rule for target.
+circuitObfuscator/fast:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build
+.PHONY : circuitObfuscator/fast
 
 # Convenience name for target.
 src/circuitProcessor/CMakeFiles/circuitFlipper.dir/rule:
@@ -203,6 +233,33 @@ helperFunctions/fast:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/helperFunctions.dir/build.make src/circuitProcessor/CMakeFiles/helperFunctions.dir/build
 .PHONY : helperFunctions/fast
 
+circuitDetails.o: circuitDetails.cpp.o
+
+.PHONY : circuitDetails.o
+
+# target to build an object file
+circuitDetails.cpp.o:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitDetails.dir/build.make src/circuitProcessor/CMakeFiles/circuitDetails.dir/circuitDetails.cpp.o
+.PHONY : circuitDetails.cpp.o
+
+circuitDetails.i: circuitDetails.cpp.i
+
+.PHONY : circuitDetails.i
+
+# target to preprocess a source file
+circuitDetails.cpp.i:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitDetails.dir/build.make src/circuitProcessor/CMakeFiles/circuitDetails.dir/circuitDetails.cpp.i
+.PHONY : circuitDetails.cpp.i
+
+circuitDetails.s: circuitDetails.cpp.s
+
+.PHONY : circuitDetails.s
+
+# target to generate assembly for a file
+circuitDetails.cpp.s:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitDetails.dir/build.make src/circuitProcessor/CMakeFiles/circuitDetails.dir/circuitDetails.cpp.s
+.PHONY : circuitDetails.cpp.s
+
 circuitEvaluator.o: circuitEvaluator.cpp.o
 
 .PHONY : circuitEvaluator.o
@@ -256,6 +313,33 @@ circuitFlipper.s: circuitFlipper.cpp.s
 circuitFlipper.cpp.s:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.s
 .PHONY : circuitFlipper.cpp.s
+
+circuitObfuscator.o: circuitObfuscator.cpp.o
+
+.PHONY : circuitObfuscator.o
+
+# target to build an object file
+circuitObfuscator.cpp.o:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/circuitObfuscator.cpp.o
+.PHONY : circuitObfuscator.cpp.o
+
+circuitObfuscator.i: circuitObfuscator.cpp.i
+
+.PHONY : circuitObfuscator.i
+
+# target to preprocess a source file
+circuitObfuscator.cpp.i:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/circuitObfuscator.cpp.i
+.PHONY : circuitObfuscator.cpp.i
+
+circuitObfuscator.s: circuitObfuscator.cpp.s
+
+.PHONY : circuitObfuscator.s
+
+# target to generate assembly for a file
+circuitObfuscator.cpp.s:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/circuitObfuscator.cpp.s
+.PHONY : circuitObfuscator.cpp.s
 
 circuitReader.o: circuitReader.cpp.o
 
@@ -317,21 +401,29 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... package_source"
 	@echo "... rebuild_cache"
 	@echo "... package"
+	@echo "... circuitDetails"
+	@echo "... package_source"
+	@echo "... circuitObfuscator"
 	@echo "... circuitFlipper"
 	@echo "... circuitEvaluator"
 	@echo "... circuitReader"
 	@echo "... edit_cache"
 	@echo "... test"
 	@echo "... helperFunctions"
+	@echo "... circuitDetails.o"
+	@echo "... circuitDetails.i"
+	@echo "... circuitDetails.s"
 	@echo "... circuitEvaluator.o"
 	@echo "... circuitEvaluator.i"
 	@echo "... circuitEvaluator.s"
 	@echo "... circuitFlipper.o"
 	@echo "... circuitFlipper.i"
 	@echo "... circuitFlipper.s"
+	@echo "... circuitObfuscator.o"
+	@echo "... circuitObfuscator.i"
+	@echo "... circuitObfuscator.s"
 	@echo "... circuitReader.o"
 	@echo "... circuitReader.i"
 	@echo "... circuitReader.s"

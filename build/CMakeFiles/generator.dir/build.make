@@ -83,6 +83,8 @@ generator: src/circuitProcessor/libhelperFunctions.a
 generator: src/circuitProcessor/libcircuitReader.a
 generator: src/circuitProcessor/libcircuitEvaluator.a
 generator: src/circuitProcessor/libcircuitFlipper.a
+generator: src/circuitProcessor/libcircuitObfuscator.a
+generator: src/circuitProcessor/libcircuitDetails.a
 generator: CMakeFiles/generator.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable generator"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/generator.dir/link.txt --verbose=$(VERBOSE)

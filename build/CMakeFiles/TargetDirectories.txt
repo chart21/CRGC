@@ -32,9 +32,11 @@
 /home/christopher/Documents/C-RGCG/build/CMakeFiles/ContinuousMemCheck.dir
 /home/christopher/Documents/C-RGCG/build/CMakeFiles/ContinuousTest.dir
 /home/christopher/Documents/C-RGCG/build/CMakeFiles/ContinuousSubmit.dir
-/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/package_source.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/rebuild_cache.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/package.dir
+/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitDetails.dir
+/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/package_source.dir
+/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitObfuscator.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitFlipper.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitEvaluator.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitReader.dir
