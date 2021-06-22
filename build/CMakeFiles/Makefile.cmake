@@ -86,6 +86,8 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousTest.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
+  "src/circuitProcessor/CMakeFiles/circuitWriter.dir/DependInfo.cmake"
+  "src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/DependInfo.cmake"
   "src/circuitProcessor/CMakeFiles/circuitDetails.dir/DependInfo.cmake"
   "src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/DependInfo.cmake"
   "src/circuitProcessor/CMakeFiles/circuitFlipper.dir/DependInfo.cmake"

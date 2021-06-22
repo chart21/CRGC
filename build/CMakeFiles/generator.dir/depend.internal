@@ -5,6 +5,7 @@ CMakeFiles/generator.dir/src/generator-main.cpp.o
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitDetails.h
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitEvaluator.h
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitFlipper.h
+ /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitIntegrityBreaker.h
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitObfuscator.h
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitReader.h
  /home/christopher/Documents/C-RGCG/src/circuitProcessor/include/circuitStructs.h

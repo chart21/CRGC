@@ -101,6 +101,8 @@ clean: src/circuitProcessor/clean
 # Directory level rules for directory src/circuitProcessor
 
 # Recursive "all" directory target.
+src/circuitProcessor/all: src/circuitProcessor/CMakeFiles/circuitWriter.dir/all
+src/circuitProcessor/all: src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/all
 src/circuitProcessor/all: src/circuitProcessor/CMakeFiles/circuitDetails.dir/all
 src/circuitProcessor/all: src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/all
 src/circuitProcessor/all: src/circuitProcessor/CMakeFiles/circuitFlipper.dir/all
@@ -116,6 +118,8 @@ src/circuitProcessor/preinstall:
 .PHONY : src/circuitProcessor/preinstall
 
 # Recursive "clean" directory target.
+src/circuitProcessor/clean: src/circuitProcessor/CMakeFiles/circuitWriter.dir/clean
+src/circuitProcessor/clean: src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/clean
 src/circuitProcessor/clean: src/circuitProcessor/CMakeFiles/circuitDetails.dir/clean
 src/circuitProcessor/clean: src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/clean
 src/circuitProcessor/clean: src/circuitProcessor/CMakeFiles/circuitFlipper.dir/clean
@@ -615,20 +619,22 @@ CMakeFiles/NightlyStart.dir/clean:
 # Target rules for target CMakeFiles/generator.dir
 
 # All Build rule for target.
+CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitWriter.dir/all
+CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/all
+CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitDetails.dir/all
+CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/all
 CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitFlipper.dir/all
 CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/all
 CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitReader.dir/all
 CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/helperFunctions.dir/all
-CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitDetails.dir/all
-CMakeFiles/generator.dir/all: src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/all
 	$(MAKE) -f CMakeFiles/generator.dir/build.make CMakeFiles/generator.dir/depend
 	$(MAKE) -f CMakeFiles/generator.dir/build.make CMakeFiles/generator.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=11,12 "Built target generator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=15,16 "Built target generator"
 .PHONY : CMakeFiles/generator.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/generator.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 18
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/generator.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 0
 .PHONY : CMakeFiles/generator.dir/rule
@@ -914,6 +920,60 @@ CMakeFiles/ContinuousSubmit.dir/clean:
 .PHONY : CMakeFiles/ContinuousSubmit.dir/clean
 
 #=============================================================================
+# Target rules for target src/circuitProcessor/CMakeFiles/circuitWriter.dir
+
+# All Build rule for target.
+src/circuitProcessor/CMakeFiles/circuitWriter.dir/all:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/depend
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=13,14 "Built target circuitWriter"
+.PHONY : src/circuitProcessor/CMakeFiles/circuitWriter.dir/all
+
+# Build rule for subdir invocation for target.
+src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitWriter.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 0
+.PHONY : src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule
+
+# Convenience name for target.
+circuitWriter: src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule
+
+.PHONY : circuitWriter
+
+# clean rule for target.
+src/circuitProcessor/CMakeFiles/circuitWriter.dir/clean:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/clean
+.PHONY : src/circuitProcessor/CMakeFiles/circuitWriter.dir/clean
+
+#=============================================================================
+# Target rules for target src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir
+
+# All Build rule for target.
+src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/all:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/depend
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=7,8 "Built target circuitIntegrityBreaker"
+.PHONY : src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/all
+
+# Build rule for subdir invocation for target.
+src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/christopher/Documents/C-RGCG/build/CMakeFiles 0
+.PHONY : src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule
+
+# Convenience name for target.
+circuitIntegrityBreaker: src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule
+
+.PHONY : circuitIntegrityBreaker
+
+# clean rule for target.
+src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/clean:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/clean
+.PHONY : src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/clean
+
+#=============================================================================
 # Target rules for target src/circuitProcessor/CMakeFiles/circuitDetails.dir
 
 # All Build rule for target.
@@ -947,7 +1007,7 @@ src/circuitProcessor/CMakeFiles/circuitDetails.dir/clean:
 src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/all:
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/depend
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build.make src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=7,8 "Built target circuitObfuscator"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=9,10 "Built target circuitObfuscator"
 .PHONY : src/circuitProcessor/CMakeFiles/circuitObfuscator.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1028,7 +1088,7 @@ src/circuitProcessor/CMakeFiles/circuitEvaluator.dir/clean:
 src/circuitProcessor/CMakeFiles/circuitReader.dir/all:
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitReader.dir/build.make src/circuitProcessor/CMakeFiles/circuitReader.dir/depend
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitReader.dir/build.make src/circuitProcessor/CMakeFiles/circuitReader.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=9,10 "Built target circuitReader"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=11,12 "Built target circuitReader"
 .PHONY : src/circuitProcessor/CMakeFiles/circuitReader.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1055,7 +1115,7 @@ src/circuitProcessor/CMakeFiles/circuitReader.dir/clean:
 src/circuitProcessor/CMakeFiles/helperFunctions.dir/all:
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/helperFunctions.dir/build.make src/circuitProcessor/CMakeFiles/helperFunctions.dir/depend
 	$(MAKE) -f src/circuitProcessor/CMakeFiles/helperFunctions.dir/build.make src/circuitProcessor/CMakeFiles/helperFunctions.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=13,14 "Built target helperFunctions"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/christopher/Documents/C-RGCG/build/CMakeFiles --progress-num=17,18 "Built target helperFunctions"
 .PHONY : src/circuitProcessor/CMakeFiles/helperFunctions.dir/all
 
 # Build rule for subdir invocation for target.

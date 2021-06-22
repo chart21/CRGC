@@ -521,6 +521,32 @@ ContinuousSubmit/fast:
 .PHONY : ContinuousSubmit/fast
 
 #=============================================================================
+# Target rules for targets named circuitWriter
+
+# Build rule for target.
+circuitWriter: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 circuitWriter
+.PHONY : circuitWriter
+
+# fast build rule for target.
+circuitWriter/fast:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/build
+.PHONY : circuitWriter/fast
+
+#=============================================================================
+# Target rules for targets named circuitIntegrityBreaker
+
+# Build rule for target.
+circuitIntegrityBreaker: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 circuitIntegrityBreaker
+.PHONY : circuitIntegrityBreaker
+
+# fast build rule for target.
+circuitIntegrityBreaker/fast:
+	$(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build
+.PHONY : circuitIntegrityBreaker/fast
+
+#=============================================================================
 # Target rules for targets named circuitDetails
 
 # Build rule for target.
@@ -665,6 +691,8 @@ help:
 	@echo "... ContinuousMemCheck"
 	@echo "... ContinuousTest"
 	@echo "... ContinuousSubmit"
+	@echo "... circuitWriter"
+	@echo "... circuitIntegrityBreaker"
 	@echo "... circuitDetails"
 	@echo "... circuitObfuscator"
 	@echo "... circuitFlipper"

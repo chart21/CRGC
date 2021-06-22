@@ -4,6 +4,7 @@
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitDetails.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitEvaluator.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitFlipper.h
+CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitIntegrityBreaker.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitObfuscator.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitReader.h
 CMakeFiles/generator.dir/src/generator-main.cpp.o: ../src/circuitProcessor/include/circuitStructs.h

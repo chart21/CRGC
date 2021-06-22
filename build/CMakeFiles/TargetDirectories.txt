@@ -34,6 +34,8 @@
 /home/christopher/Documents/C-RGCG/build/CMakeFiles/ContinuousSubmit.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/rebuild_cache.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/package.dir
+/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitWriter.dir
+/home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitDetails.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/package_source.dir
 /home/christopher/Documents/C-RGCG/build/src/circuitProcessor/CMakeFiles/circuitObfuscator.dir

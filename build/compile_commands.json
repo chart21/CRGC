@@ -6,6 +6,16 @@
 },
 {
   "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitWriter.dir/circuitWriter.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitWriter.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitWriter.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
+  "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitIntegrityBreaker.dir/circuitIntegrityBreaker.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitIntegrityBreaker.cpp",
+  "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitIntegrityBreaker.cpp"
+},
+{
+  "directory": "/home/christopher/Documents/C-RGCG/build/src/circuitProcessor",
   "command": "/bin/x86_64-linux-gnu-g++-9    -g   -o CMakeFiles/circuitDetails.dir/circuitDetails.cpp.o -c /home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitDetails.cpp",
   "file": "/home/christopher/Documents/C-RGCG/src/circuitProcessor/circuitDetails.cpp"
 },

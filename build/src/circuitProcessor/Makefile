@@ -144,6 +144,36 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule
+.PHONY : src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule
+
+# Convenience name for target.
+circuitWriter: src/circuitProcessor/CMakeFiles/circuitWriter.dir/rule
+
+.PHONY : circuitWriter
+
+# fast build rule for target.
+circuitWriter/fast:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/build
+.PHONY : circuitWriter/fast
+
+# Convenience name for target.
+src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule
+.PHONY : src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule
+
+# Convenience name for target.
+circuitIntegrityBreaker: src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/rule
+
+.PHONY : circuitIntegrityBreaker
+
+# fast build rule for target.
+circuitIntegrityBreaker/fast:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build
+.PHONY : circuitIntegrityBreaker/fast
+
+# Convenience name for target.
 src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f CMakeFiles/Makefile2 src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule
 .PHONY : src/circuitProcessor/CMakeFiles/circuitDetails.dir/rule
@@ -314,6 +344,33 @@ circuitFlipper.cpp.s:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitFlipper.dir/build.make src/circuitProcessor/CMakeFiles/circuitFlipper.dir/circuitFlipper.cpp.s
 .PHONY : circuitFlipper.cpp.s
 
+circuitIntegrityBreaker.o: circuitIntegrityBreaker.cpp.o
+
+.PHONY : circuitIntegrityBreaker.o
+
+# target to build an object file
+circuitIntegrityBreaker.cpp.o:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/circuitIntegrityBreaker.cpp.o
+.PHONY : circuitIntegrityBreaker.cpp.o
+
+circuitIntegrityBreaker.i: circuitIntegrityBreaker.cpp.i
+
+.PHONY : circuitIntegrityBreaker.i
+
+# target to preprocess a source file
+circuitIntegrityBreaker.cpp.i:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/circuitIntegrityBreaker.cpp.i
+.PHONY : circuitIntegrityBreaker.cpp.i
+
+circuitIntegrityBreaker.s: circuitIntegrityBreaker.cpp.s
+
+.PHONY : circuitIntegrityBreaker.s
+
+# target to generate assembly for a file
+circuitIntegrityBreaker.cpp.s:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/build.make src/circuitProcessor/CMakeFiles/circuitIntegrityBreaker.dir/circuitIntegrityBreaker.cpp.s
+.PHONY : circuitIntegrityBreaker.cpp.s
+
 circuitObfuscator.o: circuitObfuscator.cpp.o
 
 .PHONY : circuitObfuscator.o
@@ -368,6 +425,33 @@ circuitReader.cpp.s:
 	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitReader.dir/build.make src/circuitProcessor/CMakeFiles/circuitReader.dir/circuitReader.cpp.s
 .PHONY : circuitReader.cpp.s
 
+circuitWriter.o: circuitWriter.cpp.o
+
+.PHONY : circuitWriter.o
+
+# target to build an object file
+circuitWriter.cpp.o:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/circuitWriter.cpp.o
+.PHONY : circuitWriter.cpp.o
+
+circuitWriter.i: circuitWriter.cpp.i
+
+.PHONY : circuitWriter.i
+
+# target to preprocess a source file
+circuitWriter.cpp.i:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/circuitWriter.cpp.i
+.PHONY : circuitWriter.cpp.i
+
+circuitWriter.s: circuitWriter.cpp.s
+
+.PHONY : circuitWriter.s
+
+# target to generate assembly for a file
+circuitWriter.cpp.s:
+	cd /home/christopher/Documents/C-RGCG/build && $(MAKE) -f src/circuitProcessor/CMakeFiles/circuitWriter.dir/build.make src/circuitProcessor/CMakeFiles/circuitWriter.dir/circuitWriter.cpp.s
+.PHONY : circuitWriter.cpp.s
+
 helperFunctions.o: helperFunctions.cpp.o
 
 .PHONY : helperFunctions.o
@@ -403,6 +487,8 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... package"
+	@echo "... circuitWriter"
+	@echo "... circuitIntegrityBreaker"
 	@echo "... circuitDetails"
 	@echo "... package_source"
 	@echo "... circuitObfuscator"
@@ -421,12 +507,18 @@ help:
 	@echo "... circuitFlipper.o"
 	@echo "... circuitFlipper.i"
 	@echo "... circuitFlipper.s"
+	@echo "... circuitIntegrityBreaker.o"
+	@echo "... circuitIntegrityBreaker.i"
+	@echo "... circuitIntegrityBreaker.s"
 	@echo "... circuitObfuscator.o"
 	@echo "... circuitObfuscator.i"
 	@echo "... circuitObfuscator.s"
 	@echo "... circuitReader.o"
 	@echo "... circuitReader.i"
 	@echo "... circuitReader.s"
+	@echo "... circuitWriter.o"
+	@echo "... circuitWriter.i"
+	@echo "... circuitWriter.s"
 	@echo "... helperFunctions.o"
 	@echo "... helperFunctions.i"
 	@echo "... helperFunctions.s"
