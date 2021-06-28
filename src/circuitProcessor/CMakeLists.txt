@@ -1,3 +1,0 @@
-add_library(helperFunctions helperFunctions.cpp)
-add_library(circuitReader circuitReader.cpp)
-add_library(circuitEvaluator circuitEvaluator.cpp)

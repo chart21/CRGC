@@ -6,12 +6,16 @@
 void splitString(std::string s, std::vector<std::string> &v);	
 
 
-void swapLeftParent(bool (&arr)[2][2]);
-
-void swapRightParent(bool (&arr)[2][2]);
 
 
-CircuitDetails getBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol");
+
+CircuitDetails importBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol");
    
 
-TransformedCircuit* readBristolCircuitExNot(std::string filepath, CircuitDetails details);
+TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetails details);
+
+BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details);
+
+void importInput(std::string filepath, uint_fast64_t bitlength, bool* valArr);
+
+TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);

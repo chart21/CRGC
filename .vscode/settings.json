@@ -51,6 +51,13 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "bitset": "cpp",
-        "circuitstructs.h": "c"
+        "circuitstructs.h": "c",
+        "thread": "cpp",
+        "condition_variable": "cpp",
+        "semaphore": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "stop_token": "cpp"
     }
 }

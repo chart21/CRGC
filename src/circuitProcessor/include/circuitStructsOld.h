@@ -1,28 +1,28 @@
 #include <string>
 
 typedef struct {
-	int leftParentID;
-	int rightParentID;
-    int outputID;
+	uint_fast64_t leftParentID;
+	uint_fast64_t rightParentID;
+    uint_fast64_t outputID;
     bool truthTable[2][2];
 }TransformedGate;
 
 
 typedef struct {
-	int leftParentID;
-	int rightParentID;
-    int outputID;
+	uint_fast64_t leftParentID;
+	uint_fast64_t rightParentID;
+    uint_fast64_t outputID;
     std::string gateType;
 }BristolGate;
 
 
 typedef struct {
-	int numWires;
-	int numGates;
-    int numOutputs;
-    int bitlengthInputA;
-    int bitlengthInputB;    
-    int bitlengthOutputs;
+	uint_fast64_t numWires;
+	uint_fast64_t numGates;
+    uint_fast64_t numOutputs;
+    uint_fast64_t bitlengthInputA;
+    uint_fast64_t bitlengthInputB;    
+    uint_fast64_t bitlengthOutputs;
 }CircuitDetails;
 
 typedef struct {

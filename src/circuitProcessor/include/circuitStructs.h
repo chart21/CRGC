@@ -7,40 +7,38 @@
 
 #include <string>
 
-struct TransformedGate{
-	int leftParentID;
-	int rightParentID;
-    int outputID;
-    bool truthTable[2][2];
+template <typename T>
+struct Gate
+{
+  	uint_fast64_t leftParentID;
+	uint_fast64_t rightParentID;
+    uint_fast64_t outputID;
+    T truthTable;  
 };
 
+typedef Gate<bool[2][2]> TransformedGate;
+typedef Gate<char> BristolGate;
 
-struct BristolGate{
-	int leftParentID;
-	int rightParentID;
-    int outputID;
-    std::string gateType;
-};
 
 
 struct CircuitDetails{
-	int numWires;
-	int numGates;
-    int numOutputs;
-    int bitlengthInputA;
-    int bitlengthInputB;    
-    int bitlengthOutputs;
+	uint_fast64_t numWires;
+	uint_fast64_t numGates;
+    uint_fast64_t numOutputs;
+    uint_fast64_t bitlengthInputA;
+    uint_fast64_t bitlengthInputB;    
+    uint_fast64_t bitlengthOutputs;
 };
 
-struct TransformedCircuit{
+
+template <typename T> 
+struct Circuit{
 CircuitDetails details;
-TransformedGate* gates;
+T* gates;
 };
 
-struct BristolCircuit{
-CircuitDetails details;
-TransformedGate* gates;
-};
+typedef Circuit<TransformedGate> TransformedCircuit;
+typedef Circuit<BristolGate> BristolCircuit;
 
 
 #endif
