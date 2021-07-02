@@ -30,6 +30,8 @@
 
 
 
+
+
 template<typename F, typename... Args>
 void funcTime(F func, Args&&... args){
     std::chrono::high_resolution_clock::time_point t1 = 
@@ -45,6 +47,8 @@ void funcTime(F func, Args&&... args){
 
 int main(int argc, char *argv[])
 {
+    uint_fast64_t numThreads = 1;
+    
     std::string circuitName = "adder64";
     if (argc > 1)
     {
@@ -56,6 +60,11 @@ int main(int argc, char *argv[])
     if (argc > 4)
     {
         circuitFormat = argv[4];
+    }
+
+    if (argc > 5)
+    {
+        numThreads = std::stoul(argv[5]);
     }
 
     auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
@@ -72,8 +81,8 @@ int main(int argc, char *argv[])
     getPrevofEachWire(bristolCircuit, parents);
     
         
-    auto successors = new std::vector<uint_fast64_t>[bristolCircuit->details.numWires];
-    funcTime(getSuccessorsOfEachWire,bristolCircuit->details, parents, successors);
+    //auto successors = new std::vector<uint_fast64_t>[bristolCircuit->details.numWires];
+    //funcTime(getSuccessorsOfEachWire,bristolCircuit->details, parents, successors);
     
 
     auto po = new bool[bristolCircuit->details.numWires];    
@@ -120,16 +129,16 @@ int main(int argc, char *argv[])
 
 
 
-    auto levels = new uint_fast64_t[circuit->details.numWires];
-    auto maxLevel = getLevelOfGates(circuit, levels);
+    //auto levels = new uint_fast64_t[circuit->details.numWires];
+    //auto maxLevel = getLevelOfGates(circuit, levels);
 
     
 
-    auto circuitByLevels = new std::vector<TransformedGate>[maxLevel]();
+    //auto circuitByLevels = new std::vector<TransformedGate>[maxLevel]();
 
     
 
-    getCircuitbyLevels(circuit, levels,circuitByLevels); 
+    //getCircuitbyLevels(circuit, levels,circuitByLevels); 
 
     std::cout << "here" << '\n';
    
@@ -146,7 +155,7 @@ int main(int argc, char *argv[])
     //funcTime(evaluateTransformedCircuitbyLevelMT,circuit, circuitByLevels, maxLevel,inputA,inputB,output);
     //funcTime(evaluateTransformedCircuitHackMpCond,circuit, inputA,inputB,output);
 
-    delete[] levels;
+    //delete[] levels;
 
     
 

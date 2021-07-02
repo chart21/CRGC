@@ -223,7 +223,7 @@ void evaluateTransformedCircuitbyLevelThreadHackUint(TransformedCircuit *circuit
     }
 }
 
-void evaluateTransformedCircuitHackMpBool(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+void evaluateTransformedCircuitHackMpBool(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads, uint_fast64_t timeSleep)
 {
     auto evaluation = new bool[circuit->details.numWires];
 
@@ -245,15 +245,17 @@ void evaluateTransformedCircuitHackMpBool(TransformedCircuit *circuit, bool *inp
 
     //std::condition_variable cond;
 
-    uint_fast64_t numThreads = 7;
+    
     std::thread threads[numThreads];
     for (auto i = 0; i < numThreads; i++)
     {
-        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackBool, circuit, evaluation, i, numThreads, evaluated);
+        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackBool, circuit, evaluation, i, numThreads, evaluated, timeSleep);
     }
     for (auto i = 0; i < numThreads; i++)
         threads[i].join();
 
+    delete[] evaluated;
+    
     for (auto i = 0; i < circuit->details.numOutputs; i++)
     {
         for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
@@ -266,9 +268,8 @@ void evaluateTransformedCircuitHackMpBool(TransformedCircuit *circuit, bool *inp
     delete[] evaluation;
 }
 
-void evaluateTransformedCircuitbyLevelThreadHackBool(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated)
-{
-    using namespace std::chrono_literals;
+void evaluateTransformedCircuitbyLevelThreadHackBool(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated, uint_fast64_t timeSleep)
+{    
     auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
     for (auto i = id; i < circuit->details.numGates; i += numThreads)
     {
@@ -276,14 +277,14 @@ void evaluateTransformedCircuitbyLevelThreadHackBool(TransformedCircuit *circuit
         {
             while(not evaluated[circuit->gates[i].rightParentID - reducer])
             {
-                std::this_thread::sleep_for(300ns);
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
             }
         }
         if(circuit->gates[i].leftParentID >= reducer)
         {
             while(not evaluated[circuit->gates[i].leftParentID - reducer])
             {
-                std::this_thread::sleep_for(300ns);
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
            }
         }           
         evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];

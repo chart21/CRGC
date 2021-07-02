@@ -46,6 +46,6 @@ CTestTestfile.cmake
 _deps
 
 /build
-#/src/circuits
+/src/circuits
 
 [Bb][Uu][Ii][Ll][Dd]/

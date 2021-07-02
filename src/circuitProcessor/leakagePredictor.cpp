@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <thread>
+#include <chrono>
 
 #define parents(i,j)   parents[(i)*2 + (j)] //making 2D array index more natural
 
@@ -130,11 +131,10 @@ void getPotentiallyIntegrityBreakingGatesFromOutputThread(CircuitDetails details
 
 
 
-void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bool* po, uint_fast64_t* parents)
+void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bool* po, uint_fast64_t* parents, uint_fast64_t numThreads)
 {
     auto npib = new bool[details.numWires]();
-    auto addedGates = new bool[details.numWires]();
-    uint_fast64_t numThreads = 7;
+    auto addedGates = new bool[details.numWires]();    
     uint_fast64_t numGates = details.bitlengthOutputs/numThreads;
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
@@ -153,4 +153,61 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bo
         po[i] = !npib[i];
     delete[] addedGates; 
     delete[] npib;
+}
+
+
+void getPotentiallyObfuscatedGatesMT(BristolCircuit* circuit, bool* po, uint_fast64_t numThreads, uint_fast64_t sleepTime)
+{
+    //auto po = new bool[circuit->details.numWires];
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        po[i] = true;
+    }
+        for (auto i = circuit->details.bitlengthInputA; i < circuit->details.bitlengthInputB; i++)
+    {
+        po[i] = false;
+    }
+
+    std::thread threads[numThreads];
+    bool* evaluated = new bool[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs]();
+    
+    for (uint_fast64_t i = 0; i <numThreads; i++)
+    {
+        threads[i] = std::thread(getPotentiallyObfuscatedGatesThread,circuit,po, i,numThreads); 
+    }
+    for (auto i = 0; i <numThreads; i++)
+    {
+        threads[i].join();
+    }
+    delete[] evaluated;
+
+}
+
+void getPotentiallyObfuscatedGatesThread(BristolCircuit* circuit, bool* po, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated, uint_fast64_t sleepTime)
+{
+    using namespace std::chrono_literals;
+     auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
+    for (auto i = id; i < circuit->details.numGates; i += numThreads)
+    {
+        if(circuit->gates[i].rightParentID >= reducer)
+        {
+            while(not evaluated[circuit->gates[i].rightParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(sleepTime));
+            }
+        }
+        if(circuit->gates[i].leftParentID >= reducer)
+        {
+            while(not evaluated[circuit->gates[i].leftParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(sleepTime));
+           }
+        }   
+        if(circuit->gates[i].truthTable == 'X')        
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] && po[circuit->gates[i].rightParentID];        
+        else
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID];
+        if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+            evaluated[circuit->gates[i].outputID - reducer] = true;
+    }    
 }

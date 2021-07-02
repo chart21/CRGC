@@ -2,6 +2,7 @@
 #include "include/circuitStructs.h"
 #include <iostream>
 #include <vector>
+#include <thread>
 
 #define parents(i,j)   parents[(i)*2 + (j)] //making 2D array index more natural
 //#include "include/circuitDetails.h"
@@ -13,6 +14,17 @@ void getPrevofEachWire(BristolCircuit* circuit, uint_fast64_t* parents)
         parents(circuit->gates[i].outputID,0) = circuit->gates[i].leftParentID;    
         parents(circuit->gates[i].outputID,1) = circuit->gates[i].rightParentID;  
     }    
+}
+
+void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads)
+{
+    std::thread threads[numThreads];
+    for(auto i = 0; i < numThreads;i++)
+        threads[i] = std::thread(getPrevofEachWireThread, circuit, parents, numThreads);
+
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+    
 }
 
 void getPrevofEachWire(TransformedCircuit* circuit, uint_fast64_t* parents)
@@ -75,4 +87,27 @@ void getCircuitbyLevels(TransformedCircuit* circuit, uint_fast64_t* levels, std:
             circuitByLevels[levels[circuit->gates[i].outputID]-1].push_back(circuit->gates[i]);
         }
 
+}
+
+
+
+
+void getPrevofEachWireThread(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads)
+{
+    for(auto i = id; i < circuit->details.numGates;i+= numThreads)
+    {
+        parents(circuit->gates[i].outputID,0) = circuit->gates[i].leftParentID;    
+        parents(circuit->gates[i].outputID,1) = circuit->gates[i].rightParentID;  
+    }    
+}
+
+void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads)
+{
+    std::thread threads[numThreads];
+    for(auto i = 0; i < numThreads;i++)
+        threads[i] = std::thread(getPrevofEachWireThread, circuit, parents, i, numThreads);
+
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+    
 }

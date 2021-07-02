@@ -1,6 +1,7 @@
 #include "circuitStructs.h"
 #include <vector>
 #include <iostream>
+#include <thread>
 
 void getPrevofEachWire(BristolCircuit* circuit, uint_fast64_t* parents);
 void getPrevofEachWire(TransformedCircuit* circuit, uint_fast64_t* parents);
@@ -11,3 +12,5 @@ uint_fast64_t getLevelOfGates(TransformedCircuit* circuit, uint_fast64_t* levels
 
 void getCircuitbyLevels(TransformedCircuit* circuit, uint_fast64_t* levels, std::vector<TransformedGate>* circuitByLevels);
 
+void getPrevofEachWireThread(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
+void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
