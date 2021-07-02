@@ -78,7 +78,7 @@ void getFlippedCircuitWithoutOutputsThread(TransformedCircuit* circuit, bool* fl
     sfc64 sfc;
     RandomizerWithSentinelShift<> randomizer;
     auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
-    for (auto i = 0; i < circuit->details.numGates; i++)   
+    for (auto i = id; i < circuit->details.numGates; i+= numThreads)   
     {
 
         if(circuit->gates[i].rightParentID >= reducer)

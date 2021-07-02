@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     auto parents = new uint_fast64_t[bristolCircuit->details.numWires * 2]();    
     getPrevofEachWire(bristolCircuit, parents);
     auto po = new bool[bristolCircuit->details.numWires];    
-    //funcTime(getPotentiallyObfuscatedGates,bristolCircuit, po);
+    funcTime(getPotentiallyObfuscatedGates,bristolCircuit, po);
     funcTime(getPotentiallyIntegrityBreakingGatesFromOutput,bristolCircuit->details, po, parents);
     
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     {
         poc+= po[i];
     }
-    std::cout << "potentially obfuscated" << poc << '\n';
+    std::cout << "potentially obfuscated and integrity breaking" << poc << '\n';
 
     delete[] po;    
     delete[] bristolCircuit->gates;
@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
 
     obfuscateInput(inputA,obfuscatedValArr,flipped,circuit->details);
     funcTime(getFlippedCircuitWithoutOutputsN,circuit, flipped);
+    //funcTime(getFlippedCircuitWithoutOutputsMT,circuit, flipped, 7, 200);
     delete[] flipped;
 
     bool *isObfuscated = new bool[circuit->details.numWires]();    
@@ -228,6 +229,7 @@ int main(int argc, char *argv[])
     auto parents = new uint_fast64_t[bristolCircuit->details.numWires * 2]();    
     getPrevofEachWireMT(bristolCircuit, parents, numThreads);
     auto po = new bool[bristolCircuit->details.numWires];    
+    funcTime(getPotentiallyObfuscatedGatesMT,bristolCircuit, po, numThreads, timeSleep);
     funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT,bristolCircuit->details, po, parents, numThreads);
    
 
@@ -236,7 +238,7 @@ int main(int argc, char *argv[])
     {
         poc+= po[i];
     }
-    std::cout << "potentially obfuscated" << poc << '\n';
+    std::cout << "potentially obfuscated and integrity breaking" << poc << '\n';
 
     delete[] po;    
     delete[] bristolCircuit->gates;
@@ -278,11 +280,12 @@ int main(int argc, char *argv[])
 
     obfuscateInput(inputA,obfuscatedValArr,flipped,circuit->details);
     funcTime(getFlippedCircuitWithoutOutputsMT,circuit, flipped, numThreads, timeSleep);
+    //funcTime(getFlippedCircuitWithoutOutputsN,circuit, flipped);
     delete[] flipped;
 
     bool *isObfuscated = new bool[circuit->details.numWires]();    
     funcTime(moreEfficientObfuscationMT,circuit, obfuscatedValArr, isObfuscated, numThreads, timeSleep);
-    
+    //funcTime(moreEfficientObfuscationArr,circuit, obfuscatedValArr, isObfuscated);
  
     uint_fast64_t counter = 0;
     for(auto i = circuit->details.bitlengthInputA+circuit->details.bitlengthInputB; i < circuit->details.numWires;i++)
@@ -300,7 +303,7 @@ int main(int argc, char *argv[])
     std::cout << "obfuscated" << counter << '\n';
 
           
-    funcTime(getIntegrityBreakingGatesfromOutputMT,circuit->details, isObfuscated, parents, numThreads);
+    funcTime(getIntegrityBreakingGatesfromOutputMT2,circuit->details, isObfuscated, parents, numThreads);
     
     delete[] parents;
 
