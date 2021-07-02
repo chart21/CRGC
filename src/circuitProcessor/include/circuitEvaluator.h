@@ -23,7 +23,6 @@ void evaluateTransformedCircuitThread(TransformedCircuit *circuit, bool *evaluat
 
 
 void evaluateTransformedCircuitThreadHackBool2(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated);
-void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output);
 void evaluateTransformedCircuitbyLevelThreadHackUint(TransformedCircuit *circuit, uint_fast8_t *evaluation, uint_fast64_t id, uint_fast64_t numThreads);
 void evaluateTransformedCircuitHackMTCond(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output);
 void evaluateTransformedCircuitbyLevelThreadHackCond(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, std::binary_semaphore **semaphores, bool* aquired);

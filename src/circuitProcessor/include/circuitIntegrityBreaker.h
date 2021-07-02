@@ -10,5 +10,8 @@ void getIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isob
 void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads);
 
 
-void breakIntegrityOfGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t id, uint_fast64_t numThreads);
+void breakIntegrityOfGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t numThreads);
 void breakIntegrityOfGatesThread(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t id, uint_fast64_t numThreads);
+
+void getIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads);
+void getIntegrityBreakingGatesfromOutputMT2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads);

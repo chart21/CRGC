@@ -16,6 +16,8 @@ void converIntToBoolArr(uint_fast64_t num, size_t bitlength, bool* arr);
 
 uint_fast64_t convertBoolArrToInt(bool* arr, size_t bitlength);
 
+bool equalBoolArr(bool* arr1, bool* arr2, size_t bitlength);
+
 void swapLeftParent(bool (&arr)[2][2]);
 
 void swapRightParent(bool (&arr)[2][2]);

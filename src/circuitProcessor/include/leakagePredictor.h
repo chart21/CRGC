@@ -12,3 +12,7 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bo
 
 void getPotentiallyObfuscatedGatesMT(BristolCircuit* circuit, bool* po, uint_fast64_t numThreads, uint_fast64_t sleepTime);
 void getPotentiallyObfuscatedGatesThread(BristolCircuit* circuit, bool* po, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated, uint_fast64_t sleepTime);
+
+void getPotentiallyIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool* po, uint_fast64_t* parents, bool* npib, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads);
+void getPotentiallyIntegrityBreakingGatesFromOutputMT2(CircuitDetails details, bool* po, uint_fast64_t* parents, uint_fast64_t numThreads);
+

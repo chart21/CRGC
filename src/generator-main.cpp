@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
         if(isObfuscated[i])
         {
             counter++;
-            std::cout << "obfuscatedInd" << i << '\n';
+            //std::cout << "obfuscatedInd" << i << '\n';
 
         }
             
@@ -177,9 +177,14 @@ int main(int argc, char *argv[])
     auto outputRGC = new bool[circuit->details.bitlengthOutputs*circuit->details.numOutputs];
     evaluateTransformedCircuit(circuit, obfuscatedValArr, inputB, outputRGC);
     
-        std::cout << "Circuit outputs are equal?" << (*outputRGC == *output) << '\n';
+        std::cout << "Circuit outputs are equal?" << equalBoolArr(outputRGC, output, circuit->details.bitlengthOutputs) << '\n';
 
-    
+    inA = convertBoolArrToInt(obfuscatedValArr, details.bitlengthInputA);
+    inB = convertBoolArrToInt(inputB, details.bitlengthInputB);
+    iout = convertBoolArrToInt(outputRGC, details.bitlengthOutputs);
+    std::cout << "inA" << inA <<"\n";    
+    std::cout << "inB" << inB <<"\n"; 
+    std::cout << "iout" << iout <<"\n"; 
 
     
 
@@ -223,7 +228,7 @@ int main(int argc, char *argv[])
     auto parents = new uint_fast64_t[bristolCircuit->details.numWires * 2]();    
     getPrevofEachWireMT(bristolCircuit, parents, numThreads);
     auto po = new bool[bristolCircuit->details.numWires];    
-    funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT,bristolCircuit, po, numThreads);
+    funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT,bristolCircuit->details, po, parents, numThreads);
    
 
     int poc = - bristolCircuit->details.bitlengthInputA;
@@ -286,7 +291,7 @@ int main(int argc, char *argv[])
         if(isObfuscated[i])
         {
             counter++;
-            std::cout << "obfuscatedInd" << i << '\n';
+            //std::cout << "obfuscatedInd" << i << '\n';
 
         }
             
@@ -315,9 +320,14 @@ int main(int argc, char *argv[])
     evaluateTransformedCircuitMT(circuit, obfuscatedValArr, inputB, outputRGC, numThreads, timeSleep);
     
 
-        std::cout << "Circuit outputs are equal?" << (*outputRGC == *output) << '\n';
+        std::cout << "Circuit outputs are equal?" << equalBoolArr(outputRGC, output, circuit->details.bitlengthOutputs) << '\n';
 
-    
+    inA = convertBoolArrToInt(obfuscatedValArr, details.bitlengthInputA);
+    inB = convertBoolArrToInt(inputB, details.bitlengthInputB);
+    iout = convertBoolArrToInt(outputRGC, details.bitlengthOutputs);
+    std::cout << "inA" << inA <<"\n";    
+    std::cout << "inB" << inB <<"\n"; 
+    std::cout << "iout" << iout <<"\n"; 
 
     
 

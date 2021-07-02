@@ -106,7 +106,7 @@ void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfusca
                  notObfuscated[currIndex] = true;
                  for (auto p = 0; p < 2; p++)
                  {
-                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB && isObfuscated[parents(currIndex,p)]  && not addedGates[parents(currIndex,p)])
+                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB && ! isObfuscated[parents(currIndex,p)]  && ! addedGates[parents(currIndex,p)])
                     {
                         addedGates[parents(currIndex,p)] = true;
                         pathQueue.push(parents(currIndex,p));                        
@@ -116,8 +116,8 @@ void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfusca
         }
     } 
 
-    for (auto i = 0; i < details.numWires; i++)
-        isObfuscated[i] = !notObfuscated[i];
+    for (auto i = details.bitlengthInputA+details.bitlengthInputB; i < details.numWires; i++)
+        isObfuscated[i] = ! notObfuscated[i];
     delete[] addedGates; 
     delete[] notObfuscated;
      
@@ -139,7 +139,7 @@ void getIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isob
                  notobfuscated[currIndex] = true;
                  for (auto p = 0; p < 2; p++)
                  {
-                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB &&isobfuscated[parents(currIndex,p)]  && not addedGates[parents(currIndex,p)])
+                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB && ! isobfuscated[parents(currIndex,p)]  && not addedGates[parents(currIndex,p)])
                     {
                         addedGates[parents(currIndex,p)] = true;
                         pathQueue.push(parents(currIndex,p));                        
@@ -154,11 +154,11 @@ void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfusc
 {
     auto notobfuscated = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();    
-    uint_fast64_t numGates = details.bitlengthOutputs/numThreads;
+    uint_fast64_t numGates = details.bitlengthOutputs/numThreads+1;
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread,details,isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
+        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread,details, isobfuscated, parents, notobfuscated, addedGates,i,numGates); 
     }
     for (auto i = 0; i <numThreads; i++)
     {
@@ -168,13 +168,63 @@ void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfusc
         
     
 
-    for (auto i = 0; i < details.numWires; i++)
+    for (auto i = details.bitlengthInputA+details.bitlengthInputB; i < details.numWires; i++)
        isobfuscated[i] = !notobfuscated[i];
     delete[] addedGates; 
     delete[] notobfuscated;
 }
 
-void breakIntegrityOfGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t id, uint_fast64_t numThreads)
+void getIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads)
+{
+    std::queue<uint_fast64_t> pathQueue;
+    for (auto i = 0; i < details.numOutputs; i++)
+    {
+        for(auto j = id; j < details.bitlengthOutputs; j+=numThreads)
+        {
+            pathQueue.push(details.numWires-1-i-j);
+             while(! pathQueue.empty())
+             {
+                 auto currIndex = pathQueue.front();
+                 pathQueue.pop();
+                 notobfuscated[currIndex] = true;
+                 for (auto p = 0; p < 2; p++)
+                 {
+                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB && ! isobfuscated[parents(currIndex,p)]  && not addedGates[parents(currIndex,p)])
+                    {
+                        addedGates[parents(currIndex,p)] = true;
+                        pathQueue.push(parents(currIndex,p));                        
+                    }
+                 }
+             }
+        }
+    }
+}
+
+void getIntegrityBreakingGatesfromOutputMT2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads)
+{
+    auto notobfuscated = new bool[details.numWires]();
+    auto addedGates = new bool[details.numWires]();   
+    
+    std::thread threads[numThreads];
+    for (uint_fast64_t i = 0; i <numThreads; i++)
+    {
+        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread2,details, isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
+    }
+    for (auto i = 0; i <numThreads; i++)
+    {
+        threads[i].join();
+    }
+
+        
+    
+
+    for (auto i = details.bitlengthInputA+details.bitlengthInputB; i < details.numWires; i++)
+       isobfuscated[i] = !notobfuscated[i];
+    delete[] addedGates; 
+    delete[] notobfuscated;
+}
+
+void breakIntegrityOfGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t numThreads)
 {
     
     std::thread threads[numThreads];

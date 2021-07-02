@@ -135,11 +135,11 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bo
 {
     auto npib = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();    
-    uint_fast64_t numGates = details.bitlengthOutputs/numThreads;
+    uint_fast64_t numGates = details.bitlengthOutputs/numThreads + 1;
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread,details,po, parents, npib, addedGates,i,numThreads); 
+        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread,details,po, parents, npib, addedGates,i,numGates); 
     }
     for (auto i = 0; i <numThreads; i++)
     {
@@ -173,7 +173,7 @@ void getPotentiallyObfuscatedGatesMT(BristolCircuit* circuit, bool* po, uint_fas
     
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getPotentiallyObfuscatedGatesThread,circuit,po, i,numThreads); 
+        threads[i] = std::thread(getPotentiallyObfuscatedGatesThread,circuit,po, i,numThreads, evaluated, sleepTime); 
     }
     for (auto i = 0; i <numThreads; i++)
     {
@@ -210,4 +210,61 @@ void getPotentiallyObfuscatedGatesThread(BristolCircuit* circuit, bool* po, uint
         if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
             evaluated[circuit->gates[i].outputID - reducer] = true;
     }    
+}
+
+
+
+
+void getPotentiallyIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool* po, uint_fast64_t* parents, bool* npib, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads)
+{
+    std::queue<uint_fast64_t> pathQueue;
+    for (auto i = 0; i < details.numOutputs; i++)
+    {
+        for(auto j = id; j < details.bitlengthOutputs; j+= numThreads)
+        {
+            pathQueue.push(details.numWires-1-i-j);
+             while(! pathQueue.empty())
+             {
+                 auto currIndex = pathQueue.front();
+                 pathQueue.pop();
+                 npib[currIndex] = true;
+                 for (auto p = 0; p < 2; p++)
+                 {
+                    if(parents(currIndex,p) >= details.bitlengthInputA+details.bitlengthInputB && po[parents(currIndex,p)]  && not addedGates[parents(currIndex,p)])
+                    {
+                        addedGates[parents(currIndex,p)] = true;
+                        pathQueue.push(parents(currIndex,p));                        
+                    }
+                 }
+             }
+        }
+    }
+}
+
+
+
+
+
+void getPotentiallyIntegrityBreakingGatesFromOutputMT2(CircuitDetails details, bool* po, uint_fast64_t* parents, uint_fast64_t numThreads)
+{
+    auto npib = new bool[details.numWires]();
+    auto addedGates = new bool[details.numWires](); 
+    
+    std::thread threads[numThreads];
+    for (uint_fast64_t i = 0; i <numThreads; i++)
+    {
+        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread,details,po, parents, npib, addedGates,i,numThreads); 
+    }
+    for (auto i = 0; i <numThreads; i++)
+    {
+        threads[i].join();
+    }
+
+        
+    
+
+    for (auto i = 0; i < details.numWires; i++)
+        po[i] = !npib[i];
+    delete[] addedGates; 
+    delete[] npib;
 }

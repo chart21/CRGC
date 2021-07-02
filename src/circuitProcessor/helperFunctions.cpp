@@ -19,7 +19,13 @@ void generateRandomInput(size_t bitlength, bool* input)
     }
 }
 
-
+bool equalBoolArr(bool* arr1, bool* arr2, size_t bitlength)
+{
+for (auto i = 0; i < bitlength; i++)
+  if(arr2[i] != arr1[i])
+    return false;
+return true;
+}
 
 
 void converIntToBoolArr(uint_fast64_t num, size_t bitlength, bool* arr)

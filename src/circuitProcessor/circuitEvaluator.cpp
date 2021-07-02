@@ -220,58 +220,7 @@ void evaluateTransformedCircuitThreadHackBool2(TransformedCircuit *circuit, bool
 
 
 
-void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
-{
-    auto evaluation = new uint_fast8_t[circuit->details.numWires];
 
-    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
-    {
-        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
-    }
-
-    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
-    {
-        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
-    }
-
-    for (auto i = circuit->details.bitlengthInputB + circuit->details.bitlengthInputA; i < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs; i++)
-    {
-        evaluation[i] = 2;
-    }
-
-    //std::condition_variable cond;
-
-    uint_fast64_t numThreads = 7;
-    std::thread threads[numThreads];
-    for (auto i = 0; i < numThreads; i++)
-    {
-        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackUint, circuit, evaluation, i, numThreads);
-    }
-    for (auto i = 0; i < numThreads; i++)
-        threads[i].join();
-
-    for (auto i = 0; i < circuit->details.numOutputs; i++)
-    {
-        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
-        {
-            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
-            //std::cout << output(i,j);
-        }
-        //std::cout << std::endl;
-    }
-    delete[] evaluation;
-}
-
-void evaluateTransformedCircuitbyLevelThreadHackUint(TransformedCircuit *circuit, uint_fast8_t *evaluation, uint_fast64_t id, uint_fast64_t numThreads)
-{
-    for (auto i = id; i < circuit->details.numGates; i += numThreads)
-    {
-        while (evaluation[circuit->gates[i].rightParentID > 2] || evaluation[circuit->gates[i].rightParentID > 2])
-        {
-        }
-        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
-    }
-}
 
 
 
@@ -496,4 +445,15 @@ void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inp
         //std::cout << std::endl;
     }
     delete[] evaluation;
+}
+
+void evaluateTransformedCircuitbyLevelThreadHackUint(TransformedCircuit *circuit, uint_fast8_t *evaluation, uint_fast64_t id, uint_fast64_t numThreads)
+{
+    for (auto i = id; i < circuit->details.numGates; i += numThreads)
+    {
+        while (evaluation[circuit->gates[i].rightParentID > 2] || evaluation[circuit->gates[i].rightParentID > 2])
+        {
+        }
+        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
+    }
 }
