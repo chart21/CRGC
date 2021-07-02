@@ -177,6 +177,7 @@ int main(int argc, char *argv[])
 
     //obfuscatedValArr = inputA;
     bool *isObfuscated = new bool[circuit->details.numWires]();
+    //multithreading version needed
     funcTime(more_efficient_obfuscation4NArr,circuit, obfuscatedValArr, isObfuscated);
     
     //more_efficient_obfuscation4N(circuit, inputA);
@@ -201,6 +202,7 @@ int main(int argc, char *argv[])
 
         
     funcTime(getIntegrityBreakingGatesN4,circuit->details, isObfuscated, parents, successors);
+    
 
 
     poc = - circuit->details.bitlengthInputA;

@@ -127,7 +127,7 @@ void evaluateTransformedCircuitbyLevelThread(std::vector<TransformedGate> *circu
     }
 }
 
-void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads)
 {
     auto evaluation = new bool[circuit->details.numWires];
 
@@ -141,7 +141,7 @@ void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA,
         evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
     }
 
-    uint_fast64_t numThreads = 7;
+    
     std::thread threads[numThreads];
     for (auto i = 0; i < numThreads; i++)
     {
