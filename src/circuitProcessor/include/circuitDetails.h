@@ -14,3 +14,6 @@ void getCircuitbyLevels(TransformedCircuit* circuit, uint_fast64_t* levels, std:
 
 void getPrevofEachWireThread(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
 void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
+
+void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
+void getPrevofEachWireMTTrasnformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);

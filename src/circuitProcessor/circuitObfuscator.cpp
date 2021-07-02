@@ -5,8 +5,9 @@
 #include <thread>
 #include <chrono>
 
-void more_efficient_obfuscation4N(TransformedCircuit* circuit, bool* inputA)
+void moreEfficientObfuscation(TransformedCircuit* circuit, bool* inputA)
 {
+    //4N
     std::unordered_map<uint_fast64_t, bool> unobfuscatedValues;
     for (auto i = 0; i <circuit->details.bitlengthInputA;i++)
     {
@@ -61,7 +62,7 @@ void more_efficient_obfuscation4N(TransformedCircuit* circuit, bool* inputA)
     
 
 
-void more_efficient_obfuscation4NArr(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated)
+void moreEfficientObfuscationArr(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated)
 {
     //bool *isObfuscated = new bool[circuit->details.numWires]();
     bool *unobfuscatedValues = new bool[circuit->details.numWires];
@@ -127,7 +128,7 @@ void more_efficient_obfuscation4NArr(TransformedCircuit* circuit, bool* inputA, 
     delete[] unobfuscatedValues;
 }
 
-void more_efficient_obfuscationMT(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated, uint_fast64_t numThreads, uint_fast64_t timeSleep)
+void moreEfficientObfuscationMT(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated, uint_fast64_t numThreads, uint_fast64_t timeSleep)
 {    
     bool *unobfuscatedValues = new bool[circuit->details.numWires];   
     
@@ -142,7 +143,7 @@ void more_efficient_obfuscationMT(TransformedCircuit* circuit, bool* inputA, boo
     std::thread threads[numThreads];
     for (auto i = 0; i < numThreads; i++)
     {
-        threads[i] = std::thread(more_efficient_obfuscationThread, circuit, inputA, isObfuscated, unobfuscatedValues, evaluated, i, numThreads, timeSleep);
+        threads[i] = std::thread(moreEfficientObfuscationThread, circuit, inputA, isObfuscated, unobfuscatedValues, evaluated, i, numThreads, timeSleep);
     }
     for (auto i = 0; i < numThreads; i++)
         threads[i].join();
@@ -155,7 +156,7 @@ void more_efficient_obfuscationMT(TransformedCircuit* circuit, bool* inputA, boo
 
 }
 
-void more_efficient_obfuscationThread(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated, bool* unobfuscatedValues, bool* evaluated, uint_fast64_t id, uint_fast64_t numThreads, uint_fast64_t timeSleep)
+void moreEfficientObfuscationThread(TransformedCircuit* circuit, bool* inputA, bool* isObfuscated, bool* unobfuscatedValues, bool* evaluated, uint_fast64_t id, uint_fast64_t numThreads, uint_fast64_t timeSleep)
 {
     //bool *isObfuscated = new bool[circuit->details.numWires]();
     

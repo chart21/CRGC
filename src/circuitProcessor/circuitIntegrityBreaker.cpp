@@ -6,7 +6,7 @@
 
 #define parents(i,j)   parents[(i)*2 + (j)] //making 2D array index more natural
 
-void getIntegrityBreakingGatesN4(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
+void getIntegrityBreakingGates(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
 {
     auto addedGates = new bool[details.numWires]();
     std::queue<uint_fast64_t> pathQueue;
@@ -89,7 +89,7 @@ void breakIntegrityOfGates(TransformedCircuit* circuit, bool* isObfuscated)
 }
 
 
-void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
+void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents)
 {
     auto notObfuscated = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();
@@ -124,7 +124,7 @@ void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfusca
 }
 
 
-void getPotentiallyIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t amountGatesperThread)
+void getIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t amountGatesperThread)
 {
     std::queue<uint_fast64_t> pathQueue;
     for (auto i = 0; i < details.numOutputs; i++)
@@ -158,7 +158,7 @@ void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfusc
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread,details,isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
+        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread,details,isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
     }
     for (auto i = 0; i <numThreads; i++)
     {

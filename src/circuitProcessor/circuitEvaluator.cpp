@@ -10,7 +10,7 @@
 
 #define output(i, j) output[(i)*circuit->details.bitlengthOutputs + (j)] //making 2D array index more natural
 
-void evaluateTransformedCircuitN(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+void evaluateTransformedCircuit(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
 {
     auto evaluation = new bool[circuit->details.numWires];
 
@@ -42,92 +42,8 @@ void evaluateTransformedCircuitN(TransformedCircuit *circuit, bool *inputA, bool
     delete[] evaluation;
 }
 
-void evaluateTransformedCircuitbyLevel(TransformedCircuit *circuit, std::vector<TransformedGate> *circuitByLine, uint_fast64_t maxLevel, bool *inputA, bool *inputB, bool *output)
-{
-    auto evaluation = new bool[circuit->details.numWires];
-    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
-    {
-        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
-    }
 
-    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
-    {
-        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
-    }
-    for (auto s = 0; s < maxLevel; s++)
-    {
-        for (auto i = 0; i < circuitByLine[s].size(); i++)
-        {
-            evaluation[circuitByLine[s][i].outputID] = circuitByLine[s][i].truthTable[evaluation[circuitByLine[s][i].leftParentID]][evaluation[circuitByLine[s][i].rightParentID]];
-        }
-    }
-
-    for (auto i = 0; i < circuit->details.numOutputs; i++)
-    {
-        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
-        {
-            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
-            //std::cout << output(i,j);
-        }
-        //std::cout << std::endl;
-    }
-    delete[] evaluation;
-}
-
-void evaluateTransformedCircuitbyLevelMT(TransformedCircuit *circuit, std::vector<TransformedGate> *circuitByLine, uint_fast64_t maxLevel, bool *inputA, bool *inputB, bool *output)
-{
-    auto evaluation = new bool[circuit->details.numWires];
-    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
-    {
-        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
-    }
-
-    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
-    {
-        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
-    }
-    //uint_fast64_t numThreads = 4;
-
-    //std::thread threads[numThreads];
-    //for (auto i = 0; i < numThreads; i++)
-    //    threads[i] = std::thread(evaluateTransformedCircuitbyLevelThread, circuitByLine, maxLevel, evaluation, i, numThreads);
-    //for (auto i = 0; i < numThreads; i++)
-    //    threads[i].join();
-
-    for (auto s = 0; s < maxLevel; s++)
-    {
-        uint_fast64_t numThreads = 1;
-        //uint_fast64_t numThreads = circuitByLine[s].size();
-        std::thread threads[numThreads];
-        for (auto i = 0; i < numThreads; i++)
-        {
-            threads[i] = std::thread(evaluateTransformedCircuitbyLevelThread, circuitByLine, evaluation, s, i, (circuitByLine[s].size() + numThreads - 1) / numThreads);
-        }
-        for (auto i = 0; i < numThreads; i++)
-            threads[i].join();
-    }
-
-    for (auto i = 0; i < circuit->details.numOutputs; i++)
-    {
-        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
-        {
-            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
-            //std::cout << output(i,j);
-        }
-        //std::cout << std::endl;
-    }
-    delete[] evaluation;
-}
-
-void evaluateTransformedCircuitbyLevelThread(std::vector<TransformedGate> *circuitByLine, bool *evaluation, uint_fast64_t s, uint_fast64_t index, uint_fast64_t numGates)
-{
-    for (auto i = index; i < index + numGates; i++)
-    {
-        evaluation[circuitByLine[s][i].outputID] = circuitByLine[s][i].truthTable[evaluation[circuitByLine[s][i].leftParentID]][evaluation[circuitByLine[s][i].rightParentID]];
-    }
-}
-
-void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads)
+void evaluateTransformedCircuitHackMT(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads)
 {
     auto evaluation = new bool[circuit->details.numWires];
 
@@ -145,7 +61,7 @@ void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA,
     std::thread threads[numThreads];
     for (auto i = 0; i < numThreads; i++)
     {
-        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHack, circuit, evaluation, i, numThreads);
+        threads[i] = std::thread(evaluateTransformedCircuitHackThread, circuit, evaluation, i, numThreads);
     }
     for (auto i = 0; i < numThreads; i++)
         threads[i].join();
@@ -162,7 +78,7 @@ void evaluateTransformedCircuitHackMp(TransformedCircuit *circuit, bool *inputA,
     delete[] evaluation;
 }
 
-void evaluateTransformedCircuitbyLevelThreadHack(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads)
+void evaluateTransformedCircuitHackThread(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads)
 {
     for (auto i = id; i < circuit->details.numGates; i += numThreads)
     {
@@ -170,7 +86,141 @@ void evaluateTransformedCircuitbyLevelThreadHack(TransformedCircuit *circuit, bo
     }
 }
 
-void evaluateTransformedCircuitHackMpUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+
+void evaluateTransformedCircuitMT(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads, uint_fast64_t timeSleep)
+{
+    auto evaluation = new bool[circuit->details.numWires];
+
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+
+    bool* evaluated = new bool[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs]();
+    // bool* evaluated = new bool[circuit->details.numWires]();
+    // std::fill_n(evaluated, circuit->details.bitlengthInputA+circuit->details.bitlengthInputB, true);
+
+    
+
+    //std::condition_variable cond;
+
+    
+    std::thread threads[numThreads];
+    for (auto i = 0; i < numThreads; i++)
+    {
+        threads[i] = std::thread(evaluateTransformedCircuitThread, circuit, evaluation, i, numThreads, evaluated, timeSleep);
+    }
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+
+    delete[] evaluated;
+    
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
+}
+
+void evaluateTransformedCircuitThread(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated, uint_fast64_t timeSleep)
+{    
+    auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
+    for (auto i = id; i < circuit->details.numGates; i += numThreads)
+    {
+        if(circuit->gates[i].rightParentID >= reducer)
+        {
+            while(not evaluated[circuit->gates[i].rightParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
+            }
+        }
+        if(circuit->gates[i].leftParentID >= reducer)
+        {
+            while(not evaluated[circuit->gates[i].leftParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
+           }
+        }           
+        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
+        if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+            evaluated[circuit->gates[i].outputID - reducer] = true;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void evaluateTransformedCircuitThreadHackBool2(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated)
+{
+    using namespace std::chrono_literals;
+    
+    for (auto i = id; i < circuit->details.numGates; i += numThreads)
+    {
+
+            while(not evaluated[circuit->gates[i].rightParentID])
+            {
+                std::this_thread::sleep_for(300ns);
+            }
+   
+       
+            while(not evaluated[circuit->gates[i].leftParentID])
+            {
+                std::this_thread::sleep_for(300ns);
+           }
+                  
+        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
+        if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+            evaluated[circuit->gates[i].outputID] = true;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
 {
     auto evaluation = new uint_fast8_t[circuit->details.numWires];
 
@@ -223,102 +273,9 @@ void evaluateTransformedCircuitbyLevelThreadHackUint(TransformedCircuit *circuit
     }
 }
 
-void evaluateTransformedCircuitHackMpBool(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads, uint_fast64_t timeSleep)
-{
-    auto evaluation = new bool[circuit->details.numWires];
-
-    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
-    {
-        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
-    }
-
-    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
-    {
-        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
-    }
-
-    bool* evaluated = new bool[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs]();
-    // bool* evaluated = new bool[circuit->details.numWires]();
-    // std::fill_n(evaluated, circuit->details.bitlengthInputA+circuit->details.bitlengthInputB, true);
-
-    
-
-    //std::condition_variable cond;
-
-    
-    std::thread threads[numThreads];
-    for (auto i = 0; i < numThreads; i++)
-    {
-        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackBool, circuit, evaluation, i, numThreads, evaluated, timeSleep);
-    }
-    for (auto i = 0; i < numThreads; i++)
-        threads[i].join();
-
-    delete[] evaluated;
-    
-    for (auto i = 0; i < circuit->details.numOutputs; i++)
-    {
-        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
-        {
-            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
-            //std::cout << output(i,j);
-        }
-        //std::cout << std::endl;
-    }
-    delete[] evaluation;
-}
-
-void evaluateTransformedCircuitbyLevelThreadHackBool(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated, uint_fast64_t timeSleep)
-{    
-    auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
-    for (auto i = id; i < circuit->details.numGates; i += numThreads)
-    {
-        if(circuit->gates[i].rightParentID >= reducer)
-        {
-            while(not evaluated[circuit->gates[i].rightParentID - reducer])
-            {
-                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
-            }
-        }
-        if(circuit->gates[i].leftParentID >= reducer)
-        {
-            while(not evaluated[circuit->gates[i].leftParentID - reducer])
-            {
-                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
-           }
-        }           
-        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
-        if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
-            evaluated[circuit->gates[i].outputID - reducer] = true;
-    }
-}
-
-void evaluateTransformedCircuitbyLevelThreadHackBool2(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numThreads, bool* evaluated)
-{
-    using namespace std::chrono_literals;
-    
-    for (auto i = id; i < circuit->details.numGates; i += numThreads)
-    {
-
-            while(not evaluated[circuit->gates[i].rightParentID])
-            {
-                std::this_thread::sleep_for(300ns);
-            }
-   
-       
-            while(not evaluated[circuit->gates[i].leftParentID])
-            {
-                std::this_thread::sleep_for(300ns);
-           }
-                  
-        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
-        if(circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
-            evaluated[circuit->gates[i].outputID] = true;
-    }
-}
 
 
-void evaluateTransformedCircuitHackMpCond(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+void evaluateTransformedCircuitHackMTCond(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
 {
     auto evaluation = new bool[circuit->details.numWires];
     //auto conditions = new std::condition_variable[circuit->details.numGates]();
@@ -408,4 +365,135 @@ void evaluateTransformedCircuitbyLevelThreadHackCond(TransformedCircuit *circuit
             }
         }
     }
+}
+
+
+
+
+void evaluateTransformedCircuitbyLevel(TransformedCircuit *circuit, std::vector<TransformedGate> *circuitByLine, uint_fast64_t maxLevel, bool *inputA, bool *inputB, bool *output)
+{
+    auto evaluation = new bool[circuit->details.numWires];
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+    for (auto s = 0; s < maxLevel; s++)
+    {
+        for (auto i = 0; i < circuitByLine[s].size(); i++)
+        {
+            evaluation[circuitByLine[s][i].outputID] = circuitByLine[s][i].truthTable[evaluation[circuitByLine[s][i].leftParentID]][evaluation[circuitByLine[s][i].rightParentID]];
+        }
+    }
+
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
+}
+
+void evaluateTransformedCircuitbyLevelMT(TransformedCircuit *circuit, std::vector<TransformedGate> *circuitByLine, uint_fast64_t maxLevel, bool *inputA, bool *inputB, bool *output)
+{
+    auto evaluation = new bool[circuit->details.numWires];
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+    //uint_fast64_t numThreads = 4;
+
+    //std::thread threads[numThreads];
+    //for (auto i = 0; i < numThreads; i++)
+    //    threads[i] = std::thread(evaluateTransformedCircuitbyLevelThread, circuitByLine, maxLevel, evaluation, i, numThreads);
+    //for (auto i = 0; i < numThreads; i++)
+    //    threads[i].join();
+
+    for (auto s = 0; s < maxLevel; s++)
+    {
+        uint_fast64_t numThreads = 1;
+        //uint_fast64_t numThreads = circuitByLine[s].size();
+        std::thread threads[numThreads];
+        for (auto i = 0; i < numThreads; i++)
+        {
+            threads[i] = std::thread(evaluateTransformedCircuitbyLevelThread, circuitByLine, evaluation, s, i, (circuitByLine[s].size() + numThreads - 1) / numThreads);
+        }
+        for (auto i = 0; i < numThreads; i++)
+            threads[i].join();
+    }
+
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
+}
+
+void evaluateTransformedCircuitbyLevelThread(std::vector<TransformedGate> *circuitByLine, bool *evaluation, uint_fast64_t s, uint_fast64_t index, uint_fast64_t numGates)
+{
+    for (auto i = index; i < index + numGates; i++)
+    {
+        evaluation[circuitByLine[s][i].outputID] = circuitByLine[s][i].truthTable[evaluation[circuitByLine[s][i].leftParentID]][evaluation[circuitByLine[s][i].rightParentID]];
+    }
+}
+
+
+void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
+{
+    auto evaluation = new uint_fast8_t[circuit->details.numWires];
+
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+
+    for (auto i = circuit->details.bitlengthInputB + circuit->details.bitlengthInputA; i < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs; i++)
+    {
+        evaluation[i] = 2;
+    }
+
+    //std::condition_variable cond;
+
+    uint_fast64_t numThreads = 7;
+    std::thread threads[numThreads];
+    for (auto i = 0; i < numThreads; i++)
+    {
+        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackUint, circuit, evaluation, i, numThreads);
+    }
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
 }
