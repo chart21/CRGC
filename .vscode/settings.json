@@ -58,6 +58,10 @@
         "compare": "cpp",
         "concepts": "cpp",
         "numbers": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "set": "cpp",
+        "future": "cpp",
+        "mutex": "cpp",
+        "cinttypes": "cpp"
     }
 }

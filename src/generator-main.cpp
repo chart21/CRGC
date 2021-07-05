@@ -12,6 +12,9 @@
 #include "circuitProcessor/include/circuitWriter.h"
 #include "circuitProcessor/include/leakagePredictor.h"
 
+//#include <emp-tool/emp-tool.h>
+#include "programs/include/mult3.h"
+
 
 #include <chrono>
 
@@ -47,6 +50,7 @@ void funcTime(F func, Args&&... args){
 
 int main(int argc, char *argv[])
 {
+    generateCircuitRAM();
     uint_fast64_t numThreads = 1;
     uint_fast64_t timeSleep = 300;
     
