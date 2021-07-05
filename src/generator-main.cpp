@@ -50,9 +50,20 @@ void funcTime(F func, Args&&... args){
 
 int main(int argc, char *argv[])
 {
-    generateCircuitRAM();
+    std::vector<BristolGate> gateVec;
+    CircuitDetails empDetails;
+    generateCircuitRAM(&gateVec, &empDetails);
+    // for (auto i = 0; i < gateVec.size(); i++)
+    // {
+    //     std::cout << i << " " << gateVec[i].leftParentID << " " << gateVec[i].rightParentID << " " << gateVec[i].outputID << " " << gateVec[i].truthTable << '\n';
+    // }
+    
+    
     uint_fast64_t numThreads = 1;
     uint_fast64_t timeSleep = 300;
+
+   
+
     
     std::string circuitName = "adder64";
     if (argc > 1)
@@ -77,11 +88,17 @@ int main(int argc, char *argv[])
         timeSleep = std::stoul(argv[6]);
     }
 
-    auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
+    //auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
 
    
-    auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath+ ".txt", details);
+    //auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath+ ".txt", details);
+
     
+    
+    auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
+    
+
+    std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
     
     if(numThreads == 1)
     {
@@ -99,17 +116,24 @@ int main(int argc, char *argv[])
         poc+= po[i];
     }
     std::cout << "potentially obfuscated and integrity breaking" << poc << '\n';
+    delete[] po; 
 
-    delete[] po;    
+    
+    auto circuit = new TransformedCircuit[bristolCircuit->details.numGates];
+
+    
+    transformBristolCircuitToTransformedCircuit(bristolCircuit, circuit);
+    
+       
     delete[] bristolCircuit->gates;
     delete[] bristolCircuit;      
      
 
-    auto circuit = importBristolCircuitExNot(filepath+ ".txt", details);
+    //auto circuit = importBristolCircuitExNot(filepath+ ".txt", details);
     bool* inputA = new bool[circuit->details.bitlengthInputA];
     bool* inputB = new bool[circuit->details.bitlengthInputB];
-    generateRandomInput(details.bitlengthInputA, inputA);
-    generateRandomInput(details.bitlengthInputB, inputB);
+    generateRandomInput(circuit->details.bitlengthInputA, inputA);
+    generateRandomInput(circuit->details.bitlengthInputB, inputB);
     
     if (argc > 2)
     {        
@@ -120,23 +144,21 @@ int main(int argc, char *argv[])
     {
         uint_fast64_t b = std::stoul(argv[3]);
         converIntToBoolArr(b, circuit->details.bitlengthInputB, inputB);
-    }  
-  
-
+    }    
     bool* output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
     funcTime(evaluateTransformedCircuit,circuit, inputA, inputB, output);
 
 
-    int inA = convertBoolArrToInt(inputA, details.bitlengthInputA);
-    int inB = convertBoolArrToInt(inputB, details.bitlengthInputB);
-    int iout = convertBoolArrToInt(output, details.bitlengthOutputs);
+    int inA = convertBoolArrToInt(inputA, circuit->details.bitlengthInputA);
+    int inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
+    int iout = convertBoolArrToInt(output, circuit->details.bitlengthOutputs);
     std::cout << "inA" << inA <<"\n";    
     std::cout << "inB" << inB <<"\n"; 
     std::cout << "iout" << iout <<"\n"; 
 
     
-    bool* obfuscatedValArr = new bool[details.bitlengthInputA];
-    bool* flipped = new bool[details.numWires];     
+    bool* obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
+    bool* flipped = new bool[circuit->details.numWires];     
 
     obfuscateInput(inputA,obfuscatedValArr,flipped,circuit->details);
     funcTime(getFlippedCircuitWithoutOutputsN,circuit, flipped);
@@ -184,9 +206,9 @@ int main(int argc, char *argv[])
     
         std::cout << "Circuit outputs are equal?" << equalBoolArr(outputRGC, output, circuit->details.bitlengthOutputs) << '\n';
 
-    inA = convertBoolArrToInt(obfuscatedValArr, details.bitlengthInputA);
-    inB = convertBoolArrToInt(inputB, details.bitlengthInputB);
-    iout = convertBoolArrToInt(outputRGC, details.bitlengthOutputs);
+    inA = convertBoolArrToInt(obfuscatedValArr, circuit->details.bitlengthInputA);
+    inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
+    iout = convertBoolArrToInt(outputRGC, circuit->details.bitlengthOutputs);
     std::cout << "inA" << inA <<"\n";    
     std::cout << "inB" << inB <<"\n"; 
     std::cout << "iout" << iout <<"\n"; 
@@ -198,9 +220,9 @@ int main(int argc, char *argv[])
 
     auto newOut1 = new bool[circuit->details.bitlengthOutputs*circuit->details.numOutputs];
     evaluateTransformedCircuit(circuit, obfuscatedValArr, inputB, newOut1);
-    inA = convertBoolArrToInt(obfuscatedValArr, details.bitlengthInputA);
-    inB = convertBoolArrToInt(inputB, details.bitlengthInputB);
-    auto iout1 = convertBoolArrToInt(newOut1, details.bitlengthOutputs);
+    inA = convertBoolArrToInt(obfuscatedValArr, circuit->details.bitlengthInputA);
+    inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
+    auto iout1 = convertBoolArrToInt(newOut1, circuit->details.bitlengthOutputs);
 
    
 
@@ -249,6 +271,7 @@ int main(int argc, char *argv[])
     delete[] bristolCircuit;      
      
 
+    auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
     auto circuit = importBristolCircuitExNot(filepath+ ".txt", details);
     bool* inputA = new bool[circuit->details.bitlengthInputA];
     bool* inputB = new bool[circuit->details.bitlengthInputB];

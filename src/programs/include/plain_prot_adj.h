@@ -18,10 +18,12 @@ public:
 	PlainCircExecModified * cast_circ_exec;
 	std::vector<uint_fast64_t>output_vec;
 	std::vector<BristolGate>* gateVec;
+	CircuitDetails* details;
 
-	PlainProtModified(bool _print, string _filename, std::vector<BristolGate>* gateVec) : print(_print), 
+	PlainProtModified(bool _print, string _filename, std::vector<BristolGate>* gateVec, CircuitDetails* details) : print(_print), 
 	filename(_filename) {
 	 this->gateVec = gateVec;
+	 this->details = details;
 	 cast_circ_exec = static_cast<PlainCircExecModified *> (CircuitExecution::circ_exec);
 	}
 
@@ -31,7 +33,15 @@ public:
 			fout<<cast_circ_exec->gates<<" "<<cast_circ_exec->gid<<endl;
 			fout<<n1<<" "<<n2<<" "<<n3<<endl;
 			fout.close();
+			
 		}
+		details->bitlengthInputA = n1; 
+		details->bitlengthInputB = n2;
+		details->bitlengthOutputs = n3;
+		details->numOutputs = 1;
+		details->numGates = cast_circ_exec->gates;
+		details->numWires = cast_circ_exec->gid;
+
 		
 	}
 
@@ -53,26 +63,38 @@ public:
 	}
 };
 
-inline void setup_plain_prot_adj(bool print, string filename, std::vector<BristolGate>* gateVec) {
-	std::cout << "HI";
+inline void setup_plain_prot_adj(bool print, string filename, std::vector<BristolGate>* gateVec, CircuitDetails* details) {
+	
 	CircuitExecution::circ_exec = new PlainCircExecModified(print, filename,  gateVec);
-	ProtocolExecution::prot_exec = new PlainProtModified(print, filename, gateVec);
+	ProtocolExecution::prot_exec = new PlainProtModified(print, filename, gateVec, details);
 }
 
-inline void finalize_plain_prot_adj (std::vector<BristolGate>* gateVec) {
-	std::cout << "Tschau";
+inline void finalize_plain_prot_adj (bool print, std::vector<BristolGate>* gateVec, CircuitDetails* details) {
+	
 	PlainCircExecModified * cast_circ_exec = static_cast<PlainCircExecModified *> (CircuitExecution::circ_exec);
 	PlainProtModified * cast_prot_exec = static_cast<PlainProtModified*> (ProtocolExecution::prot_exec);
 	uint_fast64_t z_index = cast_circ_exec->gid++;
+	
+	if (print)
+	{
 	cast_circ_exec->fout<<2<<" "<<1<<" "<<0<<" "<<0<<" "<<z_index<<" XOR"<<endl;
 	for (auto v : cast_prot_exec->output_vec) {
 		cast_circ_exec->fout<<2<<" "<<1<<" "<<z_index<<" "<<v<<" "<<cast_circ_exec->gid++<<" XOR"<<endl;
-		gateVec->push_back(BristolGate{z_index,v, cast_circ_exec->gid++,'X'});
+		
 	}
+	}
+	else
+	{	
+		gateVec->push_back(BristolGate{0,0, z_index,'X'});
+		for (auto v : cast_prot_exec->output_vec) 
+			gateVec->push_back(BristolGate{z_index,v, cast_circ_exec->gid++,'X'});
+	}
+	
+
 	cast_circ_exec->gates += (1+cast_prot_exec->output_vec.size());
 	cast_circ_exec->finalize();
 
-	ProtocolExecution::prot_exec->finalize();
+	PlainProtModified::prot_exec->finalize();
 	delete PlainCircExecModified::circ_exec;
 	delete ProtocolExecution::prot_exec;
 }

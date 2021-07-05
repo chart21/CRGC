@@ -23,13 +23,14 @@ void evaluateTransformedCircuit(TransformedCircuit *circuit, bool *inputA, bool 
     {
         evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
     }
-
+    
     for (auto i = 0; i < circuit->details.numGates; i++)
     {
+        //std::cout << circuit->gates[i].leftParentID <<' ' <<  circuit->gates[i].rightParentID <<' ' << circuit->gates[i].outputID <<' ' << circuit->gates[i].truthTable[0][0] << circuit->gates[i].truthTable[0][1] << circuit->gates[i].truthTable[1][0] << circuit->gates[i].truthTable[1][1] <<'\n';  
         evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
     }
     //bool* output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
-
+    
     for (auto i = 0; i < circuit->details.numOutputs; i++)
     {
         for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
@@ -39,6 +40,7 @@ void evaluateTransformedCircuit(TransformedCircuit *circuit, bool *inputA, bool 
         }
         //std::cout << std::endl;
     }
+    
     delete[] evaluation;
 }
 

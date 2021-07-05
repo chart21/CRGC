@@ -3,6 +3,7 @@
 #include "emp-tool/utils/block.h"
 #include "emp-tool/utils/utils.h"
 #include "emp-tool/execution/circuit_execution.h"
+#include "circuitStructs.h"
 #include <iostream>
 #include <fstream>
 
@@ -96,6 +97,7 @@ public:
 			arr[1] = gid;
 			if(print)
 				fout <<"2 1 "<<arr_a[1] <<" "<<arr_b[1]<<" "<<gid<<" XOR"<<std::endl;
+			gateVec->push_back(BristolGate{arr_a[1], arr_b[1], gid, 'X'});
 			gates++;
 			gid++;
 			return res;
@@ -131,6 +133,7 @@ public:
 			arr[1] = gid;
 			if(print)
 				fout <<"1 1 "<<arr_a[1] <<" "<<gid<<" INV"<<std::endl;
+			gateVec->push_back(BristolGate{arr_a[1], arr_a[1], gid, 'I'});
 			gid++;
 			gates++;
 			return res;

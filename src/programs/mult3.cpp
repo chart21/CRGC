@@ -2,7 +2,7 @@
 //#include "emp-sh2pc/emp-sh2pc.h"
 #include "include/plain_circ_adj.h"
 #include "include/plain_prot_adj.h"
-
+#include "include/circuitStructs.h"
 #include <string>
 
 using namespace emp;
@@ -46,14 +46,14 @@ void generateCircuit()
   finalize_plain_prot();
 }
 
-void generateCircuitRAM()
+void generateCircuitRAM(std::vector<BristolGate>* gateVec, CircuitDetails* details)
 {
   int bitsize; 
-  setup_plain_prot_adj(true, "mult3.circuit.txt");
+  setup_plain_prot_adj(false, "mult3.circuit.txt", gateVec, details);
   bitsize = 16;
   string inputs[3] = {"0","0","0"};
   test_mult3(bitsize, inputs, inputs);
-  finalize_plain_prot_adj();
+  finalize_plain_prot_adj(false, gateVec, details);
 }
 
 // int main(int argc, char** argv) {
