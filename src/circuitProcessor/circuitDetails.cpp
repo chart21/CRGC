@@ -16,7 +16,7 @@ void getPrevofEachWire(BristolCircuit* circuit, uint_fast64_t* parents)
     }    
 }
 
-void getPrevofEachWire(TransformedCircuit* circuit, uint_fast64_t* parents)
+void getPrevofEachWireT(TransformedCircuit* circuit, uint_fast64_t* parents)
 {
     for(auto i = 0; i < circuit->details.numGates;i++)
     {
