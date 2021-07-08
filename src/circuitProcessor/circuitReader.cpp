@@ -145,7 +145,7 @@ TransformedCircuit *importBristolCircuitExNot(std::string filepath, CircuitDetai
             {
                 uint_fast64_t parent = std::stoul(gateElements[2]);
                 uint_fast64_t output = std::stoul(gateElements[3]);
-                std::string gateType = gateElements[4];
+                char gateType = gateElements[4][0];
 
                 if (output < details.numWires - details.numOutputs * details.bitlengthOutputs)
                 {
@@ -168,14 +168,14 @@ TransformedCircuit *importBristolCircuitExNot(std::string filepath, CircuitDetai
                 uint_fast64_t leftParent = std::stoul(gateElements[2]);
                 uint_fast64_t rightParent = std::stoul(gateElements[3]);
                 uint_fast64_t output = std::stoul(gateElements[4]);
-                std::string gateType = gateElements[5];
+                char gateType = gateElements[5][0];
 
                 bool truthTable[2][2];
-                if (gateType == "XOR")
+                if (gateType == 'X')
                     bool truthTable[2][2] = {{0, 1}, {1, 0}};
-                else if (gateType == "AND")
+                else if (gateType == 'A')
                     bool truthTable[2][2] = {{0, 0}, {0, 1}};
-                else if (gateType == "OR")
+                else if (gateType == 'O')
                     bool truthTable[2][2] = {{0, 1}, {1, 1}};
 
                 if (flipped[leftParent])

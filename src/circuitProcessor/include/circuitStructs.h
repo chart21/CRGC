@@ -42,10 +42,7 @@ typedef Circuit<TransformedGate> TransformedCircuit;
 typedef Circuit<BristolGate> BristolCircuit;
 typedef Circuit<UintGate> UintCircuit;
 
-struct UnflippedCircuit{
-    BristolCircuit* circuit;
-    bool* flipped;
-};
+
 
 
 #endif

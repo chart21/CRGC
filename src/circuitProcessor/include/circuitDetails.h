@@ -16,4 +16,4 @@ void getPrevofEachWireThread(BristolCircuit* circuit, uint_fast64_t* parents, ui
 void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
 
 void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
-void getPrevofEachWireMTTrasnformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
+void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);

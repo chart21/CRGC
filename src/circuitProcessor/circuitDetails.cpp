@@ -114,7 +114,7 @@ void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64
     }    
 }
 
-void getPrevofEachWireMTTrasnformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads)
+void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads)
 {
     std::thread threads[numThreads];
     for(auto i = 0; i < numThreads;i++)

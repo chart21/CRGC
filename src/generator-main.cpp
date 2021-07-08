@@ -50,6 +50,7 @@ TransformedCircuit* loadTransformedCircuit(std::string circuitName, std::string 
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails, flipped);
         auto circuit = importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
         std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
+        std::cout << "numGates:" << circuit->details.numGates << '\n';
         //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
         return circuit;
     }
@@ -59,7 +60,7 @@ TransformedCircuit* loadTransformedCircuit(std::string circuitName, std::string 
         auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
         //auto flipped = new bool[details.numWires];
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath + ".txt", details, flipped);
-        auto circuit = importTransformedCircuit(filepath + ".txt", details);
+        auto circuit = importBristolCircuitExNot(filepath + ".txt", details);
         //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
         return circuit;
     }
@@ -79,8 +80,8 @@ void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_
     }
     else
     {
-        getPrevofEachWireMTTrasnformed(circuit, parents, numThreads);
-        funcTime(getPotentiallyObfuscatedGatesMTT, circuit, po, numThreads, timeSleep);
+        funcTime(getPrevofEachWireMTTransformed, circuit, parents, numThreads);
+        funcTime(getPotentiallyObfuscatedGatesT, circuit, po);
         funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT, circuit->details, po, parents, numThreads);
     }
     int poc = -circuit->details.bitlengthInputA;
@@ -118,9 +119,13 @@ void evaluateCircuit(TransformedCircuit* circuit, uint_fast64_t numThreads, uint
 
 
     if(numThreads == 1)
+        //funcTime(evaluateSortedTransformedCircuit, circuit, inputA, inputB, output);
         funcTime(evaluateTransformedCircuit, circuit, inputA, inputB, output);
+        //funcTime(evaluateTransformedCircuit, circuit, inputA, inputB, output);
     else
-        funcTime(evaluateTransformedCircuitMT, circuit, inputA, inputB, output, numThreads, timeSleep);
+        //funcTime(evaluateTransformedCircuitMT, circuit, inputA, inputB, output, numThreads, timeSleep);
+        funcTime(evaluateTransformedCircuitHackMTCond, circuit, inputA, inputB, output);
+        
 
     int inA = convertBoolArrToInt(inputA, circuit->details.bitlengthInputA);
     int inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
