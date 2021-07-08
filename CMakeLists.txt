@@ -51,7 +51,7 @@ add_subdirectory(src/circuitProcessor)
 target_include_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
 target_link_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
 
-target_link_libraries(${PROJECT_NAME} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter leakagePredictor Threads::Threads)
+target_link_libraries(${PROJECT_NAME} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer leakagePredictor Threads::Threads)
 
 
 add_subdirectory(src/programs)

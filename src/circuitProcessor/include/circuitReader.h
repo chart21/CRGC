@@ -14,12 +14,12 @@ CircuitDetails importBristolCircuitDetails(std::string filepath, std::string cir
 
 TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetails details);
 
-BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details);
+BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details, bool* flipped);
 
-BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate>* gateVec, CircuitDetails details);
+BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate>* gateVec, CircuitDetails details, bool* flipped);
 
 void importInput(std::string filepath, uint_fast64_t bitlength, bool* valArr);
 
 TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);
 
-void transformBristolCircuitToTransformedCircuit(BristolCircuit *bristolCircuit, TransformedCircuit *circuit);
+TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);

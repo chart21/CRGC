@@ -1,6 +1,6 @@
 #ifndef helperFunctions
 #define helperFunctions
-#include "helperFunctions.h"
+
 #include "randomBoolGenerator.h"
 #include <iostream>
 #include <random>

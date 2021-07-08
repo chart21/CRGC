@@ -30,3 +30,6 @@ void evaluateTransformedCircuitbyLevel(TransformedCircuit *circuit, std::vector<
 void evaluateTransformedCircuitbyLevelMT(TransformedCircuit *circuit, std::vector<TransformedGate> *circuitByLine, uint_fast64_t maxLevel, bool *inputA, bool *inputB, bool *output);
 void evaluateTransformedCircuitbyLevelThread(std::vector<TransformedGate> *circuitByLine, bool *evaluation, uint_fast64_t s, uint_fast64_t index, uint_fast64_t numGates);
 void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output);
+
+
+void evaluateUintCircuit(UintCircuit *circuit, bool *inputA, bool *inputB, bool *output);

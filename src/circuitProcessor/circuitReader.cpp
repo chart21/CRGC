@@ -227,11 +227,11 @@ TransformedCircuit *importBristolCircuitExNot(std::string filepath, CircuitDetai
     return circuit;
 }
 
-BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details)
+BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details, bool *flipped)
 {
     BristolGate *gates = new BristolGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
-    bool *flipped = new bool[details.numWires];
+    //flipped = new bool[details.numWires];
     for (auto i = 0; i < details.numWires; i++)
     {
         exchangeGate[i] = i;
@@ -257,7 +257,8 @@ BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepa
                 if (output < details.numWires - details.numOutputs * details.bitlengthOutputs)
                 {
                     exchangeGate[output] = exchangeGate[parent];
-                    flipped[output] = not flipped[output];
+                    //flipped[output] = not flipped[output];
+                    flipped[exchangeGate[output]] = not flipped[exchangeGate[output]];
                 }
                 else
                 {
@@ -288,13 +289,14 @@ BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepa
             }
         }
     }
-    delete[] flipped;
+    //delete[] flipped;
 
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
     uint_fast64_t oldNumWires = details.numWires;
     for (int i = 0; i < oldNumWires; i++)
     {
+
         if (exchangeGate[i] != i)
         {
             deleteCounter++;
@@ -310,6 +312,9 @@ BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepa
         gates[i].leftParentID = adjustedWire[gates[i].leftParentID];
         gates[i].rightParentID = adjustedWire[gates[i].rightParentID];
         gates[i].outputID = adjustedWire[gates[i].outputID];
+        //flipped[adjustedWire[i]] = flipped[i];
+        flipped[gates[i].outputID] = flipped[adjustedWire[gates[i].outputID]];
+        //std::cout << flipped[i];
     }
     delete[] adjustedWire;
 
@@ -358,12 +363,12 @@ TransformedCircuit *importTransformedCircuit(std::string filepath, CircuitDetail
     return circuit;
 }
 
-BristolCircuit *importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details)
+BristolCircuit *importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details, bool *flipped)
 {
 
     BristolGate *gates = new BristolGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
-    bool *flipped = new bool[details.numWires];
+    //bool *flipped = new bool[details.numWires];
     for (auto i = 0; i < details.numWires; i++)
     {
         exchangeGate[i] = i;
@@ -371,7 +376,7 @@ BristolCircuit *importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
     }
 
     int gateCounter = 0;
-    
+
     for (auto i = 0; i < details.numGates; i++)
     {
 
@@ -404,13 +409,13 @@ BristolCircuit *importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
             gateCounter++;
         }
     }
-    
-    delete[] flipped;
-    
+
+    //delete[] flipped;
+
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
     uint_fast64_t oldNumWires = details.numWires;
-    
+
     for (int i = 0; i < oldNumWires; i++)
     {
         if (exchangeGate[i] != i)
@@ -422,51 +427,129 @@ BristolCircuit *importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
         adjustedWire[i] = i - deleteCounter;
     }
     delete[] exchangeGate;
-    
+
     for (auto i = 0; i < details.numGates; i++)
     {
-        //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable <<'\n';       
+        //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable <<'\n';
         gates[i].leftParentID = adjustedWire[gates[i].leftParentID];
         gates[i].rightParentID = adjustedWire[gates[i].rightParentID];
         gates[i].outputID = adjustedWire[gates[i].outputID];
-        
+        flipped[i] = flipped[adjustedWire[i]];
     }
     delete[] adjustedWire;
-    
+
     BristolGate *bristolGates = new BristolGate[details.numGates];
     for (auto i = 0; i < details.numGates; i++)
     {
         bristolGates[i] = gates[i]; //does that really copy?
     }
     delete[] gates;
-    
+
     BristolCircuit *circuit = new BristolCircuit;
     *circuit = {details, bristolGates};
 
     return circuit;
 }
 
-void transformBristolCircuitToTransformedCircuit(BristolCircuit *bristolCircuit, TransformedCircuit *circuit)
+TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details)
 {
-    auto gates = new TransformedGate [bristolCircuit->details.numGates];
-    for (auto i = 0; i < bristolCircuit->details.numGates; i++)
+
+    TransformedGate *gates = new TransformedGate[details.numGates];
+    uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
+    bool *flipped = new bool[details.numWires];
+    for (auto i = 0; i < details.numWires; i++)
     {
-        bool truthTable[2][2];
-        if (bristolCircuit->gates[i].truthTable == 'X')
-            bool truthTable[2][2] = {{0, 1}, {1, 0}};
-        else if (bristolCircuit->gates[i].truthTable == 'A')
-        {
-            bool truthTable[2][2] = {{0, 0}, {0, 1}};
-        }
-        else if (bristolCircuit->gates[i].truthTable == 'O')
-        {
-            bool truthTable[2][2] = {{0, 1}, {1, 1}};
-        }
-        
-
-        gates[i] = TransformedGate{bristolCircuit->gates[i].leftParentID, bristolCircuit->gates[i].rightParentID, bristolCircuit->gates[i].outputID, {{truthTable[0][0], truthTable[0][1]}, {truthTable[1][0], truthTable[1][1]}}};
-        //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable[0][0] << gates[i].truthTable[0][1] << gates[i].truthTable[1][0]<< gates[i].truthTable[1][1] <<'\n';
+        exchangeGate[i] = i;
+        flipped[i] = false;
     }
-*circuit = {bristolCircuit->details,gates};
 
+    int gateCounter = 0;
+
+    for (auto i = 0; i < details.numGates; i++)
+    {
+
+        if ((*gateVec)[i].truthTable == 'I') //not gate
+        {
+
+            if ((*gateVec)[i].outputID < details.numWires - details.numOutputs * details.bitlengthOutputs)
+            {
+                exchangeGate[(*gateVec)[i].outputID] = exchangeGate[(*gateVec)[i].leftParentID];
+                flipped[(*gateVec)[i].outputID] = not flipped[(*gateVec)[i].outputID];
+            }
+            else
+            {
+                   bool truthTable[2][2] = {{1, 1}, {0, 0}};
+
+                    if (flipped[(*gateVec)[i].leftParentID])
+                        swapLeftParent(truthTable);
+                    gates[gateCounter] = TransformedGate{exchangeGate[(*gateVec)[i].leftParentID], exchangeGate[(*gateVec)[i].leftParentID], (*gateVec)[i].outputID, {{truthTable[0][0], truthTable[0][1]}, {truthTable[1][0], truthTable[1][1]}}};
+                    gateCounter++;
+            }
+        }
+
+        else
+        {
+            uint_fast64_t leftParent = (*gateVec)[i].leftParentID;
+            uint_fast64_t rightParent = (*gateVec)[i].rightParentID;
+            uint_fast64_t output = (*gateVec)[i].outputID;
+            char type = (*gateVec)[i].truthTable;
+
+            bool truthTable[2][2];
+                
+                if (type == 'X')
+                    bool truthTable[2][2] = {{0, 1}, {1, 0}};
+                else if (type == 'A')
+                    bool truthTable[2][2] = {{0, 0}, {0, 1}};
+                else if (type == 'O')
+                    bool truthTable[2][2] = {{0, 1}, {1, 1}};
+
+            if (flipped[leftParent])
+                swapLeftParent(truthTable);
+            if (flipped[rightParent])
+                swapRightParent(truthTable);
+            
+            gates[gateCounter] = TransformedGate{exchangeGate[leftParent], exchangeGate[rightParent], output, {{truthTable[0][0], truthTable[0][1]}, {truthTable[1][0], truthTable[1][1]}}};
+            gateCounter++;
+        
+    }
+    }
+
+    delete[] flipped;
+
+    uint_fast64_t deleteCounter = 0;
+    uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
+    uint_fast64_t oldNumWires = details.numWires;
+    for (int i = 0; i < oldNumWires; i++)
+    {
+        if (exchangeGate[i] != i)
+        {
+            deleteCounter++;
+            details.numWires--;
+            details.numGates--;
+        }
+        adjustedWire[i] = i - deleteCounter;
+    }
+    delete[] exchangeGate;
+
+    for (auto i = 0; i < details.numGates; i++)
+    {
+        gates[i].leftParentID = adjustedWire[gates[i].leftParentID];
+        gates[i].rightParentID = adjustedWire[gates[i].rightParentID];
+        gates[i].outputID = adjustedWire[gates[i].outputID];
+    }
+    delete[] adjustedWire;
+
+
+    TransformedGate *transformedGates = new TransformedGate[details.numGates];
+    for (auto i = 0; i < details.numGates; i++)
+    {
+        transformedGates[i] = gates[i]; //does that really copy?
+    }
+    delete[] gates;
+
+    TransformedCircuit *circuit = new TransformedCircuit;
+    *circuit = {details, transformedGates};
+
+    return circuit;
 }
+

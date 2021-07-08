@@ -10,6 +10,8 @@
 #include "circuitProcessor/include/circuitDetails.h"
 #include "circuitProcessor/include/circuitIntegrityBreaker.h"
 #include "circuitProcessor/include/circuitWriter.h"
+#include "circuitProcessor/include/circuitTransformer.h"
+
 #include "circuitProcessor/include/leakagePredictor.h"
 
 //#include <emp-tool/emp-tool.h>
@@ -36,7 +38,7 @@ void funcTime(F func, Args &&...args)
     std::cout << time << __func__ << '\n';
 }
 
-BristolCircuit *loadBristolCircuit(std::string circuitName, std::string fileFormat, std::string circuitFormat)
+TransformedCircuit* loadTransformedCircuit(std::string circuitName, std::string fileFormat, std::string circuitFormat)
 {
 
     if (fileFormat == "cpp")
@@ -44,37 +46,45 @@ BristolCircuit *loadBristolCircuit(std::string circuitName, std::string fileForm
         std::vector<BristolGate> gateVec;
         CircuitDetails empDetails;
         funcTime(generateCircuitRAMPaper, &gateVec, &empDetails);
-        auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
+        //auto flipped = new bool[empDetails.numWires];
+        //auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails, flipped);
+        auto circuit = importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
         std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
-        return bristolCircuit;
+        //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
+        return circuit;
     }
     else if (fileFormat == "txt")
     {
         std::string filepath = CIRCUITPATH + circuitName;
         auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
-        auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath + ".txt", details);
-        return bristolCircuit;
+        //auto flipped = new bool[details.numWires];
+        //auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath + ".txt", details, flipped);
+        auto circuit = importTransformedCircuit(filepath + ".txt", details);
+        //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
+        return circuit;
     }
 }
 
-void predictLeakage(BristolCircuit *bristolCircuit, uint_fast64_t numThreads, uint_fast64_t timeSleep, uint_fast64_t* parents)
+void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_fast64_t timeSleep, uint_fast64_t* parents)
 {
     
-    auto po = new bool[bristolCircuit->details.numWires];
+    auto po = new bool[circuit->details.numWires];
     if (numThreads == 1)
     {
-        funcTime(getPrevofEachWire, bristolCircuit, parents);
-        funcTime(getPotentiallyObfuscatedGates, bristolCircuit, po);
-        funcTime(getPotentiallyIntegrityBreakingGatesFromOutput, bristolCircuit->details, po, parents);
+        funcTime(getPrevofEachWireT, circuit, parents);
+        //funcTime(getPotentiallyObfuscatedGates, bristolCircuit, po);
+        //auto circuit = transformBristolCircuitToTransformedCircuitN(bristolCircuit);
+        funcTime(getPotentiallyObfuscatedGatesT, circuit, po);
+        funcTime(getPotentiallyIntegrityBreakingGatesFromOutput, circuit->details, po, parents);
     }
     else
     {
-        getPrevofEachWireMT(bristolCircuit, parents, numThreads);
-        funcTime(getPotentiallyObfuscatedGatesMT, bristolCircuit, po, numThreads, timeSleep);
-        funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT, bristolCircuit->details, po, parents, numThreads);
+        getPrevofEachWireMTTrasnformed(circuit, parents, numThreads);
+        funcTime(getPotentiallyObfuscatedGatesMTT, circuit, po, numThreads, timeSleep);
+        funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT, circuit->details, po, parents, numThreads);
     }
-    int poc = -bristolCircuit->details.bitlengthInputA;
-    for (auto i = 0; i < bristolCircuit->details.numWires; i++)
+    int poc = -circuit->details.bitlengthInputA;
+    for (auto i = 0; i < circuit->details.numWires; i++)
     {
         poc += po[i];
     }
@@ -99,7 +109,14 @@ void evaluateCircuit(TransformedCircuit* circuit, uint_fast64_t numThreads, uint
         converIntToBoolArr(b, circuit->details.bitlengthInputB, inputB);
     }
 
-    
+    // auto uintCircuit = transformTransformedCircuitToUint(circuit);
+
+    // if(numThreads == 1)
+    //     funcTime(evaluateUintCircuit, uintCircuit, inputA, inputB, output);
+    // else
+    //     funcTime(evaluateTransformedCircuitMT, circuit, inputA, inputB, output, numThreads, timeSleep);
+
+
     if(numThreads == 1)
         funcTime(evaluateTransformedCircuit, circuit, inputA, inputB, output);
     else
@@ -182,6 +199,8 @@ void obfuscateCircuit(TransformedCircuit* circuit, bool* inputA, uint_fast64_t* 
 void verifyIntegrityOfObfuscatedCircuit(TransformedCircuit* circuit, bool* obfuscatedValArr, bool* inputA, bool *inputB, bool* output, uint_fast64_t numThreads, uint_fast64_t timeSleep)
 {
     auto outputRGC = new bool[circuit->details.bitlengthOutputs * circuit->details.numOutputs];
+
+    
     
     if(numThreads == 1)
         evaluateTransformedCircuit(circuit, obfuscatedValArr, inputB, outputRGC);
@@ -196,7 +215,7 @@ void verifyIntegrityOfObfuscatedCircuit(TransformedCircuit* circuit, bool* obfus
     auto iout = convertBoolArrToInt(outputRGC, circuit->details.bitlengthOutputs);
     std::cout << "inA" << inA << "\n";
     std::cout << "inB" << inB << "\n";
-    std::cout << "iout" << iout << "\n";
+    //std::cout << "iout" << iout << "\n";
 
     delete[] outputRGC;
 }
@@ -265,27 +284,40 @@ int main(int argc, char *argv[])
         timeSleep = std::stoul(argv[7]);
     }
 
-    auto bristolCircuit = loadBristolCircuit(circuitName, fileFormat, circuitFormat);
+    
+    auto circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
+    
+     
 
-    auto parents = new uint_fast64_t[bristolCircuit->details.numWires * 2]();
+    auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
-    predictLeakage(bristolCircuit, numThreads, timeSleep, parents);
+    predictLeakage(circuit, numThreads, timeSleep, parents);
 
-    auto circuit = new TransformedCircuit[bristolCircuit->details.numGates];
+    
 
-    transformBristolCircuitToTransformedCircuit(bristolCircuit, circuit);
+    //auto circuit = new TransformedCircuit[circuit->details.numGates];
 
-    delete[] bristolCircuit->gates;
-    delete[] bristolCircuit;
+    
 
+    //transformBristolCircuitToTransformedCircuit(circuit, circuit, unflippedCircuit->flipped);
+
+    
+    // delete[] *flipped;
+    // delete[] bristolCircuit->gates;
+    // delete[] bristolCircuit;
+    // delete[] unflippedCircuit->flipped;
+    // delete[] unflippedCircuit->circuit->gates;
+    // delete[] unflippedCircuit->circuit;
+    // delete[] unflippedCircuit;
+    
     
 
     bool *inputA = new bool[circuit->details.bitlengthInputA];
     bool *inputB = new bool[circuit->details.bitlengthInputB];
     bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
-
+    
     evaluateCircuit(circuit, numThreads, timeSleep, argc, argv, inputA, inputB, output);
-
+    
 
     bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
     obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads, timeSleep);

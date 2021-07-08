@@ -36,4 +36,10 @@ typedef Circuit<TransformedGate> TransformedCircuit;
 typedef Circuit<BristolGate> BristolCircuit;
 
 
+struct UnflippedCircuit{
+    BristolCircuit* circuit;
+    bool* flipped;
+};
+
+
 #endif

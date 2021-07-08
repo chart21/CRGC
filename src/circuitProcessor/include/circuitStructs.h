@@ -18,6 +18,7 @@ struct Gate
 
 typedef Gate<bool[2][2]> TransformedGate;
 typedef Gate<char> BristolGate;
+typedef Gate<uint_fast8_t> UintGate;
 
 
 
@@ -39,6 +40,12 @@ T* gates;
 
 typedef Circuit<TransformedGate> TransformedCircuit;
 typedef Circuit<BristolGate> BristolCircuit;
+typedef Circuit<UintGate> UintCircuit;
+
+struct UnflippedCircuit{
+    BristolCircuit* circuit;
+    bool* flipped;
+};
 
 
 #endif
