@@ -35,3 +35,9 @@ void evaluateTransformedCircuitHackMTUint(TransformedCircuit *circuit, bool *inp
 
 
 void evaluateUintCircuit(UintCircuit *circuit, bool *inputA, bool *inputB, bool *output);
+
+void evaluateTransformedCircuitMTAlt(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads, uint_fast64_t timeSleep);
+void evaluateTransformedCircuitThreadAlt(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numGatesperThread, bool *evaluated, uint_fast64_t timeSleep);
+
+void evaluateTransformedCircuitMTCondAlt(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads);
+void evaluateTransformedCircuitbyLevelThreadCondAlt(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numGatesperThread, std::binary_semaphore **semaphores, bool *aquired);

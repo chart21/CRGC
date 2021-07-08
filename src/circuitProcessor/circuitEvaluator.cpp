@@ -525,3 +525,170 @@ void evaluateUintCircuit(UintCircuit *circuit, bool *inputA, bool *inputB, bool 
 
     delete[] evaluation;
 }
+
+
+
+
+void evaluateTransformedCircuitMTAlt(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads, uint_fast64_t timeSleep)
+{
+    auto evaluation = new bool[circuit->details.numWires];
+
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+
+    bool *evaluated = new bool[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs]();
+    // bool* evaluated = new bool[circuit->details.numWires]();
+    // std::fill_n(evaluated, circuit->details.bitlengthInputA+circuit->details.bitlengthInputB, true);
+
+    //std::condition_variable cond;
+
+    uint_fast64_t numGatesperThread = circuit->details.numGates/numThreads;
+    std::thread threads[numThreads];
+    for (auto i = 0; i < numThreads; i++)
+    {
+        threads[i] = std::thread(evaluateTransformedCircuitThreadAlt, circuit, evaluation, i, numGatesperThread, evaluated, timeSleep);
+    }
+    evaluateTransformedCircuitThreadAlt(circuit, evaluation, numThreads, numGatesperThread, evaluated, timeSleep);
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+
+    delete[] evaluated;
+
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
+}
+
+void evaluateTransformedCircuitThreadAlt(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numGatesperThread, bool *evaluated, uint_fast64_t timeSleep)
+{
+    auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
+    for (auto i = numGatesperThread * id; i < std::min(numGatesperThread * (id + 1), circuit->details.numGates); i++)
+    {
+        if (circuit->gates[i].rightParentID >= reducer)
+        {
+            while (not evaluated[circuit->gates[i].rightParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
+            }
+        }
+        if (circuit->gates[i].leftParentID >= reducer)
+        {
+            while (not evaluated[circuit->gates[i].leftParentID - reducer])
+            {
+                std::this_thread::sleep_for(std::chrono::nanoseconds(timeSleep));
+            }
+        }
+        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
+        if (circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+            evaluated[circuit->gates[i].outputID - reducer] = true;
+    }
+}
+
+
+void evaluateTransformedCircuitMTCondAlt(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads)
+{
+    auto evaluation = new bool[circuit->details.numWires];
+    //auto conditions = new std::condition_variable[circuit->details.numGates]();
+    //auto semaphores = new std::counting_semaphore<1>[circuit->details.numGates](0);
+    //std::counting_semaphore<1> semaphores[circuit->details.numGates];
+    int size = 1;
+    //std::vector <std::counting_semaphore<1>> semaphores( circuit->details.numGates - circuit->details.numWires-circuit->details.bitlengthOutputs*circuit->details.numOutputs);
+    //std::counting_semaphore<1> semaphores(1);
+    //std::vector <std::counting_semaphore<1>> semaphores;
+    //std::vector <std::binary_semaphore*> semaphores;
+
+    std::binary_semaphore **semaphores = new std::binary_semaphore *[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs];
+    auto aquired = new bool[circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs]();
+    for (auto i = 0; i < circuit->details.numGates - circuit->details.bitlengthOutputs * circuit->details.numOutputs; i++)
+        semaphores[i] = new std::binary_semaphore(0);
+
+    //auto semaphore = new std::binary_semaphore(1);
+
+    //semaphores.reserve(circuit->details.numGates - circuit->details.bitlengthOutputs*circuit->details.numOutputs);
+    //std::binary_semaphore semaphoros[1](std::binary_semaphore(1));
+
+    //      for (auto i = 0; i < circuit->details.numGates - circuit->details.bitlengthOutputs*circuit->details.numOutputs; i++)
+    //   {
+    //      //std::counting_semaphore<1> semaphore(1);
+    //     std::binary_semaphore semaphoros(1);
+    //     semaphores.push_back(&semaphoros);
+    //   }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
+    {
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
+    }
+
+    for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
+    {
+        evaluation[i + circuit->details.bitlengthInputA] = inputB[circuit->details.bitlengthInputB - 1 - i];
+    }
+
+    
+    
+    uint_fast64_t numGatesperThread = circuit->details.numGates/numThreads;
+    std::thread threads[numThreads];
+    for (auto i = 0; i < numThreads; i++)
+    {
+        //threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadHackCond, circuit, evaluation, i, numThreads, &semaphores);
+        threads[i] = std::thread(evaluateTransformedCircuitbyLevelThreadCondAlt, circuit, evaluation, i, numGatesperThread, semaphores, aquired);
+    }
+    evaluateTransformedCircuitbyLevelThreadCondAlt(circuit, evaluation, numThreads, numGatesperThread, semaphores, aquired);
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
+            //std::cout << output(i,j);
+        }
+        //std::cout << std::endl;
+    }
+    delete[] evaluation;
+}
+
+void evaluateTransformedCircuitbyLevelThreadCondAlt(TransformedCircuit *circuit, bool *evaluation, uint_fast64_t id, uint_fast64_t numGatesperThread, std::binary_semaphore **semaphores, bool *aquired)
+{
+    auto reducer = circuit->details.bitlengthInputA + circuit->details.bitlengthInputB;
+    for (auto i = numGatesperThread * id; i < std::min(numGatesperThread * (id + 1), circuit->details.numGates); i++)
+    {
+
+        //conditions[circuit->gates[i].rightParentID].wait_for();
+        if (circuit->gates[i].rightParentID >= reducer && not aquired[circuit->gates[i].rightParentID])
+        {
+            semaphores[circuit->gates[i].rightParentID - reducer]->acquire();
+            semaphores[circuit->gates[i].rightParentID - reducer]->release();
+        }
+        if (circuit->gates[i].leftParentID >= reducer && not aquired[circuit->gates[i].rightParentID])
+        {
+            semaphores[circuit->gates[i].leftParentID - reducer]->acquire();
+            semaphores[circuit->gates[i].leftParentID - reducer]->release();
+        }
+
+        evaluation[circuit->gates[i].outputID] = circuit->gates[i].truthTable[evaluation[circuit->gates[i].leftParentID]][evaluation[circuit->gates[i].rightParentID]];
+        if (circuit->gates[i].outputID < circuit->details.numGates - circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+        {
+            if (circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
+            {
+                semaphores[circuit->gates[i].outputID - reducer]->release();
+                aquired[circuit->gates[i].outputID - reducer] = true;
+            }
+        }
+    }
+}

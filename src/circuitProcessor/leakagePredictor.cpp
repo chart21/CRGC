@@ -137,7 +137,7 @@ void getPotentiallyIntegrityBreakingGatesFromOutputThread(CircuitDetails details
     std::queue<uint_fast64_t> pathQueue;
     for (auto i = 0; i < details.numOutputs; i++)
     {
-        for (auto j = amountGatesperThread * id; j < amountGatesperThread * (id + 1); j++)
+        for (auto j = amountGatesperThread * id; j < std::min(amountGatesperThread * (id + 1), details.bitlengthOutputs); j++)
         {
             pathQueue.push(details.numWires - 1 - i - j);
             while (!pathQueue.empty())
@@ -162,12 +162,14 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT(CircuitDetails details, bo
 {
     auto npib = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();
-    uint_fast64_t numGates = details.bitlengthOutputs / numThreads + 1;
+    //uint_fast64_t numGates = details.bitlengthOutputs / numThreads + 1;
+    uint_fast64_t numGates = details.bitlengthOutputs / numThreads;
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i < numThreads; i++)
     {
         threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread, details, po, parents, npib, addedGates, i, numGates);
     }
+    getPotentiallyIntegrityBreakingGatesFromOutputThread(details, po, parents, npib, addedGates, numThreads, numGates); //process leftover gates, remainder
     for (auto i = 0; i < numThreads; i++)
     {
         threads[i].join();
@@ -338,7 +340,7 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT2(CircuitDetails details, b
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i < numThreads; i++)
     {
-        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread, details, po, parents, npib, addedGates, i, numThreads);
+        threads[i] = std::thread(getPotentiallyIntegrityBreakingGatesFromOutputThread2, details, po, parents, npib, addedGates, i, numThreads);
     }
     for (auto i = 0; i < numThreads; i++)
     {
