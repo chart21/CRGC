@@ -40,8 +40,16 @@ void getPotentiallyObfuscatedGatesT(TransformedCircuit *circuit, bool *po)
     }
     for (auto i = 0; i < circuit->details.numGates; i++)
     {
-        if (circuit->gates[i].truthTable[0][0] + circuit->gates[i].truthTable[0][1] + circuit->gates[i].truthTable[1][0] + circuit->gates[i].truthTable[1][1] == 2)
+        uint_fast8_t amountOnes = circuit->gates[i].truthTable[0][0] + circuit->gates[i].truthTable[0][1] + circuit->gates[i].truthTable[1][0] + circuit->gates[i].truthTable[1][1];
+        switch (amountOnes)
         {
+        case 1:
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID]; //AND or NOR
+            break;
+        case 3:
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID]; //NAND or OR
+            break;
+        case 2:
             if (circuit->gates[i].truthTable[0][1] == circuit->gates[i].truthTable[1][0]) //XOR or XNOR
             {
                 po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] && po[circuit->gates[i].rightParentID];
@@ -54,9 +62,13 @@ void getPotentiallyObfuscatedGatesT(TransformedCircuit *circuit, bool *po)
             {
                 po[circuit->gates[i].outputID] = po[circuit->gates[i].rightParentID];
             }
+
+            break;
+
+        default:
+            po[circuit->gates[i].outputID] = true;
+            break;
         }
-        else
-            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID];
     }
 }
 
@@ -254,8 +266,16 @@ void getPotentiallyObfuscatedGatesThreadT(TransformedCircuit *circuit, bool *po,
             }
         }
 
-        if (circuit->gates[i].truthTable[0][0] + circuit->gates[i].truthTable[0][1] + circuit->gates[i].truthTable[1][0] + circuit->gates[i].truthTable[1][1] == 2)
+        uint_fast8_t amountOnes = circuit->gates[i].truthTable[0][0] + circuit->gates[i].truthTable[0][1] + circuit->gates[i].truthTable[1][0] + circuit->gates[i].truthTable[1][1];
+        switch (amountOnes)
         {
+        case 1:
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID]; //AND or NOR
+            break;
+        case 3:
+            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID]; //NAND or OR
+            break;
+        case 2:
             if (circuit->gates[i].truthTable[0][1] == circuit->gates[i].truthTable[1][0]) //XOR or XNOR
             {
                 po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] && po[circuit->gates[i].rightParentID];
@@ -268,9 +288,13 @@ void getPotentiallyObfuscatedGatesThreadT(TransformedCircuit *circuit, bool *po,
             {
                 po[circuit->gates[i].outputID] = po[circuit->gates[i].rightParentID];
             }
+
+            break;
+
+        default: //0000 OR 1111
+            po[circuit->gates[i].outputID] = true;
+            break;
         }
-        else
-            po[circuit->gates[i].outputID] = po[circuit->gates[i].leftParentID] || po[circuit->gates[i].rightParentID];
 
         if (circuit->gates[i].outputID < circuit->details.numWires - circuit->details.bitlengthOutputs * circuit->details.numOutputs)
             evaluated[circuit->gates[i].outputID - reducer] = true;

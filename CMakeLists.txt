@@ -13,10 +13,10 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-find_path(CMAKE_FOLDER NAMES cmake/emp-tool-config.cmake)
+#find_path(CMAKE_FOLDER NAMES cmake/emp-tool-config.cmake)
 find_package(emp-ot REQUIRED)
-find_package(emp-sh2pc REQUIRED)
-
+#find_package(emp-sh2pc REQUIRED)
+INCLUDE_DIRECTORIES(${EMP-OT_INCLUDE_DIRS}) #recently added
 
 # macro (add_test_executable_with_lib _name libs)
 # 	add_executable(test_${_name} "${_name}.cpp")
