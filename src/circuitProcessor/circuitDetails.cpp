@@ -135,7 +135,7 @@ void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circu
     }
 }
 
-float compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit)
+void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit)
 {
     uint_fast64_t identicalGates = 0;
     for(auto i = 0; i < originalCircuit->details.numGates;i++)
@@ -148,5 +148,5 @@ float compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedC
         )
             identicalGates++;
     } 
-    return identicalGates/originalCircuit->details.numGates;
+    std::cout << "Ratio of identical gates compared to original circuit: " << identicalGates/originalCircuit->details.numGates << '\n';
 }

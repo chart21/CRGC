@@ -19,4 +19,4 @@ void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_f
 void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
 void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
 
-float compareStructuralSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit);
+void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit);
