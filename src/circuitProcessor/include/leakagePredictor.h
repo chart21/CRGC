@@ -20,3 +20,8 @@ void getPotentiallyIntegrityBreakingGatesFromOutputMT2(CircuitDetails details, b
 
 void getPotentiallyObfuscatedGatesMTT(TransformedCircuit *circuit, bool *po, uint_fast64_t numThreads, uint_fast64_t sleepTime);
 void getPotentiallyObfuscatedGatesThreadT(TransformedCircuit *circuit, bool *po, uint_fast64_t id, uint_fast64_t numThreads, bool *evaluated, uint_fast64_t sleepTime);
+
+void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex);
+
+void getLeakedInputsFromOutput(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs);
+void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t* circuitLineOfWireIndex);

@@ -125,3 +125,28 @@ void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* 
         threads[i].join();
     
 }
+
+
+void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex)
+{
+    for(auto i = 0; i < circuit->details.numGates;i++)
+    {
+        circuitLineOfWireIndex[circuit->gates[i].outputID] = i;
+    }
+}
+
+float compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit)
+{
+    uint_fast64_t identicalGates = 0;
+    for(auto i = 0; i < originalCircuit->details.numGates;i++)
+    {
+        if(originalCircuit->gates[i].truthTable[0][0] == transformedCircuit->gates[i].truthTable[0][0] && 
+            originalCircuit->gates[i].truthTable[0][1] == transformedCircuit->gates[i].truthTable[0][1] &&
+            originalCircuit->gates[i].truthTable[1][0] == transformedCircuit->gates[i].truthTable[1][0] &&
+            originalCircuit->gates[i].truthTable[1][1] == transformedCircuit->gates[i].truthTable[1][1]
+        
+        )
+            identicalGates++;
+    } 
+    return identicalGates/originalCircuit->details.numGates;
+}

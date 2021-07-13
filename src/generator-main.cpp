@@ -84,12 +84,28 @@ void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_
         funcTime(getPotentiallyObfuscatedGatesT, circuit, po);
         funcTime(getPotentiallyIntegrityBreakingGatesFromOutputMT, circuit->details, po, parents, numThreads);
     }
-    int poc = -circuit->details.bitlengthInputA;
+    uint_fast64_t poc = -circuit->details.bitlengthInputA;
     for (auto i = 0; i < circuit->details.numWires; i++)
     {
         poc += po[i];
     }
     std::cout << "potentially obfuscated and integrity breaking" << poc << '\n';
+
+
+    std::vector<uint_fast64_t> leakedInputs;
+    //funcTime(getLeakedInputsFromOutput, circuit, po, &leakedInputs);
+    auto circuitLineOfWireIndex = new uint_fast64_t[circuit->details.numWires];
+    funcTime(getCircuitLineofWireIndex, circuit, circuitLineOfWireIndex);
+    funcTime(getLeakedInputsFromOutputUnsorted, circuit, po, &leakedInputs, circuitLineOfWireIndex);
+
+    
+    std::cout << leakedInputs.size() << " leaked inputs:" << '\n';
+    for (auto i = 0; i < leakedInputs.size(); i++)
+    {
+        std::cout << leakedInputs[i] << '\n';;
+    }
+    
+
     delete[] po;
 }
 

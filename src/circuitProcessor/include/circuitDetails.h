@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 
+
 void getPrevofEachWire(BristolCircuit* circuit, uint_fast64_t* parents);
 void getPrevofEachWireT(TransformedCircuit* circuit, uint_fast64_t* parents);
 void getSuccessorsOfEachWire(CircuitDetails details, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors);
@@ -17,3 +18,5 @@ void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_f
 
 void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
 void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
+
+float compareStructuralSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit);
