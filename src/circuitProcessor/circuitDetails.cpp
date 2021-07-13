@@ -145,3 +145,4 @@ void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCi
     } 
     std::cout << "Ratio of identical gates compared to original circuit: " << (float) identicalGates/originalCircuit->details.numGates << '\n';
 }
+

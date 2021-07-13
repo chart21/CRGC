@@ -2,6 +2,7 @@
 #include "include/circuitStructs.h"
 #include "include/helperFunctions.h"
 #include <iostream>
+#include <unordered_set>
 
 UintCircuit* transformTransformedCircuitToUint(TransformedCircuit* circuit)
 {
@@ -87,4 +88,53 @@ TransformedCircuit* transformBristolCircuitToTransformedCircuitN(BristolCircuit 
     auto circuit = new TransformedCircuit({bristolCircuit->details,gates});
     return circuit;
 
+}
+
+void deleteRevealGates(TransformedCircuit *circuit, uint_fast64_t* circuitLineOfWireIndex)
+{
+
+    //std::queue<uint_fast64_t> deleteIndexQueue; //cant use a queue for this purpose -> map (elements are not in order)
+    std::unordered_set<uint_fast64_t> deleteSet;
+    uint_fast64_t deleteCounter = 0;
+    for ( auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
+        {
+            auto gateID = circuit->gates[circuit->details.numGates - (i+1)*j - 1].rightParentID;
+            auto gateIndex = circuitLineOfWireIndex[gateID];
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].leftParentID = circuit->gates[gateIndex].leftParentID;
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].rightParentID = circuit->gates[gateIndex].rightParentID;
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].outputID = circuit->gates[gateIndex].outputID;
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].truthTable[0][0] = circuit->gates[gateIndex].truthTable[0][0];
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].truthTable[0][1] = circuit->gates[gateIndex].truthTable[0][1];
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].truthTable[1][0] = circuit->gates[gateIndex].truthTable[1][0];
+            circuit->gates[circuit->details.numGates - (i+1)*j - 2].truthTable[1][1] = circuit->gates[gateIndex].truthTable[1][1];
+
+            deleteSet.insert(gateIndex);
+        }
+    }
+
+    
+    for ( auto i = 0; i < circuit->details.numGates- (circuit->details.bitlengthOutputs*circuit->details.numOutputs)*2 - 1; i++)
+    {
+        if(deleteSet.find(i) == deleteSet.end())
+        {
+            
+            
+            circuit->gates[circuit->details.numGates- (circuit->details.bitlengthOutputs*circuit->details.numOutputs)*2 - 1 + deleteCounter] = circuit->gates[i];
+            circuit->gates[i] = circuit->gates[i + deleteCounter +1];
+            deleteCounter++;
+            
+        }
+        else
+        {  
+            circuit->gates[i] = circuit->gates[i+ deleteCounter + 1];
+        }        
+    } 
+    
+
+        //the 0 0 XOR gate is no longer needed and the previous last gates are no longer needed
+    circuit->details.numGates -= circuit->details.bitlengthOutputs*circuit->details.numOutputs - 1;
+    circuit->details.numWires -= circuit->details.bitlengthOutputs*circuit->details.numOutputs - 1;;
+    
 }
