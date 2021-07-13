@@ -19,4 +19,14 @@ void getPrevofEachWireMT(BristolCircuit* circuit, uint_fast64_t* parents, uint_f
 void getPrevofEachWireThreadTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t id, uint_fast64_t numThreads);
 void getPrevofEachWireMTTransformed(TransformedCircuit* circuit, uint_fast64_t* parents, uint_fast64_t numThreads);
 
+void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex);
+void getCircuitLineofWireIndexMT(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t numThreads);
+void getCircuitLineofWireIndexThread(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t id, uint_fast64_t numThreads);
+
+void getCircuitLineofWireIndexThread(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t id, uint_fast64_t numThreads);
 void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit);
+
+void getCircuitLineofWireIndexMT(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t numThreads);
+
+void compareCircuitSimilarityThread(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit, uint_fast64_t id, uint_fast64_t numThreads, uint_fast64_t* numIdenticalGates);
+void compareCircuitSimilarityMT(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit, uint_fast64_t numThreads);

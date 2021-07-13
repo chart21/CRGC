@@ -135,6 +135,26 @@ void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circu
     }
 }
 
+void getCircuitLineofWireIndexThread(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t id, uint_fast64_t numThreads)
+{    
+    
+    for(auto i = id; i < circuit->details.numGates;i+= numThreads)
+    {
+        circuitLineOfWireIndex[circuit->gates[i].outputID] = i;
+    }
+}
+
+void getCircuitLineofWireIndexMT(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t numThreads)
+{
+    std::thread threads[numThreads];
+    for(auto i = 0; i < numThreads;i++)
+        threads[i] = std::thread(getCircuitLineofWireIndexThread, circuit, circuitLineOfWireIndex, i, numThreads);
+
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+}
+
+
 void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit)
 {
     uint_fast64_t identicalGates = 0;
@@ -143,6 +163,35 @@ void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCi
         if(originalCircuit->gates[i].truthTable[0][0] == transformedCircuit->gates[i].truthTable[0][0] && originalCircuit->gates[i].truthTable[0][1] == transformedCircuit->gates[i].truthTable[0][1] && originalCircuit->gates[i].truthTable[1][0] == transformedCircuit->gates[i].truthTable[1][0] && originalCircuit->gates[i].truthTable[1][1] == transformedCircuit->gates[i].truthTable[1][1])
             identicalGates+=1;
     } 
+    std::cout << "Ratio of identical gates compared to original circuit: " << (float) identicalGates/originalCircuit->details.numGates << '\n';
+}
+
+
+void compareCircuitSimilarityThread(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit, uint_fast64_t id, uint_fast64_t numThreads, uint_fast64_t* numIdenticalGates)
+{
+    uint_fast64_t identicalGates = 0;
+    for(auto i = id; i < originalCircuit->details.numGates;i+= numThreads)
+    {
+        if(originalCircuit->gates[i].truthTable[0][0] == transformedCircuit->gates[i].truthTable[0][0] && originalCircuit->gates[i].truthTable[0][1] == transformedCircuit->gates[i].truthTable[0][1] && originalCircuit->gates[i].truthTable[1][0] == transformedCircuit->gates[i].truthTable[1][0] && originalCircuit->gates[i].truthTable[1][1] == transformedCircuit->gates[i].truthTable[1][1])
+            identicalGates+=1;
+    } 
+    numIdenticalGates[id] = identicalGates;
+}
+
+
+void compareCircuitSimilarityMT(TransformedCircuit* originalCircuit, TransformedCircuit* transformedCircuit, uint_fast64_t numThreads)
+{
+    uint_fast64_t* numIdenticalGates = new uint_fast64_t[numThreads];
+    uint_fast64_t identicalGates = 0;
+    std::thread threads[numThreads];
+    for(auto i = 0; i < numThreads;i++)
+        threads[i] = std::thread(compareCircuitSimilarityThread, originalCircuit, transformedCircuit, i, numThreads, numIdenticalGates);
+
+    for (auto i = 0; i < numThreads; i++)
+        threads[i].join();
+    for (auto i = 0; i < numThreads; i++)
+        identicalGates += numIdenticalGates[i];
+    
     std::cout << "Ratio of identical gates compared to original circuit: " << (float) identicalGates/originalCircuit->details.numGates << '\n';
 }
 

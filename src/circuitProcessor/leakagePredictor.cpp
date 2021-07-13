@@ -637,6 +637,301 @@ void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, st
     delete[] addedGates[1];
 }
 
+void getLeakedInputsFromOutputUnsortedThread(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t* circuitLineOfWireIndex, bool *addedGates[2], uint_fast64_t id, uint_fast64_t numThreads)
+{
+std::queue<uint_fast64_t> pathQueue[2];
+
+    //std::vector<uint_fast64_t> leakedInputs;
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = id; j < circuit->details.bitlengthOutputs; j+=numThreads)
+        {
+            auto outputWireGateIndex = circuitLineOfWireIndex[circuit->details.numWires - 1 - i - j]; 
+
+            uint_fast8_t amountOnesCurrIndex = circuit->gates[outputWireGateIndex].truthTable[0][0] + circuit->gates[outputWireGateIndex].truthTable[0][1] + circuit->gates[outputWireGateIndex].truthTable[1][0] + circuit->gates[outputWireGateIndex].truthTable[1][1];
+            bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;           
+            
+            if(isImbalancedGate)
+                pathQueue[0].push(outputWireGateIndex); 
+            else
+                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
+            
+            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            {
+                for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
+                {
+                    while (!pathQueue[imbalancedCount].empty())
+                    {
+                        auto currIndex = pathQueue[imbalancedCount].front();
+                        pathQueue[imbalancedCount].pop();
+                        //uint_fast8_t amountOnesCurrIndex = circuit->gates[currIndex].truthTable[0][0] + circuit->gates[currIndex].truthTable[0][1] + circuit->gates[currIndex].truthTable[1][0] + circuit->gates[currIndex].truthTable[1][1];
+                        //bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;
+                        uint_fast64_t parents[2] = {circuit->gates[currIndex].leftParentID, circuit->gates[currIndex].rightParentID};
+                        
+                        for (auto p = 0; p < 2; p++)
+                        {
+                            if (! addedGates[0][p]) //no need to check gates twice
+                            {
+
+                                if (parents[p] < circuit->details.bitlengthInputA + circuit->details.bitlengthInputB) //input wire
+                                {
+                                    
+                                    if (parents[p] < circuit->details.bitlengthInputA && !addedGates[0][parents[p]])
+                                        leakedInputs->push_back(parents[p]);
+                                    addedGates[0][parents[p]] = true;
+                                }
+
+                                else
+                                {
+                                    if(imbalancedCount == 0 || !addedGates[1][parents[p]]) //no need to check gates twice
+                                    {
+
+                                    
+                                        auto parentGateIndex = circuitLineOfWireIndex[parents[p]];
+                                        uint_fast8_t amountOnesParent = circuit->gates[parentGateIndex].truthTable[0][0] + circuit->gates[parentGateIndex].truthTable[0][1] + circuit->gates[parentGateIndex].truthTable[1][0] + circuit->gates[parentGateIndex].truthTable[1][1];
+                                        
+                                        
+                                        switch (amountOnesParent)
+                                        {
+                                        case 1: //AND or NOR
+
+                                            if (imbalancedCount == 0 && po[parents[p] == false]) //imbalanced gates refreshes XOR count
+                                            {
+                                                addedGates[0][parents[p]] = true;
+                                                pathQueue[0].push(parentGateIndex);
+                                            }
+                                            else
+                                            {
+                                                addedGates[imbalancedCount][parents[p]] = true;
+                                                pathQueue[imbalancedCount].push(parentGateIndex);
+                                                
+                                            }
+
+                                            break;
+                                        case 3:                                                  //NAND or NOR
+                                            if (imbalancedCount == 0 && po[parents[p] == false]) //imbalanced gates refreshes XOR count
+                                            {
+                                                addedGates[0][parents[p]] = true;
+                                                pathQueue[0].push(parentGateIndex);                                                
+                                            }
+                                            else
+                                            {
+                                                addedGates[imbalancedCount][parents[p]] = true;
+                                                pathQueue[imbalancedCount].push(parentGateIndex);                                                
+                                            }
+                                            break;
+                                        case 2: //balanced gates
+                                            if (imbalancedCount == 0)
+                                            {
+                                                if (circuit->gates[parentGateIndex].truthTable[0][1] == circuit->gates[parentGateIndex].truthTable[1][0]) //XOR or XNOR
+                                                {
+                                                    addedGates[1][parents[p]] = true;
+                                                    pathQueue[1].push(parentGateIndex);
+                                                }
+                                                else if (circuit->gates[parentGateIndex].truthTable[0][0] == circuit->gates[parentGateIndex].truthTable[0][1]) // 0011 or 1100
+                                                {
+                                                    if (p == 0)
+                                                    {
+                                                        addedGates[1][parents[p]] = true;
+                                                        pathQueue[1].push(parentGateIndex);
+                                                    }
+                                                }
+                                                else // 0101 or 1010
+                                                {
+                                                    if (p == 1)
+                                                    {
+                                                        addedGates[1][parents[p]] = true;
+                                                        pathQueue[1].push(parentGateIndex);
+                                                    }
+                                                }
+                                            }
+                                            break;
+
+                                        default: //0000 or 1111
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //delete[] po;
+    }
+}
+
+void getLeakedInputsFromOutputSortedThread(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, bool *addedGates[2], uint_fast64_t id, uint_fast64_t numThreads)
+{
+std::queue<uint_fast64_t> pathQueue[2];
+
+    //std::vector<uint_fast64_t> leakedInputs;
+    for (auto i = 0; i < circuit->details.numOutputs; i++)
+    {
+        for (auto j = id; j < circuit->details.bitlengthOutputs; j+=numThreads)
+        {
+            auto outputWireGateIndex = circuit->details.numWires - 1 - i - j - circuit->details.bitlengthInputA - circuit->details.bitlengthInputB; 
+
+            uint_fast8_t amountOnesCurrIndex = circuit->gates[outputWireGateIndex].truthTable[0][0] + circuit->gates[outputWireGateIndex].truthTable[0][1] + circuit->gates[outputWireGateIndex].truthTable[1][0] + circuit->gates[outputWireGateIndex].truthTable[1][1];
+            bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;           
+            
+            if(isImbalancedGate)
+                pathQueue[0].push(outputWireGateIndex); 
+            else
+                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
+            
+            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            {
+                for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
+                {
+                    while (!pathQueue[imbalancedCount].empty())
+                    {
+                        auto currIndex = pathQueue[imbalancedCount].front();
+                        pathQueue[imbalancedCount].pop();
+                        //uint_fast8_t amountOnesCurrIndex = circuit->gates[currIndex].truthTable[0][0] + circuit->gates[currIndex].truthTable[0][1] + circuit->gates[currIndex].truthTable[1][0] + circuit->gates[currIndex].truthTable[1][1];
+                        //bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;
+                        uint_fast64_t parents[2] = {circuit->gates[currIndex].leftParentID, circuit->gates[currIndex].rightParentID};
+                        
+                        for (auto p = 0; p < 2; p++)
+                        {
+                            if (! addedGates[0][p]) //no need to check gates twice
+                            {
+
+                                if (parents[p] < circuit->details.bitlengthInputA + circuit->details.bitlengthInputB) //input wire
+                                {
+                                    
+                                    if (parents[p] < circuit->details.bitlengthInputA && !addedGates[0][parents[p]])
+                                        leakedInputs->push_back(parents[p]);
+                                    addedGates[0][parents[p]] = true;
+                                }
+
+                                else
+                                {
+                                    if(imbalancedCount == 0 || !addedGates[1][parents[p]]) //no need to check gates twice
+                                    {
+
+                                    
+                                        auto parentGateIndex = parents[p] - circuit->details.bitlengthInputA - circuit->details.bitlengthInputB;
+                                        uint_fast8_t amountOnesParent = circuit->gates[parentGateIndex].truthTable[0][0] + circuit->gates[parentGateIndex].truthTable[0][1] + circuit->gates[parentGateIndex].truthTable[1][0] + circuit->gates[parentGateIndex].truthTable[1][1];
+                                        
+                                        
+                                        switch (amountOnesParent)
+                                        {
+                                        case 1: //AND or NOR
+
+                                            if (imbalancedCount == 0 && po[parents[p] == false]) //imbalanced gates refreshes XOR count
+                                            {
+                                                addedGates[0][parents[p]] = true;
+                                                pathQueue[0].push(parentGateIndex);
+                                            }
+                                            else
+                                            {
+                                                addedGates[imbalancedCount][parents[p]] = true;
+                                                pathQueue[imbalancedCount].push(parentGateIndex);
+                                                
+                                            }
+
+                                            break;
+                                        case 3:                                                  //NAND or NOR
+                                            if (imbalancedCount == 0 && po[parents[p] == false]) //imbalanced gates refreshes XOR count
+                                            {
+                                                addedGates[0][parents[p]] = true;
+                                                pathQueue[0].push(parentGateIndex);                                                
+                                            }
+                                            else
+                                            {
+                                                addedGates[imbalancedCount][parents[p]] = true;
+                                                pathQueue[imbalancedCount].push(parentGateIndex);                                                
+                                            }
+                                            break;
+                                        case 2: //balanced gates
+                                            if (imbalancedCount == 0)
+                                            {
+                                                if (circuit->gates[parentGateIndex].truthTable[0][1] == circuit->gates[parentGateIndex].truthTable[1][0]) //XOR or XNOR
+                                                {
+                                                    addedGates[1][parents[p]] = true;
+                                                    pathQueue[1].push(parentGateIndex);
+                                                }
+                                                else if (circuit->gates[parentGateIndex].truthTable[0][0] == circuit->gates[parentGateIndex].truthTable[0][1]) // 0011 or 1100
+                                                {
+                                                    if (p == 0)
+                                                    {
+                                                        addedGates[1][parents[p]] = true;
+                                                        pathQueue[1].push(parentGateIndex);
+                                                    }
+                                                }
+                                                else // 0101 or 1010
+                                                {
+                                                    if (p == 1)
+                                                    {
+                                                        addedGates[1][parents[p]] = true;
+                                                        pathQueue[1].push(parentGateIndex);
+                                                    }
+                                                }
+                                            }
+                                            break;
+
+                                        default: //0000 or 1111
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //delete[] po;
+    }
+}
+
+
+
+void getLeakedInputsFromOutputUnsortedMT(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t* circuitLineOfWireIndex, uint_fast64_t numThreads)
+{
+
+    bool *addedGates[2] = {new bool[circuit->details.numWires](), new bool[circuit->details.numWires]()}; //one for each queue
+
+    std::thread threads[numThreads];
+    for (uint_fast64_t i = 0; i < numThreads; i++)
+    {
+        threads[i] = std::thread(getLeakedInputsFromOutputUnsortedThread, circuit, po, leakedInputs, circuitLineOfWireIndex, addedGates, i, numThreads);
+    }
+    for (auto i = 0; i < numThreads; i++)
+    {
+        threads[i].join();
+    }
+    
+    delete[] addedGates[0];
+    delete[] addedGates[1];
+}
+
+
+void getLeakedInputsFromOutputSortedMT(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t numThreads)
+{
+
+    bool *addedGates[2] = {new bool[circuit->details.numWires](), new bool[circuit->details.numWires]()}; //one for each queue
+
+    std::thread threads[numThreads];
+    for (uint_fast64_t i = 0; i < numThreads; i++)
+    {
+        threads[i] = std::thread(getLeakedInputsFromOutputSortedThread, circuit, po, leakedInputs, addedGates, i, numThreads);
+    }
+    for (auto i = 0; i < numThreads; i++)
+    {
+        threads[i].join();
+    }
+    
+    delete[] addedGates[0];
+    delete[] addedGates[1];
+}
+
     // void getLeakedInputsFromOutput(TransformedCircuit* circuit, bool *npib)
     // {
     //     //auto npib = new bool[details.numWires]();
