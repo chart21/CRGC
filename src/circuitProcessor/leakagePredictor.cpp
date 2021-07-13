@@ -390,8 +390,15 @@ void getLeakedInputsFromOutput(TransformedCircuit *circuit, bool *po, std::vecto
         for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
         {
             auto outputWireGateIndex = circuit->details.numWires - 1 - i - j - circuit->details.bitlengthInputA - circuit->details.bitlengthInputB;
-            pathQueue[0].push(outputWireGateIndex);
-            while (!pathQueue[0].empty())
+            uint_fast8_t amountOnesCurrIndex = circuit->gates[outputWireGateIndex].truthTable[0][0] + circuit->gates[outputWireGateIndex].truthTable[0][1] + circuit->gates[outputWireGateIndex].truthTable[1][0] + circuit->gates[outputWireGateIndex].truthTable[1][1];
+            bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;           
+            
+            if(isImbalancedGate)
+                pathQueue[0].push(outputWireGateIndex); 
+            else
+                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
+            
+            while (!pathQueue[0].empty() && !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
@@ -510,9 +517,17 @@ void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, st
     {
         for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
         {
-            auto outputWireGateIndex = circuitLineOfWireIndex[circuit->details.numWires - 1 - i - j];
-            pathQueue[0].push(outputWireGateIndex);
-            while (!pathQueue[0].empty())
+            auto outputWireGateIndex = circuitLineOfWireIndex[circuit->details.numWires - 1 - i - j]; 
+
+            uint_fast8_t amountOnesCurrIndex = circuit->gates[outputWireGateIndex].truthTable[0][0] + circuit->gates[outputWireGateIndex].truthTable[0][1] + circuit->gates[outputWireGateIndex].truthTable[1][0] + circuit->gates[outputWireGateIndex].truthTable[1][1];
+            bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;           
+            
+            if(isImbalancedGate)
+                pathQueue[0].push(outputWireGateIndex); 
+            else
+                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
+            
+            while (!pathQueue[0].empty() && !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
@@ -520,9 +535,10 @@ void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, st
                     {
                         auto currIndex = pathQueue[imbalancedCount].front();
                         pathQueue[imbalancedCount].pop();
-                        uint_fast8_t amountOnesCurrIndex = circuit->gates[currIndex].truthTable[0][0] + circuit->gates[currIndex].truthTable[0][1] + circuit->gates[currIndex].truthTable[1][0] + circuit->gates[currIndex].truthTable[1][1];
+                        //uint_fast8_t amountOnesCurrIndex = circuit->gates[currIndex].truthTable[0][0] + circuit->gates[currIndex].truthTable[0][1] + circuit->gates[currIndex].truthTable[1][0] + circuit->gates[currIndex].truthTable[1][1];
+                        //bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;
                         uint_fast64_t parents[2] = {circuit->gates[currIndex].leftParentID, circuit->gates[currIndex].rightParentID};
-
+                        
                         for (auto p = 0; p < 2; p++)
                         {
                             if (! addedGates[0][p]) //no need to check gates twice
@@ -544,6 +560,8 @@ void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, st
                                     
                                         auto parentGateIndex = circuitLineOfWireIndex[parents[p]];
                                         uint_fast8_t amountOnesParent = circuit->gates[parentGateIndex].truthTable[0][0] + circuit->gates[parentGateIndex].truthTable[0][1] + circuit->gates[parentGateIndex].truthTable[1][0] + circuit->gates[parentGateIndex].truthTable[1][1];
+                                        
+                                        
                                         switch (amountOnesParent)
                                         {
                                         case 1: //AND or NOR
