@@ -346,8 +346,8 @@ int main(int argc, char *argv[])
     verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads, timeSleep);
 
 
-    //auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
-    //compareCircuitSimilarity(originalCircuit,circuit);
+    auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
+    compareCircuitSimilarity(originalCircuit,circuit);
 
     //exportCircuitSeparateFiles(circuit, CIRCUITPATH);
     //exportObfuscatedInput(obfuscatedValArr, circuit->details, CIRCUITPATH);

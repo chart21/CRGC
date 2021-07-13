@@ -140,13 +140,8 @@ void compareCircuitSimilarity(TransformedCircuit* originalCircuit, TransformedCi
     uint_fast64_t identicalGates = 0;
     for(auto i = 0; i < originalCircuit->details.numGates;i++)
     {
-        if(originalCircuit->gates[i].truthTable[0][0] == transformedCircuit->gates[i].truthTable[0][0] && 
-            originalCircuit->gates[i].truthTable[0][1] == transformedCircuit->gates[i].truthTable[0][1] &&
-            originalCircuit->gates[i].truthTable[1][0] == transformedCircuit->gates[i].truthTable[1][0] &&
-            originalCircuit->gates[i].truthTable[1][1] == transformedCircuit->gates[i].truthTable[1][1]
-        
-        )
-            identicalGates++;
+        if(originalCircuit->gates[i].truthTable[0][0] == transformedCircuit->gates[i].truthTable[0][0] && originalCircuit->gates[i].truthTable[0][1] == transformedCircuit->gates[i].truthTable[0][1] && originalCircuit->gates[i].truthTable[1][0] == transformedCircuit->gates[i].truthTable[1][0] && originalCircuit->gates[i].truthTable[1][1] == transformedCircuit->gates[i].truthTable[1][1])
+            identicalGates+=1;
     } 
-    std::cout << "Ratio of identical gates compared to original circuit: " << identicalGates/originalCircuit->details.numGates << '\n';
+    std::cout << "Ratio of identical gates compared to original circuit: " << (float) identicalGates/originalCircuit->details.numGates << '\n';
 }
