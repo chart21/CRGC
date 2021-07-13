@@ -31,6 +31,7 @@ void getPrevofEachWireT(TransformedCircuit* circuit, uint_fast64_t* parents)
 
 
 
+
 void getSuccessorsOfEachWire(CircuitDetails details, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
 {
     for(auto id = 0; id < details.numWires;id++)
