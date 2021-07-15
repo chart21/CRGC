@@ -15,8 +15,9 @@
 #include "circuitProcessor/include/leakagePredictor.h"
 
 //#include <emp-tool/emp-tool.h>
-#include "programs/include/mult3.h"
-#include "programs/include/paperoptm.h"
+//#include "programs/include/mult3.h"
+//#include "programs/include/paperoptm.h"
+#include "programs/include/circuitLinker.h"
 
 #include <chrono>
 
@@ -45,7 +46,8 @@ TransformedCircuit* loadTransformedCircuit(std::string circuitName, std::string 
     {
         std::vector<BristolGate> gateVec;
         CircuitDetails empDetails;
-        funcTime("converting program to circuit", generateCircuitRAMPaper, &gateVec, &empDetails);
+        //funcTime("converting program to circuit", generateCircuitRAMPaper, &gateVec, &empDetails);
+        funcTime("converting program to circuit", generateCircuitRAM, &gateVec, &empDetails, false, circuitName);
         //auto flipped = new bool[empDetails.numWires];
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails, flipped);
         auto circuit = importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);

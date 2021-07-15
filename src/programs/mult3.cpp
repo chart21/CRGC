@@ -36,7 +36,7 @@ void test_mult3(int bitsize, std::string inputs_a[], std::string inputs_b[]) {
   std::cout << endl;
 }
 
-void generateCircuit()
+void generateCircuitMult()
 {
   int bitsize; 
   setup_plain_prot(true, "mult3.circuit.txt");
@@ -46,14 +46,14 @@ void generateCircuit()
   finalize_plain_prot();
 }
 
-void generateCircuitRAM(std::vector<BristolGate>* gateVec, CircuitDetails* details)
+void generateCircuitRAMMult(std::vector<BristolGate>* gateVec, CircuitDetails* details, bool print)
 {
   int bitsize; 
-  setup_plain_prot_adj(false, "mult3.circuit.txt", gateVec, details);
+  setup_plain_prot_adj(print, "mult3.circuit.txt", gateVec, details);
   bitsize = 16;
   string inputs[3] = {"0","0","0"};
   test_mult3(bitsize, inputs, inputs);
-  finalize_plain_prot_adj(false, gateVec, details);
+  finalize_plain_prot_adj(print, gateVec, details);
 }
 
 // int main(int argc, char** argv) {
