@@ -76,7 +76,7 @@ void test_setIntersectAlt3(std::string inputs_a[], std::string inputs_b[])
     intersect[LEN - 1].reveal<int>();
 }
 
-void generateCircuitRAMPaper(std::vector<BristolGate> *gateVec, CircuitDetails *details, bool print)
+void generateCircuitRAMPaper(std::vector<BristolGate>* gateVec, CircuitDetails* details, bool print)
 {
 
     setup_plain_prot_adj(print, "setIntersectAlt3.circuit.txt", gateVec, details);

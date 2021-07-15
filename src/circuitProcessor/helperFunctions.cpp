@@ -14,8 +14,8 @@ void generateRandomInput(size_t bitlength, bool* input)
     sfc64 sfc;
     RandomizerWithSentinelShift<> randomizer;    
     for (int i = 0; i < bitlength; i++)
-    {
-        input[i] = randomizer(sfc);
+    {        
+        input[i] = randomizer(sfc);;
     }
 }
 
