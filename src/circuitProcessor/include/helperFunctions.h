@@ -35,4 +35,6 @@ void printArr(T *arr, uint_fast64_t size)
         std::cout <<  i << " : " << arr[i] << '\n';
 }
 
+bool check_number(std::string str);
+
 #endif

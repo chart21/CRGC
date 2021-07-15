@@ -112,23 +112,54 @@ void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_
     delete[] po;
 }
 
-void evaluateCircuit(TransformedCircuit* circuit, uint_fast64_t numThreads, uint_fast64_t timeSleep, int argc, char *argv[], bool* inputA, bool *inputB, bool *output)
+void evaluateCircuit(TransformedCircuit* circuit, uint_fast64_t numThreads, uint_fast64_t timeSleep, int argc, char *argv[], bool* inputA, bool *inputB, bool *output, std::string circuitName)
 {
     //auto circuit = importBristolCircuitExNot(filepath+ ".txt", details);
-    generateRandomInput(circuit->details.bitlengthInputA, inputA);
-    generateRandomInput(circuit->details.bitlengthInputB, inputB);
-
+    
+    
+    std::string filepath = CIRCUITPATH + circuitName;
     if (argc > 3)
     {
-        uint_fast64_t a = std::stoul(argv[3]);
-        converIntToBoolArr(a, circuit->details.bitlengthInputA, inputA);
+        uint_fast64_t a;
+        if(check_number(argv[3]))
+        {
+            uint_fast64_t a = std::stoul(argv[3]);
+            converIntToBoolArr(a, circuit->details.bitlengthInputA, inputA);
+        }
+        else
+        {
+            if (argv[3] != "r")
+                importBinaryInput(filepath + "_inputA.txt", circuit->details.bitlengthInputA, inputA);
+            else
+                generateRandomInput(circuit->details.bitlengthInputA, inputA);            
+        }
+        
+        
     }
-    if (argc > 4)
-    {
-        uint_fast64_t b = std::stoul(argv[4]);
-        converIntToBoolArr(b, circuit->details.bitlengthInputB, inputB);
-    }
+    else
+        generateRandomInput(circuit->details.bitlengthInputA, inputA);
 
+
+     if (argc > 4)
+    {
+        uint_fast64_t b;
+        if(check_number(argv[4]))
+        {
+            uint_fast64_t b = std::stoul(argv[4]);
+            converIntToBoolArr(b, circuit->details.bitlengthInputB, inputB);
+        }
+        else
+        {
+            if (argv[4] != "r")
+                importBinaryInput(filepath + "_inputB.txt", circuit->details.bitlengthInputB, inputB);
+            else
+                generateRandomInput(circuit->details.bitlengthInputB, inputB);            
+        }
+        
+        
+    }
+    else
+        generateRandomInput(circuit->details.bitlengthInputB, inputB);
     // auto uintCircuit = transformTransformedCircuitToUint(circuit);
 
     // if(numThreads == 1)
@@ -344,7 +375,7 @@ int main(int argc, char *argv[])
     bool *inputB = new bool[circuit->details.bitlengthInputB];
     bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
     
-    evaluateCircuit(circuit, numThreads, timeSleep, argc, argv, inputA, inputB, output);
+    evaluateCircuit(circuit, numThreads, timeSleep, argc, argv, inputA, inputB, output, circuitName);
     
 
     bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];

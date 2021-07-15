@@ -117,3 +117,11 @@ void stopClock(std::chrono::_V2::system_clock::time_point t1)
 //     }
 //     return input;
 // }
+
+
+bool check_number(std::string str) {
+   for (auto i = 0; i < str.length(); i++)
+   if (isdigit(str[i]) == false)
+      return false;
+      return true;
+}
