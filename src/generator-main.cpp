@@ -15,8 +15,8 @@
 #include "circuitProcessor/include/leakagePredictor.h"
 
 //#include <emp-tool/emp-tool.h>
-//#include "programs/include/mult3.h"
-//#include "programs/include/paperoptm.h"
+#include "programs/include/mult3.h"
+#include "programs/include/paperoptm.h"
 #include "programs/include/circuitLinker.h"
 
 #include <chrono>
@@ -287,7 +287,7 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit* circuit, bool* outputRGC, 
     auto newCircuit = importTransformedCircuit(filepath + "_rgc.txt", newDetails);
 
     auto newInputA = new bool[newCircuit->details.bitlengthInputA];
-    importInput(filepath + "_rgc_inputA.txt", newCircuit->details.bitlengthInputA, newInputA);
+    importBinaryInput(filepath + "_rgc_inputA.txt", newCircuit->details.bitlengthInputA, newInputA);
     auto newOut2 = new bool[newCircuit->details.bitlengthOutputs * newCircuit->details.numOutputs];
     
     if(numThreads == 1)

@@ -18,7 +18,7 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
 
 BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate>* gateVec, CircuitDetails details, bool* flipped);
 
-void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool* valArr);
+void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool *valArr);
 
 TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);
 

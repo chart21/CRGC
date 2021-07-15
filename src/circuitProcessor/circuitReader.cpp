@@ -331,7 +331,7 @@ BristolCircuit *importBristolCircuitExNotForLeakagePrediction(std::string filepa
     return circuit;
 }
 
-void importInput(std::string filepath, uint_fast64_t bitlength, bool *valArr)
+void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool *valArr)
 {
     //auto valArr = new bool[bitlength];
     char ch;
