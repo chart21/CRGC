@@ -4,6 +4,7 @@
 #include <queue>
 #include <thread>
 #include <chrono>
+#include <iostream>
 
 #define parents(i, j) parents[(i)*2 + (j)] //making 2D array index more natural
 
@@ -398,7 +399,7 @@ void getLeakedInputsFromOutput(TransformedCircuit *circuit, bool *po, std::vecto
             else
                 pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
             
-            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            while (!pathQueue[0].empty() || !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
@@ -527,7 +528,7 @@ void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, st
             else
                 pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
             
-            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            while (!pathQueue[0].empty() || !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
@@ -644,6 +645,7 @@ std::queue<uint_fast64_t> pathQueue[2];
     //std::vector<uint_fast64_t> leakedInputs;
     for (auto i = 0; i < circuit->details.numOutputs; i++)
     {
+        
         for (auto j = id; j < circuit->details.bitlengthOutputs; j+=numThreads)
         {
             auto outputWireGateIndex = circuitLineOfWireIndex[circuit->details.numWires - 1 - i - j]; 
@@ -654,12 +656,14 @@ std::queue<uint_fast64_t> pathQueue[2];
             if(isImbalancedGate)
                 pathQueue[0].push(outputWireGateIndex); 
             else
-                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
+                pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate  
+                       
             
-            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            while (!pathQueue[0].empty() || !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
+                    
                     while (!pathQueue[imbalancedCount].empty())
                     {
                         auto currIndex = pathQueue[imbalancedCount].front();
@@ -668,6 +672,7 @@ std::queue<uint_fast64_t> pathQueue[2];
                         //bool isImbalancedGate = amountOnesCurrIndex == 1 || amountOnesCurrIndex == 3;
                         uint_fast64_t parents[2] = {circuit->gates[currIndex].leftParentID, circuit->gates[currIndex].rightParentID};
                         
+                        
                         for (auto p = 0; p < 2; p++)
                         {
                             if (! addedGates[0][p]) //no need to check gates twice
@@ -675,6 +680,7 @@ std::queue<uint_fast64_t> pathQueue[2];
 
                                 if (parents[p] < circuit->details.bitlengthInputA + circuit->details.bitlengthInputB) //input wire
                                 {
+                                    
                                     
                                     if (parents[p] < circuit->details.bitlengthInputA && !addedGates[0][parents[p]])
                                         leakedInputs->push_back(parents[p]);
@@ -771,6 +777,7 @@ std::queue<uint_fast64_t> pathQueue[2];
     //std::vector<uint_fast64_t> leakedInputs;
     for (auto i = 0; i < circuit->details.numOutputs; i++)
     {
+        
         for (auto j = id; j < circuit->details.bitlengthOutputs; j+=numThreads)
         {
             auto outputWireGateIndex = circuit->details.numWires - 1 - i - j - circuit->details.bitlengthInputA - circuit->details.bitlengthInputB; 
@@ -783,7 +790,7 @@ std::queue<uint_fast64_t> pathQueue[2];
             else
                 pathQueue[1].push(outputWireGateIndex); //no leakage after one balanced gate           
             
-            while (!pathQueue[0].empty() && !pathQueue[1].empty())
+            while (!pathQueue[0].empty() || !pathQueue[1].empty())
             {
                 for (auto imbalancedCount = 0; imbalancedCount < 2; imbalancedCount++)
                 {
@@ -797,11 +804,13 @@ std::queue<uint_fast64_t> pathQueue[2];
                         
                         for (auto p = 0; p < 2; p++)
                         {
+                            
                             if (! addedGates[0][p]) //no need to check gates twice
                             {
 
                                 if (parents[p] < circuit->details.bitlengthInputA + circuit->details.bitlengthInputB) //input wire
                                 {
+                                    
                                     
                                     if (parents[p] < circuit->details.bitlengthInputA && !addedGates[0][parents[p]])
                                         leakedInputs->push_back(parents[p]);

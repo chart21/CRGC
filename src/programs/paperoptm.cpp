@@ -6,7 +6,7 @@
 #include <string>
 using namespace emp;
 
-int LEN = 2000;
+int LEN = 5000;
 int BITSIZE = 16;
 
 Integer dubSelect3(Integer &a, Integer &b, Integer &c)
