@@ -105,7 +105,7 @@ void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_
     {
         poc += po[i];
     }
-    std::cout << "---INFO--- potentially obfuscated and integrity-breaking gates: " << poc << '\n';
+    std::cout << "---INFO--- potentially obfuscated fixed and intermediary gates: " << poc << '\n';
 
     std::vector<uint_fast64_t> leakedInputs;
     //funcTime(getLeakedInputsFromOutput, circuit, po, &leakedInputs);
@@ -237,7 +237,7 @@ void obfuscateCircuit(TransformedCircuit *circuit, bool *inputA, uint_fast64_t *
     {
         poc += isObfuscated[i];
     }
-    std::cout << "---INFO--- obfuscated and integrity-breaking gates: " << poc << '\n';
+    std::cout << "---INFO--- obfuscated fixed and intermediary gates: " << poc << '\n';
 
     if (numThreads == 1)
         funcTime("obfuscate gates", regenerateGates, circuit, isObfuscated);
