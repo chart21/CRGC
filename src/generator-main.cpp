@@ -25,7 +25,8 @@
 #define time_S t1 = startClock();
 #define time_E stopClock(t1);
 
-#define CIRCUITPATH "/home/christopher/Documents/C-RGCG/src/circuits/"
+//#define CIRCUITPATH "/home/christopher/Documents/C-RGCG/src/circuits/"
+#define CIRCUITPATH "../src/circuits/"
 
 template <typename F, typename... Args>
 void funcTime(std::string printText, F func, Args &&...args)
