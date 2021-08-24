@@ -6,7 +6,7 @@
 
 #define parents(i,j)   parents[(i)*2 + (j)] //making 2D array index more natural
 
-void getIntegrityBreakingGates(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
+void getIntermediaryGates(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents, std::vector<uint_fast64_t>* successors)
 {
     auto addedGates = new bool[details.numWires]();
     std::queue<uint_fast64_t> pathQueue;
@@ -46,7 +46,7 @@ void getIntegrityBreakingGates(CircuitDetails details, bool* isObfuscated, uint_
      
 }
 
-void breakIntegrityOfGates(TransformedCircuit* circuit, bool* isObfuscated)
+void regenerateGates(TransformedCircuit* circuit, bool* isObfuscated)
 {
     sfc64 sfc;
     RandomizerWithSentinelShift<> randomizer;
@@ -89,7 +89,7 @@ void breakIntegrityOfGates(TransformedCircuit* circuit, bool* isObfuscated)
 }
 
 
-void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents)
+void getIntermediaryGatesfromOutput(CircuitDetails details, bool* isObfuscated, uint_fast64_t* parents)
 {
     auto notObfuscated = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();
@@ -124,7 +124,7 @@ void getIntegrityBreakingGatesfromOutput(CircuitDetails details, bool* isObfusca
 }
 
 
-void getIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t amountGatesperThread)
+void getIntermediaryGatesFromOutputThread(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t amountGatesperThread)
 {
     std::queue<uint_fast64_t> pathQueue;
     for (auto i = 0; i < details.numOutputs; i++)
@@ -150,7 +150,7 @@ void getIntegrityBreakingGatesFromOutputThread(CircuitDetails details, bool*isob
     }
 }
 
-void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads)
+void getIntermediaryGatesfromOutputMT(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads)
 {
     auto notobfuscated = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();    
@@ -158,7 +158,7 @@ void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfusc
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread,details, isobfuscated, parents, notobfuscated, addedGates,i,numGates); 
+        threads[i] = std::thread(getIntermediaryGatesFromOutputThread,details, isobfuscated, parents, notobfuscated, addedGates,i,numGates); 
     }
     for (auto i = 0; i <numThreads; i++)
     {
@@ -174,7 +174,7 @@ void getIntegrityBreakingGatesfromOutputMT(CircuitDetails details, bool*isobfusc
     delete[] notobfuscated;
 }
 
-void getIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads)
+void getIntermediaryGatesFromOutputThread2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, bool* notobfuscated, bool* addedGates, uint_fast64_t id, uint_fast64_t numThreads)
 {
     std::queue<uint_fast64_t> pathQueue;
     for (auto i = 0; i < details.numOutputs; i++)
@@ -200,7 +200,7 @@ void getIntegrityBreakingGatesFromOutputThread2(CircuitDetails details, bool*iso
     }
 }
 
-void getIntegrityBreakingGatesfromOutputMT2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads)
+void getIntermediaryGatesfromOutputMT2(CircuitDetails details, bool*isobfuscated, uint_fast64_t* parents, uint_fast64_t numThreads)
 {
     auto notobfuscated = new bool[details.numWires]();
     auto addedGates = new bool[details.numWires]();   
@@ -208,7 +208,7 @@ void getIntegrityBreakingGatesfromOutputMT2(CircuitDetails details, bool*isobfus
     std::thread threads[numThreads];
     for (uint_fast64_t i = 0; i <numThreads; i++)
     {
-        threads[i] = std::thread(getIntegrityBreakingGatesFromOutputThread2,details, isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
+        threads[i] = std::thread(getIntermediaryGatesFromOutputThread2,details, isobfuscated, parents, notobfuscated, addedGates,i,numThreads); 
     }
     for (auto i = 0; i <numThreads; i++)
     {
@@ -224,19 +224,19 @@ void getIntegrityBreakingGatesfromOutputMT2(CircuitDetails details, bool*isobfus
     delete[] notobfuscated;
 }
 
-void breakIntegrityOfGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t numThreads)
+void regenerateGatesMT(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t numThreads)
 {
     
     std::thread threads[numThreads];
     for (auto i = 0; i < numThreads; i++)
     {
-        threads[i] = std::thread(breakIntegrityOfGatesThread, circuit, isObfuscated, i, numThreads);
+        threads[i] = std::thread(regenerateGatesThread, circuit, isObfuscated, i, numThreads);
     }
     for (auto i = 0; i < numThreads; i++)
         threads[i].join();
 }
 
-void breakIntegrityOfGatesThread(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t id, uint_fast64_t numThreads)
+void regenerateGatesThread(TransformedCircuit* circuit, bool* isObfuscated, uint_fast64_t id, uint_fast64_t numThreads)
 {
     sfc64 sfc;
     RandomizerWithSentinelShift<> randomizer;
