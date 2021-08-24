@@ -18,6 +18,7 @@
 //#include <emp-tool/emp-tool.h>
 // #include "programs/include/mult3.h"
 // #include "programs/include/paperoptm.h"
+#include "programs/include/examplePrograms.h"
 #include "programs/include/circuitLinker.h"
 
 #include <chrono>
