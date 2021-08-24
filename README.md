@@ -72,7 +72,7 @@ make -j
 
 ### Optional arguments
 
-#### generator.py
+#### generator executable
 
 ``1st param`` specify the filename for the circuit or CPP function you want to execute. Circuit file has to be located in **./src/circuits**. C++ file has **./src/programs**. (default: adder64)
 
@@ -92,11 +92,9 @@ make -j
 
 
 
-#### evaluator.py
+#### evalator executable
 
-``-f`` specify the filename for the RGC you want to execute. Circuit file has to be located in **./circuits** (default: adder64)
 
-``-b`` set the input of party B for the evaluation of the circuit (default: Random input)
 
 
 ### Example 
