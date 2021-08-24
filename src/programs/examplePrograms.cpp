@@ -42,8 +42,8 @@ Integer product(BITSIZE, 1);
 void setIntersect()
 {
 
-    uint_fast64_t LEN = 5000;
-    uint_fast64_t BITSIZE = 16;
+    uint_fast64_t LEN = 40000;
+    uint_fast64_t BITSIZE = 32;
 
     //Integer product(BITSIZE, 1);
     Integer intersect[LEN];
