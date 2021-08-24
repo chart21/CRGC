@@ -58,7 +58,7 @@ add_subdirectory(src/programs)
 target_include_directories(${PROJECT_NAME} PUBLIC src/programs)
 target_link_directories(${PROJECT_NAME} PUBLIC src/programs)
 
-target_link_libraries(${PROJECT_NAME} mult3 paperoptm circuitLinker)
+target_link_libraries(${PROJECT_NAME} circuitLinker mult3 paperoptm)
 
 target_link_libraries(${PROJECT_NAME} ${EMP-OT_LIBRARIES})
 #add_executable(generator src/circuitProcessor/helperFunctions.cpp src/circuitProcessor/circuitReader.cpp src/circuitProcessor/circuitEvaluator.cpp src/generator-main.cpp)

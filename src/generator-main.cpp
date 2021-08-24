@@ -16,9 +16,9 @@
 #include "circuitProcessor/include/leakagePredictor.h"
 
 //#include <emp-tool/emp-tool.h>
-#include "programs/include/mult3.h"
-#include "programs/include/paperoptm.h"
-//include "programs/include/circuitLinker.h"
+// #include "programs/include/mult3.h"
+// #include "programs/include/paperoptm.h"
+#include "programs/include/circuitLinker.h"
 
 #include <chrono>
 
@@ -41,16 +41,16 @@ void funcTime(std::string printText, F func, Args &&...args)
     std::cout << "---TIMING--- " << time << "ms " << printText << '\n';
 }
 
-void generateCircuitRAM(std::vector<BristolGate> *gateVec, CircuitDetails *details, bool print, std::string programName)
-{
-    if (programName == "mult3")
-        generateCircuitRAMMult(gateVec, details, print);
+// void generateCircuitRAM(std::vector<BristolGate> *gateVec, CircuitDetails *details, bool print, std::string programName)
+// {
+//     if (programName == "mult3")
+//         generateCircuitRAMMult(gateVec, details, print);
 
-    else if (programName == "paperoptm")
-        generateCircuitRAMPaper(gateVec, details, print);
-    else
-        std::cout << "Program not found, make sure you added it in CircuitLinker.cpp." << '\n';
-}
+//     else if (programName == "paperoptm")
+//         generateCircuitRAMPaper(gateVec, details, print);
+//     else
+//         std::cout << "Program not found, make sure you added it in CircuitLinker.cpp." << '\n';
+// }
 
 TransformedCircuit *loadTransformedCircuit(std::string circuitName, std::string fileFormat, std::string circuitFormat)
 {
