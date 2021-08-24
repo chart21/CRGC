@@ -178,6 +178,30 @@ TransformedCircuit *importBristolCircuitExNot(std::string filepath, CircuitDetai
                 else if (gateType == 'O')
                     bool truthTable[2][2] = {{0, 1}, {1, 1}};
 
+                // if there are problems with above syntax:
+                // bool truthTable[2][2];
+                // if (gateType == 'X')
+                // {
+                //     truthTable[0][0] = 0;
+                //     truthTable[0][1] = 1;
+                //     truthTable[1][0] = 1;
+                //     truthTable[1][1] = 0;
+                // }
+                // else if (gateType == 'A')
+                // {
+                //     truthTable[0][0] = 0;
+                //     truthTable[0][1] = 0;
+                //     truthTable[1][0] = 0;
+                //     truthTable[1][1] = 1;
+                // }
+                // else if (gateType == 'O')
+                // {
+                //     truthTable[0][0] = 0;
+                //     truthTable[0][1] = 1;
+                //     truthTable[1][0] = 1;
+                //     truthTable[1][1] = 1;
+                // }
+
                 if (flipped[leftParent])
                     swapLeftParent(truthTable);
 
