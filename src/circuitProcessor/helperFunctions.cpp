@@ -98,27 +98,6 @@ void stopClock(std::chrono::_V2::system_clock::time_point t1)
 }
 
 
-
-
-
-
-// bool* generateRandomInputOLD(size_t bitlength)
-// {
-//     auto gen = std::bind(std::uniform_int_distribution<>(0,1),std::default_random_engine());
-//     //sfc64 sfc;
-//     //RandomizerWithSentinelShift<> randomizer;
-
-//     bool *input = new bool[bitlength];
-
-//     for (int i = 0; i < bitlength; i++)
-//     {
-//         input[i] = gen();
-//         //input[i] = randomizer(sfc);
-//     }
-//     return input;
-// }
-
-
 bool check_number(std::string str) {
    for (auto i = 0; i < str.length(); i++)
    if (isdigit(str[i]) == false)

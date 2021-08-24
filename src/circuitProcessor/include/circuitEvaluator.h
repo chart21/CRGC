@@ -1,6 +1,5 @@
 #include "circuitStructs.h"
 #include <iostream>
-#include <semaphore>
 #include <thread>
 #include <vector>
 #include <chrono>
