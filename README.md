@@ -151,12 +151,12 @@ Ratio of identical gates compared to original circuit: 0.00100102
 You can direclty convert C++ functions to a boolean circuit and a CRGC using our library. We use a slightly modified version of [emp-toolkit](https://github.com/emp-toolkit). Simply follow these steps:
 
 1. Add your cpp file and header to the **program folder**. Look at the existing files for inspiration.
-2. Link your file to our library by adding it to the target_link_libraries of line 61 in **CMakeLists.txt**.
+2. Link your file to our library by adding it to the target_link_libraries (line 61 in **CMakeLists.txt**).
 
 
 Run cmake, make and the following command to convert your program into a CRGC:  
 ```
-./build/generator *FILENAME OF YOUR CPP FILE* cpp *inputA* *inputB* bristo; *number of Threads*
+./build/generator *`FILENAME OF YOUR CPP FILE`* cpp *inputA* *inputB* bristol *number of Threads*
 ```
 
 
