@@ -47,30 +47,45 @@ The evaluator (party B) performs the following steps:
 | Max element in a search window of a 64x64 8-bit 2D Array|  A has a 64x64 8-bit 2D Array with values. B wants to find the maximum value in a specified search window | 1202392 out of 1202408 (> 99.99%) | 1 out of 32768 (<0.01%)            | 28.98%                       |
 
 
-- **Perfectly obfuscated gates**: Perfectly obfuscated gates are gates that may be obfuscated completely at random for at least one secret input without destroying the circuit's integrity. A reusable garbled circuit provides improved circuit privacy with a higher proportion of those gates. 
+- **Perfectly obfuscated gates**: Perfectly obfuscated gates are gates that may be obfuscated completely at random for at least one secret input without destroying the circuit's integrity. A reusable garbled circuit provides improved obfuscation and circuit privacy with a higher proportion of those gates. 
 - **Secret input bits of A leaked**: Any non-perfectly obfuscated gate's truth table may leak information of the circuit's construction. In some cases, this information can be used to learn a secret input of party A with certainty. A reusable garbled circuit provides improved input privacy with a lower proportion of input leakage. Note that inputs are only leaked if the evaluator knows the original boolean circuit's exact (or almost exact) construction.
-- **Circuit similarity**:  A reusable garbled circuit can only be constructed dependent on one secret input of party A (but supports arbitrary inputs of party B). After constructing a circuit based on a specific input, one can analyze the similarity of the constructed circuit and the original boolean circuit. A percentage of 30% means that given a random gate in the reusable garbled circuit, it has a 30% chance to have an identical truth table as the same gate in the original boolean circuit. A lower percentage of circuit similarity provides improved circuit privacy.  
+- **Circuit similarity**:  A reusable garbled circuit can only be constructed dependent on one secret input of party A (but supports arbitrary inputs of party B). After constructing a circuit based on a specific input, one can analyze the similarity of the constructed circuit and the original boolean circuit. A percentage of 30% means that given a random gate in the reusable garbled circuit, it has a 30% chance to have an identical truth table as the same gate in the original boolean circuit. A lower percentage of circuit similarity provides improved obfuscation and circuit privacy.  
 
 ## Getting Started
 
-``python3 generator.py`` converts the adder64 circuit and a random input for party A into a reusable garbled circuit. It exports the transformed circuit (RGC) and the obfuscated input of party A to the circuits folder.
+First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repo, cd into it and run the following commands:
 
-``python3 evaluator.py`` reads an adder64 RGC and obfuscated input of party A from the circuit folder. It evaluates the circuit with a random input for party B.
+
+```
+cmake . -B ./build
+cd build
+make -j
+```
+
+
+
+
+``./build/generator adder64 txt`` converts the adder64 circuit and a random input for party A into a CRGC. It exports the CRGC and the obfuscated input of party A to the circuits folder.
+
+``./build/evaluator adder64 txt`` reads an adder64 RGC and obfuscated input of party A from the circuit folder. It evaluates the circuit with a random input for party B.
 
 
 ### Optional arguments
 
 #### generator.py
 
-``-f`` specify the filename for the circuit you want to execute. Circuit file has to be located in **./circuits** (default: adder64)
+``1st param`` specify the filename for the circuit or CPP function you want to execute. Circuit file has to be located in **./src/circuits**. C++ file has **./src/programs**. (default: adder64)
 
-``-a`` set the first input of the circuit (default: Random input)
+``2nd param`` specify the file format: cpp/txt/bin (default: txt) 
 
-``-b`` set the second input of the circuit (default: Random input)
+``3rd param`` set the first input of the circuit. Use **r** for random input. (default: Random input)
 
-``-cf`` specify the format of the circuit (emp/bristol) (default: bristol)
+``4th param`` set the second input of the circuit. Use **r** for random input. (default: Random input)
 
-``-ex`` eliminate NOT Gates in the circuit (flag, if set NOT gates get eliminated)
+``5th param`` specify the format of the circuit (emp/bristol). Use emp for circuit files generated gnerated by emp. (default: bristol)
+
+``6th param`` pset the number of threads that should be used. Many of our functions benefit from multithreading. (default: 1)
+
 
 
 
@@ -86,79 +101,69 @@ The evaluator (party B) performs the following steps:
 
 ### Example 
 ```
-python generator.py -f sub64 -a 5555 -b 222
+./build/generator myCPPFunction cpp 200 300 bristol 40
 ```
 
-Transforms the **bristol** circuit file **./circuits/sub64.txt** with secret input **5555** of party A into a reusable garbled circuit. It tests the integrity of the circuit's logic with an exemplary input of **222** that party B might query. 
+Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. It tests the integrity of the circuit's logic with an exemplary input of **300** that party B might query. The bristol keyword is irrelevant for imported C++ functions.
 
 ```
-python evaluator.py -f sub64 -b 222
+./build/generator myCircuit txt r r emp 1
 ```
-Reads the circuit file **./circuits/sub64_rgc.txt** with secret input **./circuits/sub64_rgc_inputA.txt**. It evaluates the circuit with an input **222** from party B. 
+Transorms the circuit file **./circuits/myCircuit.txt** generated by **emp** with a random secret input using **1** Thread. It evaluates the circuit with a random input for party B. 
 
 
 #### Example Outputs
 
 
-> python3 generator.py -f sub64 -a 5555 -b 222
+> ./build/generator myCPPFunction cpp 200 300 bristol 40
 
 
 ```
-Transforming boolean circuit sub64 to a reusable garbled circuit (RGC) ...
-
-Analyzing leakage ...
-Number of potentially obfuscated gates: 250 / 439
-Proportion of potentially obfuscated gates: 0.5694760820045558 (optimal: 1.0)
-Additionally obfuscated gates by breaking integrity of gates: 62 / 312
-Number of potentially integrity braking gates (zero-knowledge): 312 / 439
-Proportion of potentially integrity braking gates (zero-knowledge) (optimal: 1.0): 0.7107061503416856
-Amount of input bits of party A that may be leaked (optimal: 0): 1 / 64
-Proportion of input bits of party A that may be leaked (optimal: 0): 0.015625
-The following indices of party A's input may be leaked:
-0
-leakage prediction finished in 0.009666400000000006 seconds
-
-Transforming circuit into a different format ...
-
-Evaluating boolean circuit with chosen inputs...
-Finished evaluating circuit in 0.0005581000000000058 seconds
-ina 5555
-inb 222
-circuit output 0:  5333
-
-Transforming boolean circuit to RGC ...
-Finished creating RGC in 0.006738800000000003 seconds
-
-Evaluating RGC ...
-Finished evaluating circuit in 0.0005952000000000041 seconds
-ina 18264005428931638032
-inb 222
-circuit output 0:  5333
-Success: Result of boolean circuit and RGC match
-Exported RGC to ./circuits/sub64_rgc.txt
-Exported party A's obfuscated input to ./circuits/sub64_rgc_inputA.txt
-
-Analyzing constructed RGC ...
-Number of obfuscated gates: 67 / 439
-Number of integrity-breaking gates: 68 / 439
-Integrity-breaking gates that were not obfuscated before:  1
-Circuit Similarity:  0.28018223234624146
-Circuit Similarity (Ex Gate 1, Ex Not) (naive approach: 0.5, optimal: 0.07142857142857142):  0.2980769230769231
-Circuit Structural Similarity (naive approach: 1, optimal: 0.14285714285714285): 0.6634615384615384
+---TIMING--- 7073ms converting program to circuit
+---INFO--- numGates: 79918167
+---TIMING--- 224ms getting Parents of each Wire
+---TIMING--- 502ms identifying potentially obfuscated fixed gates
+---TIMING--- 547ms identifying potentially intermediary gates
+---INFO--- potentially obfuscated and integrity-breaking gates: 6888560
+---TIMING--- 64ms predict leaked inputs
+---INFO--- 0 leaked inputs: 
+---TIMING--- 405ms evaluate circuit
+---Evaluation--- inA200
+---Evaluation--- inB300
+---Evaluation--- out0
+---TIMING--- 942ms flip circuit
+---TIMING--- 503ms identify fixed Gates
+---INFO--- obfuscated gates: 50990467
+---TIMING--- 190ms identify intermediary gates
+---INFO--- obfuscated and integrity-breaking gates: 79838167
+---TIMING--- 437ms obfuscate gates
+---Success--- Evaluation of original circuit and constructed RGC are equal
+---Evaluation--- inA18446744073709551615
+---Evaluation--- inB300
+---Evaluation--- out0
+---TIMING--- 7038ms converting program to circuit
+---INFO--- numGates: 79918167
+Ratio of identical gates compared to original circuit: 0.00100102
+---TIMING--- 175ms compare circuit similarity
 ```
 
 
-> python3 evaluator.py -f sub64 -b 222
+### Compiling a C++ function to a reusable garbled circuit using our library
 
+You can direclty convert C++ functions to a boolean circuit and a CRGC using our library. We use a slightly modified version of [emp-toolkit](https://github.com/emp-toolkit). Simply follow these steps:
+
+1. Add your cpp file and header to the **program folder**. Look at the existing files for inspiration.
+2. Link your file to our library by adding it to the target_link_libraries of line 61 in **CMakeLists.txt**.
+
+
+Run cmake, make and the following command to convert your program into a CRGC:  
 ```
-Finished evaluating circuit in 0.00042330000000000145 seconds
-ina 18264005428931638032
-inb 222
-circuit output 0:  5333
+./build/generator *FILENAME OF YOUR CPP FILE* cpp *inputA* *inputB* bristo; *number of Threads*
 ```
 
 
-### Compiling a C++ function to a reusable garbled circuit
+
+### Compiling a C++ function to a boolean circuit using emp toolkit
 
 You can either follow the installation and setup instructions from [emp-toolkit](https://github.com/emp-toolkit) or easier clone [MPC-SoK](https://github.com/MPC-SoK/frameworks). MPC-Sok contains a Docker container that installs and sets up emp. 
 
@@ -182,11 +187,12 @@ From the **sh_test folder** run:
 ```
 This saves a boolean circuit.txt file that you can use to generate a reusable garbled circuit. Save it to the **circuits folder** of this project and run:
 
+
 ```
-python3 generator.py -f "FILENAME OF YOUR CIRCUIT FILE" -cf emp
+./build/generator *FILENAME OF YOUR CIRCUIT FILE* txt *inputA* *inputB* emp *number of Threads*
 ```
 
-### Compiling a C function to a reusable garbled circuit
+### Compiling a C function to a reusable garbled circuit using CBMC-GC2
 
 You can either follow the installation and setup instructions from [CBMC-GC-2](https://gitlab.com/securityengineering/CBMC-GC-2/-/tree/master) or clone [MPC-SoK](https://github.com/MPC-SoK/frameworks). In this case, both options are straightforward. MPC-Sok contains a Docker container that installs and sets up CBMC-GC-2.
 
@@ -206,8 +212,9 @@ ADD main.c and MAKEFILE
 make
 ```
 
-This saves a bristol_circuit.txt file that you can use to generate a reusable garbled circuit. Save it to the **circuits folder** of this project and run:
+This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-python3 generator.py -f "FILENAME OF YOUR CIRCUIT FILE" -cf cbmc
+./build/generator *FILENAME OF YOUR CIRCUIT FILE* txt *inputA* *inputB* bristol *number of Threads*
 ```
+
