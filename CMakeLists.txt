@@ -14,7 +14,8 @@ set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
 #find_path(CMAKE_FOLDER NAMES cmake/emp-tool-config.cmake)
-find_package(emp-ot REQUIRED)
+#find_package(emp-ot REQUIRED)
+find_package(emp-ot REQUIRED PATHS /usr/local/cmake/)
 #find_package(emp-sh2pc REQUIRED)
 INCLUDE_DIRECTORIES(${EMP-OT_INCLUDE_DIRS}) #recently added
 

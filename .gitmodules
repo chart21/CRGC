@@ -1,0 +1,3 @@
+[submodule "TurboPFor-Integer-Compression"]
+	path = TurboPFor-Integer-Compression
+	url = https://github.com/firebolt007/TurboPFor-Integer-Compression

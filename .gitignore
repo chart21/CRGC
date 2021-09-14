@@ -49,3 +49,9 @@ _deps
 /src/circuits
 
 [Bb][Uu][Ii][Ll][Dd]/
+
+#emp tool
+/emp-ot
+/emp-sh2pc
+/emp-tool
+install.py
