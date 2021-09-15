@@ -29,7 +29,10 @@ void generateCircuitRAM(std::vector<BristolGate> *gateVec, CircuitDetails *detai
         query();
     else if (programName == "maxIn2DArr")
         maxIn2DArr();  
-    
+    else if (programName == "insurance")
+        insurance();
+    else if (programName == "billboardAd")
+        billboardAd(); 
 
     // add additional programs here
     //  else if (programName == "YourProgram")

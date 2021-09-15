@@ -138,3 +138,30 @@ void deleteRevealGates(TransformedCircuit *circuit, uint_fast64_t* circuitLineOf
     circuit->details.numWires -= circuit->details.bitlengthOutputs*circuit->details.numOutputs - 1;;
     
 }
+
+ShrinkedCircuit* transformCircuitToShrinkedCircuit(TransformedCircuit* circuit)
+{
+    auto shrinkedCircuit = new ShrinkedCircuit(circuit->details);
+    auto shrinkedGates = shrinkedCircuit->gates;
+    //auto shrinkedGates = new ShrinkedGate[circuit->details.numGates];
+    for (auto i = 0; i < circuit->details.numGates; i++)
+    {
+        if(circuit->gates[i].leftParentID <= circuit->gates[i].rightParentID)
+            shrinkedGates[i] = {circuit->gates[i].leftParentID, circuit->gates[i].rightParentID - circuit->gates[i].leftParentID, circuit->gates[i].truthTable[0][0], circuit->gates[i].truthTable[0][1], circuit->gates[i].truthTable[1][0], circuit->gates[i].truthTable[1][1]};
+        else
+        {
+            //mirror truthTable
+            auto temp = circuit->gates[i].truthTable[0][1];
+            circuit->gates[i].truthTable[0][1] = circuit->gates[i].truthTable[1][0];
+            circuit->gates[i].truthTable[1][0] = temp;
+
+            shrinkedGates[i] = {circuit->gates[i].rightParentID, circuit->gates[i].leftParentID - circuit->gates[i].rightParentID, circuit->gates[i].truthTable[0][0], circuit->gates[i].truthTable[0][1], circuit->gates[i].truthTable[1][0], circuit->gates[i].truthTable[1][1]};
+        
+            
+
+        }
+    }
+    // auto shrinkedCircuit = new ShrinkedCircuit{circuit->details, shrinkedGates};
+    //*shrinkedCircuit = {circuit->details, shrinkedGates};
+    return shrinkedCircuit;
+}

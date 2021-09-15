@@ -1,7 +1,12 @@
 #include "include/circuitWriter.h"
 #include "include/circuitStructs.h"
+#include "include/circuitCompressor.h"
+//include "include/circuitTransfer.h"
+#include "emp-tool/emp-tool.h"
+
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 
 void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destinationPath)
@@ -31,7 +36,8 @@ void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destina
 
 }
 
-void exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string destinationPath)
+template <typename IO>
+void Gen<IO>::exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string destinationPath)
 {
     std::ofstream inputFile (destinationPath + "_rgc_inputA.txt");
     for (auto i = 0; i < details.bitlengthInputA; i++)
@@ -40,6 +46,89 @@ void exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string des
     }
     inputFile.close();
     
-} 
+}
+
+template <typename IO>
+void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
+    //chrono::time_point<std::chrono::system_clock> start, end_enc, end_write;
+
+    vector<unsigned char*> bufs(thr_enc*2+2);
+    vector<uint32_t> bufLens(thr_enc*2+2);
+    
+    //start = std::chrono::system_clock::now();
+
+    compressShrinkedCircuit(cir, bufs, bufLens, thr_enc);
+
+    //end_enc = std::chrono::system_clock::now();
+
+    //if(chrono::duration_cast<chrono::microseconds>(end_enc - start).count()>1000000)
+    //t_enc_sum += chrono::duration_cast<chrono::microseconds>(end_enc - start).count();
+    //t_enc_sum += chrono::duration_cast<chrono::milliseconds>(end_enc - start).count();
+    //cout<<"finished enc, elapsed seconds: "<<chrono::duration_cast<chrono::milliseconds>(end_enc - start).count()<<endl;
 
 
+    size_t len=bufLens.size()-1;
+    //fwrite(&len,(size_t),1,enc);
+    io->send_data( &len, sizeof(size_t) );
+
+    //fwrite(&(bufLens.back()),sizeof(bufLens.back()),1,enc);
+    io->send_data( &(bufLens.back()), sizeof(bufLens.back()) );
+
+    //cout<<bufLens.back()<<endl;
+    //fwrite(bufs.back(),sizeof(bufs.back()[0]), bufLens.back(), enc);
+    io->send_data( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
+
+    delete [] bufs.back();
+    bufs.back()=nullptr;
+    bufs.pop_back();
+    bufLens.pop_back();
+
+    for(int i=0;i<len;i++){
+        //fwrite(bufs[i],sizeof(bufs[i][0]), bufLens[i], enc);
+        io->send_data( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
+        delete [] bufs[i];
+        bufs[i]=nullptr;
+    }
+
+    //fclose(enc);
+
+    //end_write = std::chrono::system_clock::now();
+    //elapsed_seconds = end_write - start;
+    //t_write_sum += chrono::duration_cast<chrono::microseconds>(end_write - start).count();
+    //t_write_sum += chrono::duration_cast<chrono::milliseconds>(end_write - start).count();
+    //cout<<"finished write, elapsed seconds:" << chrono::duration_cast<chrono::milliseconds>(end_write - start).count() <<endl;
+}
+
+template <typename IO>
+void Gen<IO>::exportBin(ShrinkedCircuit* circuit, std::string destinationPath){
+    //std::chrono::time_point<std::chrono::system_clock> start, end;
+    //start = std::chrono::system_clock::now();
+
+    //FILE *f;
+    //f = fopen((destinationPath+".bin").c_str(),"w");
+    uint64_t cir_param[6];
+    cir_param[0] = circuit->details.numWires;
+	cir_param[1] = circuit->details.numGates;
+    cir_param[2] = circuit->details.numOutputs;
+    cir_param[3] = circuit->details.bitlengthInputA;
+    cir_param[4] = circuit->details.bitlengthInputB;    
+    cir_param[5] = circuit->details.bitlengthOutputs;
+    io->send_data( cir_param, 6*sizeof(uint64_t) );
+    //fwrite(cir_param, 1, 6*sizeof(uint64_t), f);
+    //std::cout<<circuit->details.numGates<<std::endl;
+    //for(int i=0;i<circuit->details.numGates;i++){
+        //fwrite(&(circuit->gates[i].leftParentID),1,sizeof(uint64_t),f);
+        //fwrite(&(circuit->gates[i].rightParentOffset),1,sizeof(uint64_t),f);
+        //fwrite(circuit->gates[i].truthTable,1,1,f);
+        //fwrite(circuit->gates, 1, circuit->details.numGates*sizeof(ShrinkedGate), f);
+    //}
+    io->send_data(circuit->gates, circuit->details.numGates*sizeof(ShrinkedGate) );
+    //end = std::chrono::system_clock::now();
+    //std::chrono::duration<double> elapsed_seconds = end - start;
+
+    //std::cout << "finished export bin, elapsed ms:" << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<std::endl;
+        
+    
+    //fclose(f);
+    return;
+}

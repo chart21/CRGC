@@ -52,7 +52,7 @@ add_subdirectory(src/circuitProcessor)
 target_include_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
 target_link_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
 
-target_link_libraries(${PROJECT_NAME} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer leakagePredictor Threads::Threads)
+target_link_libraries(${PROJECT_NAME} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
 
 
 add_subdirectory(src/programs)
@@ -62,6 +62,10 @@ target_link_directories(${PROJECT_NAME} PUBLIC src/programs)
 target_link_libraries(${PROJECT_NAME} circuitLinker examplePrograms)
 
 target_link_libraries(${PROJECT_NAME} ${EMP-OT_LIBRARIES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC TurboPFor-Integer-Compression)
+target_link_directories(${PROJECT_NAME} PUBLIC TurboPFor-Integer-Compression)
+target_link_libraries(${PROJECT_NAME} cir ic)
 #add_executable(generator src/circuitProcessor/helperFunctions.cpp src/circuitProcessor/circuitReader.cpp src/circuitProcessor/circuitEvaluator.cpp src/generator-main.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

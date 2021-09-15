@@ -7,6 +7,7 @@ add_library(circuitDetails circuitDetails.cpp)
 add_library(circuitIntegrityBreaker circuitIntegrityBreaker.cpp)
 add_library(circuitWriter circuitWriter.cpp)
 add_library(circuitTransformer circuitTransformer.cpp)
+add_library(circuitCompressor circuitCompressor.cpp)
 
 
 

@@ -36,13 +36,30 @@ template <typename T>
 struct Circuit{
 CircuitDetails details;
 T* gates;
+
+//~Circuit(){delete [] gates;}
 };
 
 typedef Circuit<TransformedGate> TransformedCircuit;
 typedef Circuit<BristolGate> BristolCircuit;
 typedef Circuit<UintGate> UintCircuit;
 
+struct ShrinkedGate
+{
+    uint_fast64_t leftParentID;
+    uint_fast64_t rightParentOffset;
+    bool truthTable[2][2];
+};
 
+struct ShrinkedCircuit
+{
+    CircuitDetails details;
+    ShrinkedGate* gates;
+    ShrinkedCircuit(CircuitDetails dts=CircuitDetails()):details(dts){
+        gates = new ShrinkedGate[dts.numGates];
+    }
+    ~ShrinkedCircuit(){delete [] gates;}
+};
 
 
 #endif

@@ -1,25 +1,37 @@
+#ifndef CIRCUIT_READER_H__
+#define CIRCUIT_READER_H__
+
 #include "circuitStructs.h"
 #include <fstream>
 #include<vector>
-
+ 
 
 void splitString(std::string s, std::vector<std::string> &v);	
 
-
-
-
-
+/* no need to tranfer plain circuit through io, preprocess of generator */
+void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool *valArr);
 CircuitDetails importBristolCircuitDetails(std::string filepath, std::string circuitFormat="bristol");
-   
-
 TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetails details);
 
 BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepath, CircuitDetails details, bool* flipped);
 
 BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate>* gateVec, CircuitDetails details, bool* flipped);
 
-void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool *valArr);
-
 TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);
 
-TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
+template <typename IO>
+class Eva{ public:
+    IO *io = nullptr;
+    Eva(IO *io):io(io) {}
+    Eva() {}
+
+    
+    ShrinkedCircuit* importBin(std::string filepath );
+    TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
+
+    /* import compressed Circuit */
+    ShrinkedCircuit* importCompressedCircuit( int thr_dec);
+
+};
+
+#endif

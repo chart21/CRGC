@@ -12,6 +12,8 @@
 #include "circuitProcessor/include/circuitIntegrityBreaker.h"
 #include "circuitProcessor/include/circuitWriter.h"
 #include "circuitProcessor/include/circuitTransformer.h"
+#include "circuitProcessor/circuitReader.cpp"
+#include "circuitProcessor/circuitWriter.cpp"
 
 #include "circuitProcessor/include/leakagePredictor.h"
 
@@ -30,7 +32,7 @@
 #define CIRCUITPATH "../src/circuits/"
 
 template <typename F, typename... Args>
-void funcTime(std::string printText, F func, Args &&...args)
+auto funcTime(std::string printText, F func, Args &&...args)
 {
     std::chrono::high_resolution_clock::time_point t1 =
         std::chrono::high_resolution_clock::now();
@@ -40,6 +42,7 @@ void funcTime(std::string printText, F func, Args &&...args)
                     .count();
 
     std::cout << "---TIMING--- " << time << "ms " << printText << '\n';
+    return time;
 }
 
 // void generateCircuitRAM(std::vector<BristolGate> *gateVec, CircuitDetails *details, bool print, std::string programName)
@@ -58,16 +61,19 @@ TransformedCircuit *loadTransformedCircuit(std::string circuitName, std::string 
 
     if (fileFormat == "cpp")
     {
+        Eva<emp::FileIO> *local = new Eva<emp::FileIO>();
         std::vector<BristolGate> gateVec;
         CircuitDetails empDetails;
         //funcTime("converting program to circuit", generateCircuitRAMPaper, &gateVec, &empDetails);
         funcTime("converting program to circuit", generateCircuitRAM, &gateVec, &empDetails, false, circuitName);
         //auto flipped = new bool[empDetails.numWires];
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails, flipped);
-        auto circuit = importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
+        
+        auto circuit = local->importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
         std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
         std::cout << "---INFO--- numGates: " << circuit->details.numGates << '\n';
         //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
+        delete local;
         return circuit;
     }
     else if (fileFormat == "txt")
@@ -271,6 +277,7 @@ void verifyIntegrityOfObfuscatedCircuit(TransformedCircuit *circuit, bool *obfus
 void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, bool *inputB, uint_fast64_t numThreads)
 {
     std::string filepath = CIRCUITPATH;
+
     auto newDetails = importBristolCircuitDetails(filepath + "_rgc_details.txt", "rgc");
     auto newCircuit = importTransformedCircuit(filepath + "_rgc.txt", newDetails);
 
@@ -288,6 +295,43 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, 
     auto inA = convertBoolArrToInt(newInputA, newDetails.bitlengthInputA);
     auto inB = convertBoolArrToInt(inputB, newDetails.bitlengthInputB);
     auto iout2 = convertBoolArrToInt(newOut2, newDetails.bitlengthOutputs);
+}
+
+template <typename T>
+void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, int thr){
+    obj->exportCompressedCircuit(scir,thr);
+}
+
+template <typename T>
+void forwarderIm(Eva<T> *obj, int thr){
+    obj->importCompressedCircuit(thr);
+}
+
+void compressBenchmark( TransformedCircuit *circuit, std::string circuitName){
+    auto scir = transformCircuitToShrinkedCircuit(circuit);
+    ShrinkedCircuit* imported;
+    int circuitThread = 1;
+    uint64_t ctime=0;
+    uint64_t dtime=0;
+    std::string filepath = CIRCUITPATH + circuitName + "_compressed.dat";
+    for(int i=0;i<10;i++){
+        emp::FileIO *cio = new emp::FileIO( filepath.c_str(),false );
+        Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(cio);
+        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, circuitThread);
+        delete cio;
+        delete gen;
+
+        emp::FileIO *dio = new emp::FileIO( filepath.c_str(),true );
+        Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(dio);
+        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, circuitThread);
+        if(i==0) {
+            eva->io->reset();
+            imported = eva->importCompressedCircuit(circuitThread);
+        }
+        delete dio;
+        delete eva;
+    }
+    cout << areShrinkedCircuitsEqual(imported, scir) << ": " << ctime/10 << ", " << dtime/10 << endl;
 }
 
 int main(int argc, char *argv[])
@@ -319,27 +363,30 @@ int main(int argc, char *argv[])
     }
 
 
-
     auto circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
 
     auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
-    predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
+    // predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
 
     bool *inputA = new bool[circuit->details.bitlengthInputA];
     bool *inputB = new bool[circuit->details.bitlengthInputB];
     bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
 
-    evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
+    // evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
 
     bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
-    obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
+    // obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
 
-    verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+    // verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+    
+    //here tranfer the obfuscated circuit, 3 typ: compressor, transformedCircuit(bin), txt
+    compressBenchmark(circuit, circuitName);
+
 
     auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
     funcTime("compare circuit similarity", compareCircuitSimilarityMT, originalCircuit, circuit, numThreads);
-
+    //std::cout<<areCircuitsEqual(circuit,originalCircuit)<<std::endl;
     //deleteRevealGates(circuit, circuitLineOfWireIndex);
 
     //exportCircuitSeparateFiles(circuit, CIRCUITPATH);

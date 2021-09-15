@@ -41,8 +41,7 @@ Integer product(BITSIZE, 1);
 
 void setIntersect()
 {
-
-    uint_fast64_t LEN = 40000;
+    uint_fast64_t LEN = 400;
     uint_fast64_t BITSIZE = 32;
 
     //Integer product(BITSIZE, 1);
@@ -113,12 +112,11 @@ void setIntersect()
 
 
 //Find maximum element in an interval range of a 2D arr
-void maxIn2DArr() {
-  
-uint_fast64_t LEN = 5000;
-uint_fast64_t BITSIZE = 16; 
+void maxIn2DArr() {  
+  uint_fast64_t LEN = 5000;
+  uint_fast64_t BITSIZE = 16; 
 
-Integer coordinates[2];
+  Integer coordinates[2];
 
 	Integer a[LEN][LEN]; // 2D arr
 	Integer b[4]; // xmin, xmax. ymin. ymax
@@ -135,56 +133,39 @@ Integer coordinates[2];
   for (uint_fast64_t i=0; i<LEN; i++)
     indexArr[i] = Integer(BITSIZE,0,PUBLIC); // array that stores all indices
     
-
   for (uint_fast64_t i=0; i<4; i++)  
   {    
     b[i] = Integer(BITSIZE, 0, BOB); // dummy input B
   }
+
   for (uint_fast64_t i=0; i<2; i++)
     coordinates[i] = Integer(BITSIZE, 0, PUBLIC); //coordniates of max elements
     
-
-  
 	for(uint_fast64_t i=0; i <LEN; i++ ) 
   {   
     for(uint_fast64_t j = 0; j < LEN; j++)
     {
+      Bit cond1 = indexArr[i].geq(b[0]);
+      Bit cond2 = b[1].geq(indexArr[i]);
+      Bit cond3 = indexArr[j].geq(b[2]);
+      Bit cond4 = b[3].geq(indexArr[j]);
+      Bit allcond = cond1 & cond2 & cond3 & cond4;
 
-   
-    Bit cond1 = indexArr[i].geq(b[0]);
-    Bit cond2 = b[1].geq(indexArr[i]);
-    Bit cond3 = indexArr[j].geq(b[2]);
-    Bit cond4 = b[3].geq(indexArr[j]);
-    Bit allcond = cond1 & cond2 & cond3 & cond4;
-
-
-
-   
-    maxVal = If(allcond & a[i][j].geq(maxVal), a[i][j], maxVal);
-    coordinates[0] = If(allcond & a[i][j].geq(maxVal), indexArr[i], coordinates[0]);
-    coordinates[1] = If(allcond & a[i][j].geq(maxVal), indexArr[j], coordinates[0]);
-    
-                 
+      maxVal = If(allcond & a[i][j].geq(maxVal), a[i][j], maxVal);
+      coordinates[0] = If(allcond & a[i][j].geq(maxVal), indexArr[i], coordinates[0]);
+      coordinates[1] = If(allcond & a[i][j].geq(maxVal), indexArr[j], coordinates[0]);                
     }
   }
-  
-    
+      
     coordinates[0].reveal<uint_fast64_t>();
-    coordinates[1].reveal<uint_fast64_t>();
-  
-                 
+    coordinates[1].reveal<uint_fast64_t>();             
     
 }
 
-
-
-
-
 //Check if value b is in array a
 void query() {
-
-uint_fast64_t LEN = 5000; //Specify length of input A
-uint_fast64_t BITSIZE = 16; //Specify bitlength of inputs
+  uint_fast64_t LEN = 5000; //Specify length of input A
+  uint_fast64_t BITSIZE = 16; //Specify bitlength of inputs
   
   Bit result = Bit(false);
 
@@ -201,6 +182,85 @@ uint_fast64_t BITSIZE = 16; //Specify bitlength of inputs
   for (uint_fast64_t i=0; i<LEN; i++)
     result = If(a[i].equal(b), Bit(true),result); //check if b is contained in a
 
+  result.reveal(); //mark output gate
+}
 
-        result.reveal(); //mark output gate
+void insurance() {
+  uint_fast64_t LEN = 100;
+  uint_fast64_t BITSIZE = 32;
+  //Integer product(BITSIZE, 1);
+  Integer result = Integer(BITSIZE*4, 0, PUBLIC);
+
+	Integer a[4][LEN];
+
+	Integer b[4];
+  for (int i=0; i<LEN; i++)
+  {
+    a[0][i] = Integer(BITSIZE, 0, ALICE); //dummy inputs
+    a[1][i] = Integer(BITSIZE, 0, ALICE); 
+    a[2][i] = Integer(BITSIZE, 0, ALICE);
+    a[3][i] = Integer(BITSIZE, 0, ALICE);
+  }
+
+
+  for (int i=0; i<4; i++)
+    b[i] = Integer(BITSIZE, 0, BOB);
+
+  for (int i=0; i<LEN; i++)
+    //result = If(a[i][0].equal(b[0]), a[i][1]*b[1],result);
+    result = If(a[0][i].equal(b[0]), (a[1][i]*b[1] + a[2][i]*b[2] + a[3][i]*b[3]),result);
+
+  result.reveal<int>();
+}
+
+void billboardAd() {
+  //Integer product(BITSIZE, 1);
+  uint_fast64_t LEN = 100;
+  uint_fast64_t BITSIZE = 32;
+
+  Integer coordinates[2];
+
+	//Integer a[LEN][LEN];
+  vector<vector<Integer>> a(LEN,vector<Integer>(LEN));
+	Integer b[4];
+
+  Integer maxVal = Integer(8,0);
+
+  for (int i=0; i<LEN; i++)
+  {
+      for(int j=0; j<LEN; j++)
+        a[i][j] = Integer(BITSIZE, 0, ALICE); //dummy inputs
+      //a[i] = Integer(BITSIZE, stoi(inputs_a[i]), ALICE);
+  }
+
+  Integer indexArr[LEN];
+  for (int i=0; i<LEN; i++)
+    indexArr[i] = Integer(BITSIZE,i,PUBLIC);
+    
+
+  for (int i=0; i<4; i++)  
+  {    
+    b[i] = Integer(BITSIZE, 0, BOB);
+  }
+  for (int i=0; i<2; i++)
+    coordinates[i] = Integer(BITSIZE, 0, PUBLIC);
+    
+  
+	for(int i=0; i <LEN; i++ ) 
+  {   
+    for(int j = 0; j < LEN; j++)
+    {
+      Bit cond1 = indexArr[i].geq(b[0]);
+      Bit cond2 = b[1].geq(indexArr[i]);
+      Bit cond3 = indexArr[j].geq(b[2]);
+      Bit cond4 = b[3].geq(indexArr[j]);
+      Bit allcond = cond1 & cond2 & cond3 & cond4;
+    
+      maxVal = If(allcond & a[i][j].geq(maxVal), a[i][j], maxVal);
+      coordinates[0] = If(allcond & a[i][j].geq(maxVal), indexArr[i], coordinates[0]);
+      coordinates[1] = If(allcond & a[i][j].geq(maxVal), indexArr[j], coordinates[0]);
     }
+  }
+    coordinates[0].reveal<int>();
+    coordinates[1].reveal<int>();  
+}

@@ -8,5 +8,6 @@ void setIntersect();
 void mult3();
 void query();
 void maxIn2DArr();
-
+void insurance();
+void billboardAd();
 
