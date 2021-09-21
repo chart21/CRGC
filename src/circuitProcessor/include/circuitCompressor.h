@@ -5,6 +5,7 @@
 #include <vector>
 #include "circuitStructs.h"
 
+#define SEG(n,th) (n+th-n%th)/th
 #define ROUND_UP(_n_, _a_) (((_n_) + ((_a_)-1)) & ~((_a_)-1))
 #define P4NENC_BOUND(n, size) ((n + 127) / 128 + (n + 32) * (size))
 #define P4NDEC_BOUND(n, size) (ROUND_UP(n, 32) * (size))

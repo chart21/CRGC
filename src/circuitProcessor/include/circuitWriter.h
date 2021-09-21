@@ -6,6 +6,8 @@
 #include <iostream>
 #include <fstream>
 
+#define BUF 100000000
+
 void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destinationPath);
 
 template <typename IO>
@@ -14,9 +16,17 @@ public:
     IO *io = nullptr;
     Gen(IO *io):io(io) {}
     Gen() {}
-    
+    void send_data_gen(const void * data, uint64_t nbyte){
+        uint64_t send = 0;
+        while(send<nbyte){
+            size_t n = nbyte-send>BUF? BUF : nbyte-send;
+            io->send_data((char*)data+send,n);
+            send+=n;
+
+        }
+    }
     void exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string destinationPath);
-    void exportBin(ShrinkedCircuit* circuit, std::string destinationPath);
+    void exportBin(ShrinkedCircuit* circuit);
     
     /* export compressed circuit to HDD */
     void exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc=1);

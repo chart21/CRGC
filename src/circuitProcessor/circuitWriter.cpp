@@ -69,14 +69,17 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
 
     size_t len=bufLens.size()-1;
     //fwrite(&len,(size_t),1,enc);
-    io->send_data( &len, sizeof(size_t) );
+    // io->send_data( &len, sizeof(size_t) );
+    send_data_gen( &len, sizeof(size_t) );
 
     //fwrite(&(bufLens.back()),sizeof(bufLens.back()),1,enc);
-    io->send_data( &(bufLens.back()), sizeof(bufLens.back()) );
+    // io->send_data( &(bufLens.back()), sizeof(bufLens.back()) );
+    send_data_gen( &(bufLens.back()), sizeof(bufLens.back()) );
 
     //cout<<bufLens.back()<<endl;
     //fwrite(bufs.back(),sizeof(bufs.back()[0]), bufLens.back(), enc);
-    io->send_data( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
+    // io->send_data( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
+    send_data_gen( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
 
     delete [] bufs.back();
     bufs.back()=nullptr;
@@ -85,7 +88,8 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
 
     for(int i=0;i<len;i++){
         //fwrite(bufs[i],sizeof(bufs[i][0]), bufLens[i], enc);
-        io->send_data( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
+        // io->send_data( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
+        send_data_gen( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
         delete [] bufs[i];
         bufs[i]=nullptr;
     }
@@ -100,7 +104,7 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
 }
 
 template <typename IO>
-void Gen<IO>::exportBin(ShrinkedCircuit* circuit, std::string destinationPath){
+void Gen<IO>::exportBin(ShrinkedCircuit* circuit){
     //std::chrono::time_point<std::chrono::system_clock> start, end;
     //start = std::chrono::system_clock::now();
 
@@ -113,7 +117,8 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit, std::string destinationPath){
     cir_param[3] = circuit->details.bitlengthInputA;
     cir_param[4] = circuit->details.bitlengthInputB;    
     cir_param[5] = circuit->details.bitlengthOutputs;
-    io->send_data( cir_param, 6*sizeof(uint64_t) );
+    //io->send_data( cir_param, 6*sizeof(uint64_t) );
+    send_data_gen( cir_param, (size_t)6*sizeof(uint64_t) );
     //fwrite(cir_param, 1, 6*sizeof(uint64_t), f);
     //std::cout<<circuit->details.numGates<<std::endl;
     //for(int i=0;i<circuit->details.numGates;i++){
@@ -122,7 +127,10 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit, std::string destinationPath){
         //fwrite(circuit->gates[i].truthTable,1,1,f);
         //fwrite(circuit->gates, 1, circuit->details.numGates*sizeof(ShrinkedGate), f);
     //}
-    io->send_data(circuit->gates, circuit->details.numGates*sizeof(ShrinkedGate) );
+
+    // io->send_data(circuit->gates, circuit->details.numGates*sizeof(ShrinkedGate) );
+    cout<<circuit->details.numGates<<endl;
+    send_data_gen(circuit->gates, (size_t)circuit->details.numGates*sizeof(ShrinkedGate) );
     //end = std::chrono::system_clock::now();
     //std::chrono::duration<double> elapsed_seconds = end - start;
 

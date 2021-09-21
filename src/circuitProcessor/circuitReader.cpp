@@ -489,7 +489,8 @@ template <typename IO>
 TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details)
 {
     if(io) {
-        io->recv_data(&details, sizeof(details));
+        // io->recv_data(&details, sizeof(details));
+        recv_data_eva(&details, sizeof(details));
     }
     TransformedGate *gates = new TransformedGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
@@ -506,7 +507,8 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
     {
         if(io){
             BristolGate bg;
-            io->recv_data(&bg, sizeof(BristolGate));
+            // io->recv_data(&bg, sizeof(BristolGate));
+            recv_data_eva(&bg, sizeof(BristolGate));
             gateVec->push_back(bg);
         }
         if ((*gateVec)[i].truthTable == 'I') //not gate
@@ -606,15 +608,18 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
 
     size_t len;
     //fread(&len, sizeof(size_t), 1, denc);
-    io->recv_data( &len, sizeof(size_t) );
+    // io->recv_data( &len, sizeof(size_t) );
+    recv_data_eva( &len, sizeof(size_t) );
 
     uint32_t bufLensSize;
     //fread(&bufLensSize,sizeof(uint32_t), 1, denc);
-    io->recv_data( &bufLensSize, sizeof(uint32_t) );
+    // io->recv_data( &bufLensSize, sizeof(uint32_t) );
+    recv_data_eva( &bufLensSize, sizeof(uint32_t) );
     unsigned char* bufLens = new unsigned char[P4NENC_BOUND(len,32)];
 
     //size_t test1 = fread(bufLens,sizeof(bufLens[0]), bufLensSize, denc);
-    io->recv_data( bufLens, sizeof(bufLens[0])*bufLensSize );
+    // io->recv_data( bufLens, sizeof(bufLens[0])*bufLensSize );
+    recv_data_eva( bufLens, sizeof(bufLens[0])*bufLensSize );
 
     size_t old;
     uint32_t* outLens = decHlp32(bufLens, len, &old,TYPE);
@@ -623,7 +628,8 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
     unsigned char* bufDetails = new unsigned char[P4NENC_BOUND(DETAILS_NUM,64)];
 
     //size_t bld=fread(bufDetails,sizeof(bufDetails[0]), outLens[0], denc);
-    io->recv_data( bufDetails, sizeof(bufDetails[0])*outLens[0] );
+    // io->recv_data( bufDetails, sizeof(bufDetails[0])*outLens[0] );
+    recv_data_eva( bufDetails, sizeof(bufDetails[0])*outLens[0] );
     uint64_t* outDetails = decHlp64(bufDetails, DETAILS_NUM, &old,TYPE);
     delete [] bufDetails;
 
@@ -642,7 +648,8 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
     vector<unsigned char*> bufTables;
     vector<size_t> dataLens;
     size_t thr_enc = (len-1)/2;
-    size_t seg = ROUND_UP(scir->details.numGates,thr_enc)/thr_enc;
+    size_t seg = SEG(scir->details.numGates,thr_enc);
+    // size_t seg = ROUND_UP(scir->details.numGates,thr_enc)/thr_enc;
     seg = seg%2==0?seg:seg+1;
     int ll = details.numGates;
     //a = std::chrono::system_clock::now();
@@ -653,13 +660,15 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
 
         unsigned char* bufGate = new unsigned char[P4NENC_BOUND(l*2,64)];
         //size_t blg=fread(bufGate,sizeof(bufGate[0]), outLens[1+j*2], denc);
-        io->recv_data( bufGate, sizeof(bufGate[0])*outLens[1+j*2] );
+        // io->recv_data( bufGate, sizeof(bufGate[0])*outLens[1+j*2] );
+        recv_data_eva( bufGate, sizeof(bufGate[0])*outLens[1+j*2] );
         bufGates.push_back(bufGate);
         
         size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
         unsigned char* bufTable = new unsigned char[P4NENC_BOUND( tbll ,8)];
         //size_t blt=fread(bufTable,sizeof(bufTable[0]), outLens[j*2+2], denc);
-        io->recv_data( bufTable, sizeof(bufTable[0])*outLens[2+j*2] );
+        // io->recv_data( bufTable, sizeof(bufTable[0])*outLens[2+j*2] );
+        recv_data_eva( bufTable, sizeof(bufTable[0])*outLens[2+j*2] );
         bufTables.push_back(bufTable);
 
         dataLens.push_back(l);
@@ -687,7 +696,7 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
 }
 
 template <typename IO>
-ShrinkedCircuit* Eva<IO>::importBin(std::string filepath ){
+ShrinkedCircuit* Eva<IO>::importBin(){
     //std::chrono::time_point<std::chrono::system_clock> start, end;
     //start = std::chrono::system_clock::now();
 
@@ -696,7 +705,8 @@ ShrinkedCircuit* Eva<IO>::importBin(std::string filepath ){
     uint64_t cir_param[6];
     //fread((char*)cir_param, 1, 6*sizeof(uint64_t), f);
     //fread(cir_param, 1, 6*sizeof(uint64_t), f);
-    io->recv_data(cir_param, 6*sizeof(uint64_t) );
+    // io->recv_data(cir_param, 6*sizeof(uint64_t) );
+    recv_data_eva(cir_param, 6*sizeof(uint64_t) );
     CircuitDetails details;
     details.numWires = cir_param[0];
 	details.numGates = cir_param[1];
@@ -712,7 +722,8 @@ ShrinkedCircuit* Eva<IO>::importBin(std::string filepath ){
         //fread(gates[i].truthTable,1,1,f);
         //fread(gates,1,details.numGates*sizeof(ShrinkedGate),f);
     //}
-    io->recv_data(gates, details.numGates*sizeof(ShrinkedGate));
+    // io->recv_data(gates, details.numGates*sizeof(ShrinkedGate));
+    recv_data_eva(gates, details.numGates*sizeof(ShrinkedGate));
     //fclose(f);
     //end = std::chrono::system_clock::now();
     //std::chrono::duration<double> elapsed_seconds = end - start;

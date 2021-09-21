@@ -41,8 +41,8 @@ Integer product(BITSIZE, 1);
 
 void setIntersect()
 {
-    uint_fast64_t LEN = 400;
-    uint_fast64_t BITSIZE = 32;
+    uint_fast64_t LEN = 1000;
+    uint_fast64_t BITSIZE = 8;
 
     //Integer product(BITSIZE, 1);
     Integer intersect[LEN];
@@ -187,7 +187,7 @@ void query() {
 
 void insurance() {
   uint_fast64_t LEN = 100;
-  uint_fast64_t BITSIZE = 32;
+  uint_fast64_t BITSIZE = 8;
   //Integer product(BITSIZE, 1);
   Integer result = Integer(BITSIZE*4, 0, PUBLIC);
 
@@ -215,8 +215,8 @@ void insurance() {
 
 void billboardAd() {
   //Integer product(BITSIZE, 1);
-  uint_fast64_t LEN = 100;
-  uint_fast64_t BITSIZE = 32;
+  uint_fast64_t LEN = 1000;
+  uint_fast64_t BITSIZE = 8;
 
   Integer coordinates[2];
 
@@ -224,7 +224,7 @@ void billboardAd() {
   vector<vector<Integer>> a(LEN,vector<Integer>(LEN));
 	Integer b[4];
 
-  Integer maxVal = Integer(8,0);
+  Integer maxVal = Integer(BITSIZE,0);
 
   for (int i=0; i<LEN; i++)
   {
@@ -234,6 +234,7 @@ void billboardAd() {
   }
 
   Integer indexArr[LEN];
+  
   for (int i=0; i<LEN; i++)
     indexArr[i] = Integer(BITSIZE,i,PUBLIC);
     

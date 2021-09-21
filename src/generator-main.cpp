@@ -298,41 +298,54 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, 
 }
 
 template <typename T>
-void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, int thr){
-    obj->exportCompressedCircuit(scir,thr);
+void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, int thr, bool bin){
+    if(bin) 
+        obj->exportBin(scir);
+    else
+        obj->exportCompressedCircuit(scir,thr);
+    return;
 }
 
 template <typename T>
-void forwarderIm(Eva<T> *obj, int thr){
-    obj->importCompressedCircuit(thr);
+void forwarderIm(Eva<T> *obj, int thr, bool bin){
+    if(bin)
+        obj->importBin();
+    else
+        obj->importCompressedCircuit(thr);
+    return;
 }
 
-void compressBenchmark( TransformedCircuit *circuit, std::string circuitName){
-    auto scir = transformCircuitToShrinkedCircuit(circuit);
+void compressBenchmark( ShrinkedCircuit *scir, std::string circuitName, bool bin){
     ShrinkedCircuit* imported;
-    int circuitThread = 1;
+    int circuitThread = 10;
     uint64_t ctime=0;
     uint64_t dtime=0;
-    std::string filepath = CIRCUITPATH + circuitName + "_compressed.dat";
-    for(int i=0;i<10;i++){
+    int len = bin==true?1:10;
+    std::string filepath = CIRCUITPATH + circuitName + (bin==true? ".bin" : "_compressed.dat");
+    for(int i=0;i<len;i++){
         emp::FileIO *cio = new emp::FileIO( filepath.c_str(),false );
         Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(cio);
-        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, circuitThread);
+        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, circuitThread, bin);
+        cio->flush();
         delete cio;
         delete gen;
+        cout<<"finish compress"<<endl;
 
         emp::FileIO *dio = new emp::FileIO( filepath.c_str(),true );
         Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(dio);
-        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, circuitThread);
-        if(i==0) {
+        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, circuitThread, bin);
+        if(i==len-1) {
             eva->io->reset();
-            imported = eva->importCompressedCircuit(circuitThread);
+            if(bin) imported = eva->importBin();
+            else imported = eva->importCompressedCircuit(circuitThread);
         }
+        dio->flush();
         delete dio;
         delete eva;
     }
-    cout << areShrinkedCircuitsEqual(imported, scir) << ": " << ctime/10 << ", " << dtime/10 << endl;
+    cout << areShrinkedCircuitsEqual(imported, scir) << ": " << ctime/len << ", " << dtime/len << endl;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -340,6 +353,8 @@ int main(int argc, char *argv[])
     uint_fast64_t numThreads = 1;    
     std::string fileFormat = "cpp";
     std::string circuitName = "adder64";
+    int party = 0;
+    int port = 8080;
 
     if (argc > 1)
     {
@@ -362,30 +377,57 @@ int main(int argc, char *argv[])
         numThreads = std::stoul(argv[6]);
     }
 
+    if (argc > 7)
+    {
+        party = std::stoi(argv[7]);
+    }
 
-    auto circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
+    TransformedCircuit *circuit;
+    ShrinkedCircuit *scir;
+    if(party!=2){
+    /* to do: for cpp format, load input */
+        circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
 
-    auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
+        auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
-    // predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
+        predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
 
-    bool *inputA = new bool[circuit->details.bitlengthInputA];
-    bool *inputB = new bool[circuit->details.bitlengthInputB];
-    bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
+        bool *inputA = new bool[circuit->details.bitlengthInputA];
+        bool *inputB = new bool[circuit->details.bitlengthInputB];
+        bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
 
-    // evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
+        evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
 
-    bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
-    // obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
+        bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
+        obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
 
-    // verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+        verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+        scir = transformCircuitToShrinkedCircuit(circuit);
+    }
     
     //here tranfer the obfuscated circuit, 3 typ: compressor, transformedCircuit(bin), txt
-    compressBenchmark(circuit, circuitName);
+    if( party==0 ){
+        compressBenchmark(scir, circuitName, false);
+        return 0;
+    }
 
+    // emp::NetIO * io = new emp::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
+    emp::HighSpeedNetIO * io = new emp::HighSpeedNetIO(party==1 ? nullptr : "127.0.0.1", 6112, 8080); //assume server as local
+    int circuitThread=3;
+    bool bin=false;
+    if( party==1 ){
+        Gen<emp::HighSpeedNetIO> *gen = new Gen<emp::HighSpeedNetIO>(io);
+        funcTime( "send", forwarderEx<emp::HighSpeedNetIO>, gen, scir, circuitThread, bin);
+        gen->io->flush();
+    }
+    else {
+        Eva<emp::HighSpeedNetIO> *eva = new Eva<emp::HighSpeedNetIO>(io);
+        funcTime( "receive", forwarderIm<emp::HighSpeedNetIO>, eva, circuitThread, bin);
+        eva->io->flush();
+    }
 
-    auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
-    funcTime("compare circuit similarity", compareCircuitSimilarityMT, originalCircuit, circuit, numThreads);
+    // auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
+    // funcTime("compare circuit similarity", compareCircuitSimilarityMT, originalCircuit, circuit, numThreads);
     //std::cout<<areCircuitsEqual(circuit,originalCircuit)<<std::endl;
     //deleteRevealGates(circuit, circuitLineOfWireIndex);
 

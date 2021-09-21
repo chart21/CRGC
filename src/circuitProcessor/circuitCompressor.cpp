@@ -12,7 +12,7 @@
 
 #define TBL_SHR
 //#define BP
-
+#define SEG(n,th) (n+th-n%th)/th
 #define ROUND_UP(_n_, _a_) (((_n_) + ((_a_)-1)) & ~((_a_)-1))
 #define P4NENC_BOUND(n, size) ((n + 127) / 128 + (n + 32) * (size))
 #define P4NDEC_BOUND(n, size) (ROUND_UP(n, 32) * (size))
@@ -27,7 +27,7 @@
 void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it, vector<uint32_t>::iterator bufLens_it, 
                 uint64_t* in, uint8_t* inTable, uint64_t gate_num, size_t l, size_t offset){
     chrono::time_point<std::chrono::system_clock> a, b, c, d;
-    a = chrono::system_clock::now();
+    //a = chrono::system_clock::now();
 
     uint8_t gate=0;
 
@@ -56,7 +56,7 @@ void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it
 
     }
     if(l%2!=0) inTable[l>>1]=gate;
-    b = chrono::system_clock::now();
+    //b = chrono::system_clock::now();
 
     size_t olg;
     *bufs_it = encHlp64(in,l*2,&olg,TYPE);
@@ -65,7 +65,7 @@ void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it
     *(bufs_it+1) = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg,TYPE);
     *(bufLens_it+1) = (uint32_t)olg;
 
-    c = chrono::system_clock::now();
+    //c = chrono::system_clock::now();
 }
 
 
@@ -86,7 +86,8 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
     bufs[0] = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
     bufLens[0] = (uint32_t)old;
     
-    size_t seg = ROUND_UP(cir->details.numGates,thr_enc)/thr_enc;
+    size_t seg = SEG(cir->details.numGates,thr_enc);
+    //size_t seg = ROUND_UP(cir->details.numGates,thr_enc)/thr_enc;
     seg = seg%2==0?seg:seg+1;            
 
     vector<thread> threads;    
