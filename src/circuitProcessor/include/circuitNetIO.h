@@ -1,90 +1,27 @@
-#ifndef CIRCUIT_TRANSFER_H__
-#define CIRCUIT_TRANSFER_H__
+#ifndef NETWORK_IO_CHANNEL_H__
+#define NETWORK_IO_CHANNEL_H__
 
+#include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <string>
+#include <emp-tool/io/io_channel.h>
+using std::string;
+
+
 #include <unistd.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <iostream>
 
-using namespace std;
-#define NETWORK_BUFFER_SIZE 1024*1024
 
-template<typename T>
-class IO {
-private:
-	T& derived() {
-		return *static_cast<T*>(this);
-	}
-public:
-    uint64_t counter = 0;
-	void send_data(const void * data, size_t nbyte) {
-		counter +=nbyte;
-		derived().send_data_internal(data, nbyte);
-	}
+namespace rgc{
+using namespace emp;
 
-	void recv_data(void * data, size_t nbyte) {
-		derived().recv_data_internal(data, nbyte);
-	}
-};
-
-class FileIO : public IO<FileIO> {
-public:
-    uint64_t bytes_sent = 0;
-	FILE * stream = nullptr;
-	char * buffer = nullptr;
-	FileIO(const string filepath, bool read) {
-		if (read)
-			stream = fopen((filepath+"_compressed.dat").c_str(),"r");
-		else
-			stream = fopen((filepath+"_compressed.dat").c_str(),"w");
-
-	}
-
-	~FileIO(){
-		fflush(stream);
-		fclose(stream);
-	}
-
-	void flush() {
-		fflush(stream);
-	}
-
-	void reset() {
-		rewind(stream);
-	}
-
-	void send_data_internal(const void *data, size_t len) {
-        //fwrite(data,sizeof(data[0]),len,stream);
-		fwrite(data,1,len,stream);
-		// bytes_sent += len;
-		// int sent = 0;
-		// while(sent < len) {
-		// 	int res = fwrite(sent+(char*)data, 1, len-sent, stream);
-		// 	if (res >= 0)
-		// 		sent+=res;
-		// 	else
-		// 		fprintf(stderr,"error: file_send_data %d\n", res);
-		// }
-	}
-	void recv_data_internal(void *data, size_t len) {
-        fread(data, 1, len, stream);
-		// int sent = 0;
-		// while(sent < len) {
-		// 	int res = fread(sent+(char*)data, 1, len-sent, stream);
-		// 	if (res >= 0)
-		// 		sent+=res;
-		// 	else 
-		// 		fprintf(stderr,"error: file_recv_data %d\n", res);
-		// }
-	}
-};
-
-class NetIO : public IO<NetIO> { public:
+class NetIO: public IOChannel<NetIO> { public:
 	bool is_server;
 	int mysocket = -1;
 	int consocket = -1;
@@ -94,7 +31,7 @@ class NetIO : public IO<NetIO> { public:
 	string addr;
 	int port;
 	NetIO(const char * address, int port, bool quiet = false) {
-		port = port & 0xFFFF;
+		this->port = port & 0xFFFF;
 		is_server = (address == nullptr);
 		if (address == nullptr) {
 			struct sockaddr_in dest;
@@ -179,10 +116,10 @@ class NetIO : public IO<NetIO> { public:
 		fflush(stream);
 	}
 
-	void send_data_internal(const void * data, size_t len) {
-		size_t sent = 0;
+	void send_data_internal(const void * data, int len) {
+		int sent = 0;
 		while(sent < len) {
-			size_t res = fwrite(sent + (char*)data, 1, len - sent, stream);
+			int res = fwrite(sent + (char*)data, 1, len - sent, stream);
 			if (res >= 0)
 				sent+=res;
 			else
@@ -191,7 +128,7 @@ class NetIO : public IO<NetIO> { public:
 		has_sent = true;
 	}
 
-	void recv_data_internal(void  * data, size_t len) {
+	void recv_data_internal(void  * data, int len) {
 		if(has_sent)
 			fflush(stream);
 		has_sent = false;
@@ -205,4 +142,7 @@ class NetIO : public IO<NetIO> { public:
 		}
 	}
 };
-#endif
+}
+
+
+#endif  //NETWORK_IO_CHANNEL

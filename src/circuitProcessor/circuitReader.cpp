@@ -4,7 +4,8 @@
 #include "include/circuitCompressor.h"
 #include "../../TurboPFor-Integer-Compression/vp4.h"
 #include "../../TurboPFor-Integer-Compression/circuitutil.h"
-#include "emp-tool/emp-tool.h"
+//#include "emp-tool/emp-tool.h"
+#include "include/circuitHighSpeedNetIO.h"
 #include <fstream>
 #include <vector>
 

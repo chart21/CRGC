@@ -17,7 +17,10 @@
 
 #include "circuitProcessor/include/leakagePredictor.h"
 
-//#include <emp-tool/emp-tool.h>
+#include "circuitProcessor/include/circuitHighSpeedNetIO.h"
+#include "circuitProcessor/include/circuitNetIO.h"
+
+#include <emp-tool/emp-tool.h>
 // #include "programs/include/mult3.h"
 // #include "programs/include/paperoptm.h"
 #include "programs/include/examplePrograms.h"
@@ -412,17 +415,17 @@ int main(int argc, char *argv[])
     }
 
     // emp::NetIO * io = new emp::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
-    emp::HighSpeedNetIO * io = new emp::HighSpeedNetIO(party==1 ? nullptr : "127.0.0.1", 6112, 8080); //assume server as local
+    rgc::HighSpeedNetIO * io = new rgc::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
     int circuitThread=3;
     bool bin=false;
     if( party==1 ){
-        Gen<emp::HighSpeedNetIO> *gen = new Gen<emp::HighSpeedNetIO>(io);
-        funcTime( "send", forwarderEx<emp::HighSpeedNetIO>, gen, scir, circuitThread, bin);
+        Gen<rgc::HighSpeedNetIO> *gen = new Gen<rgc::HighSpeedNetIO>(io);
+        funcTime( "send", forwarderEx<rgc::HighSpeedNetIO>, gen, scir, circuitThread, bin);
         gen->io->flush();
     }
     else {
-        Eva<emp::HighSpeedNetIO> *eva = new Eva<emp::HighSpeedNetIO>(io);
-        funcTime( "receive", forwarderIm<emp::HighSpeedNetIO>, eva, circuitThread, bin);
+        Eva<rgc::HighSpeedNetIO> *eva = new Eva<rgc::HighSpeedNetIO>(io);
+        funcTime( "receive", forwarderIm<rgc::HighSpeedNetIO>, eva, circuitThread, bin);
         eva->io->flush();
     }
 

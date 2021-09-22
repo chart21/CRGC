@@ -2,8 +2,8 @@
 #include "include/circuitStructs.h"
 #include "include/circuitCompressor.h"
 //include "include/circuitTransfer.h"
-#include "emp-tool/emp-tool.h"
-
+//#include "emp-tool/emp-tool.h"
+#include "include/circuitHighSpeedNetIO.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
