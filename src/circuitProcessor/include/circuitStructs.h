@@ -36,8 +36,10 @@ template <typename T>
 struct Circuit{
 CircuitDetails details;
 T* gates;
-
-//~Circuit(){delete [] gates;}
+Circuit(CircuitDetails dts=CircuitDetails()):details(dts){
+    gates = new T[dts.numGates];
+}
+~Circuit(){delete [] gates;}
 };
 
 typedef Circuit<TransformedGate> TransformedCircuit;

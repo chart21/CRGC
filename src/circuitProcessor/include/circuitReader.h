@@ -4,7 +4,7 @@
 #include "circuitStructs.h"
 #include <fstream>
 #include<vector>
-#define BUF 100000000
+#define BUF_R 100000
 
 void splitString(std::string s, std::vector<std::string> &v);	
 
@@ -28,8 +28,9 @@ class Eva{ public:
     void recv_data_eva(void * data, uint64_t nbyte){
         size_t send = 0;
         while(send<nbyte){
-            size_t n = nbyte-send>BUF? BUF : nbyte-send;
+            size_t n = nbyte-send>BUF_R? BUF_R : nbyte-send;
             io->recv_data((char*)data+send,n);
+            // io->flush();
             send+=n;
             
         }

@@ -1,6 +1,6 @@
 #ifndef NETWORK_IO_CHANNEL_H__
 #define NETWORK_IO_CHANNEL_H__
-
+#include <errno.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,6 +70,8 @@ class NetIO: public IOChannel<NetIO> { public:
 				if (connect(consocket, (struct sockaddr *)&dest, sizeof(struct sockaddr)) == 0) {
 					break;
 				}
+				else
+				{printf("%d\n",errno);}
 				
 				close(consocket);
 				usleep(1000);
@@ -79,7 +81,7 @@ class NetIO: public IOChannel<NetIO> { public:
 		stream = fdopen(consocket, "wb+");
 		buffer = new char[NETWORK_BUFFER_SIZE];
 		memset(buffer, 0, NETWORK_BUFFER_SIZE);
-		setvbuf(stream, buffer, _IOFBF, NETWORK_BUFFER_SIZE);
+		//setvbuf(stream, buffer, _IOFBF, NETWORK_BUFFER_SIZE);
 		if(!quiet)
 			std::cout << "connected\n";
 	}
@@ -120,6 +122,7 @@ class NetIO: public IOChannel<NetIO> { public:
 		int sent = 0;
 		while(sent < len) {
 			int res = fwrite(sent + (char*)data, 1, len - sent, stream);
+			//printf("%d, %d\n",res,len);
 			if (res >= 0)
 				sent+=res;
 			else

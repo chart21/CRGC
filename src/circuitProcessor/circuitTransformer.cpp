@@ -6,7 +6,9 @@
 
 UintCircuit* transformTransformedCircuitToUint(TransformedCircuit* circuit)
 {
-    auto gates = new UintGate[circuit->details.numGates];
+    auto uintCircuit = new UintCircuit(circuit->details);
+    UintGate* gates = uintCircuit->gates;
+    //auto gates = new UintGate[circuit->details.numGates];
     for (auto i = 0; i < circuit->details.numGates; i++)
     {
         uint_fast8_t truthTable = 0;
@@ -18,14 +20,14 @@ UintCircuit* transformTransformedCircuitToUint(TransformedCircuit* circuit)
         gates[i] = UintGate{circuit->gates[i].leftParentID, circuit->gates[i].rightParentID,circuit->gates[i].outputID, truthTable};
         //std::cout <<  circuit->gates[i].truthTable[0][0] << circuit->gates[i].truthTable[0][1] << circuit->gates[i].truthTable[1][0] << circuit->gates[i].truthTable[1][1] << ' ' << (unsigned)gates[i].truthTable << '\n';
     }
-    auto uintCircuit = new UintCircuit({circuit->details, gates});
+    //auto uintCircuit = new UintCircuit({circuit->details, gates});
     return uintCircuit;
 }
 
 
 void transformBristolCircuitToTransformedCircuit(BristolCircuit *bristolCircuit, TransformedCircuit *circuit, bool* flipped)
 {
-    
+
     auto gates = new TransformedGate [bristolCircuit->details.numGates];
     for (auto i = 0; i < bristolCircuit->details.numGates; i++)
     {
@@ -51,7 +53,9 @@ void transformBristolCircuitToTransformedCircuit(BristolCircuit *bristolCircuit,
         //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable[0][0] << gates[i].truthTable[0][1] << gates[i].truthTable[1][0]<< gates[i].truthTable[1][1] <<'\n';
     }
     
-    *circuit = {bristolCircuit->details,gates};
+    //*circuit = {bristolCircuit->details,gates};
+    circuit->details = bristolCircuit->details;
+    circuit->gates = gates;
 
 
 }
@@ -85,7 +89,10 @@ TransformedCircuit* transformBristolCircuitToTransformedCircuitN(BristolCircuit 
         //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable[0][0] << gates[i].truthTable[0][1] << gates[i].truthTable[1][0]<< gates[i].truthTable[1][1] <<'\n';
     }
     
-    auto circuit = new TransformedCircuit({bristolCircuit->details,gates});
+    // auto circuit = new TransformedCircuit({bristolCircuit->details,gates});
+    auto circuit = new TransformedCircuit();
+    circuit->details = bristolCircuit->details;
+    circuit->gates = gates;
     return circuit;
 
 }

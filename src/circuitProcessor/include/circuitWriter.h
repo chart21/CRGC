@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-#define BUF 100000000
+#define BUF_W 100000
 
 void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destinationPath);
 
@@ -19,8 +19,9 @@ public:
     void send_data_gen(const void * data, uint64_t nbyte){
         uint64_t send = 0;
         while(send<nbyte){
-            size_t n = nbyte-send>BUF? BUF : nbyte-send;
+            size_t n = nbyte-send>BUF_W? BUF_W : nbyte-send;
             io->send_data((char*)data+send,n);
+            // io->flush();
             send+=n;
 
         }

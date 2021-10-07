@@ -124,6 +124,7 @@ CircuitDetails importBristolCircuitDetails(std::string filepath, std::string cir
             counter++;
         }
     }
+    f.close();
     return details;
 }
 
@@ -246,17 +247,18 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     }
     delete[] adjustedWire;
 
-    // TransformedCircuit *circuit = new TransformedCircuit(details);
-    // TransformedGate *transformedGates = circuit->gates;
-    TransformedGate *transformedGates = new TransformedGate[details.numGates];
+    TransformedCircuit *circuit = new TransformedCircuit(details);
+    TransformedGate *transformedGates = circuit->gates;
+    // TransformedGate *transformedGates = new TransformedGate[details.numGates];
     for (auto i = 0; i < details.numGates; i++)
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
+    cout<<"read: "<<gates[0].truthTable[0][1]<<endl;
     delete[] gates;
 
-    TransformedCircuit *circuit = new TransformedCircuit;
-    *circuit = {details, transformedGates};
+    // TransformedCircuit *circuit = new TransformedCircuit;
+    // *circuit = {details, transformedGates};
 
     return circuit;
 }
@@ -352,15 +354,18 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
     }
     delete[] adjustedWire;
 
-    BristolGate *bristolGates = new BristolGate[details.numGates];
+    // BristolGate *bristolGates = new BristolGate[details.numGates];
+    BristolCircuit *circuit = new BristolCircuit(details);
+    BristolGate *bristolGates = circuit->gates;
     for (auto i = 0; i < details.numGates; i++)
     {
         bristolGates[i] = gates[i]; //does that really copy?
     }
+    
     delete[] gates;
 
-    BristolCircuit *circuit = new BristolCircuit;
-    *circuit = {details, bristolGates};
+    // BristolCircuit *circuit = new BristolCircuit;
+    // *circuit = {details, bristolGates};
 
     return circuit;
 }
@@ -386,6 +391,7 @@ TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetail
     TransformedCircuit *circuit = new TransformedCircuit;
     circuit->details = details;
     TransformedGate *gates = new TransformedGate[details.numGates];
+
     uint_fast64_t gateCounter = 0;
     while (std::getline(f, line, '\n'))
     {
@@ -473,15 +479,17 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
     }
     delete[] adjustedWire;
 
-    BristolGate *bristolGates = new BristolGate[details.numGates];
+    BristolCircuit *circuit = new BristolCircuit(details);
+    BristolGate *bristolGates = circuit->gates;
+    // BristolGate *bristolGates = new BristolGate[details.numGates];
     for (auto i = 0; i < details.numGates; i++)
     {
         bristolGates[i] = gates[i]; //does that really copy?
     }
     delete[] gates;
 
-    BristolCircuit *circuit = new BristolCircuit;
-    *circuit = {details, bristolGates};
+    // BristolCircuit *circuit = new BristolCircuit;
+    // *circuit = {details, bristolGates};
 
     return circuit;
 }
@@ -583,16 +591,18 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
     }
     delete[] adjustedWire;
 
-
-    TransformedGate *transformedGates = new TransformedGate[details.numGates];
+    TransformedCircuit *circuit = new TransformedCircuit(details);
+    TransformedGate *transformedGates = circuit->gates;
+    // TransformedGate *transformedGates = new TransformedGate[details.numGates];
     for (auto i = 0; i < details.numGates; i++)
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
+    cout<<"read: "<<gates[0].leftParentID<<endl;
     delete[] gates;
 
-    TransformedCircuit *circuit = new TransformedCircuit;
-    *circuit = {details, transformedGates};
+    // TransformedCircuit *circuit = new TransformedCircuit;
+    // *circuit = {details, transformedGates};
 
     return circuit;
 }
@@ -654,7 +664,7 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
     seg = seg%2==0?seg:seg+1;
     int ll = details.numGates;
     //a = std::chrono::system_clock::now();
-
+    cout<<"details read finish"<<endl;
     int offset=0;
     for(int j=0;j<thr_enc;j++){
         size_t l = ll>seg?seg:ll;

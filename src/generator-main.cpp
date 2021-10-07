@@ -390,45 +390,45 @@ int main(int argc, char *argv[])
     if(party!=2){
     /* to do: for cpp format, load input */
         circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
+        //auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
-        auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
-
-        predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
+        //predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
 
         bool *inputA = new bool[circuit->details.bitlengthInputA];
         bool *inputB = new bool[circuit->details.bitlengthInputB];
         bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
 
-        evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
+        //evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
 
         bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
-        obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
+        //obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
 
-        verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+        //verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
         scir = transformCircuitToShrinkedCircuit(circuit);
     }
-    
+
     //here tranfer the obfuscated circuit, 3 typ: compressor, transformedCircuit(bin), txt
     if( party==0 ){
         compressBenchmark(scir, circuitName, false);
         return 0;
     }
 
-    // emp::NetIO * io = new emp::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
-    rgc::HighSpeedNetIO * io = new rgc::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
+    rgc::NetIO * io = new rgc::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
+    // rgc::HighSpeedNetIO * io = new rgc::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
     int circuitThread=3;
-    bool bin=false;
+    bool bin=true;
     if( party==1 ){
-        Gen<rgc::HighSpeedNetIO> *gen = new Gen<rgc::HighSpeedNetIO>(io);
-        funcTime( "send", forwarderEx<rgc::HighSpeedNetIO>, gen, scir, circuitThread, bin);
-        gen->io->flush();
+        
+        Gen<rgc::NetIO> *gen = new Gen<rgc::NetIO>(io);
+        funcTime( "send", forwarderEx<rgc::NetIO>, gen, scir, circuitThread, bin);
+        // gen->io->flush();
     }
     else {
-        Eva<rgc::HighSpeedNetIO> *eva = new Eva<rgc::HighSpeedNetIO>(io);
-        funcTime( "receive", forwarderIm<rgc::HighSpeedNetIO>, eva, circuitThread, bin);
-        eva->io->flush();
+        Eva<rgc::NetIO> *eva = new Eva<rgc::NetIO>(io);
+        funcTime( "receive", forwarderIm<rgc::NetIO>, eva, circuitThread, bin);
+        // eva->io->flush();
     }
-
+    delete io;
     // auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
     // funcTime("compare circuit similarity", compareCircuitSimilarityMT, originalCircuit, circuit, numThreads);
     //std::cout<<areCircuitsEqual(circuit,originalCircuit)<<std::endl;

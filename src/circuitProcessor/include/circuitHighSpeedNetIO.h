@@ -156,6 +156,7 @@ class HighSpeedNetIO : public IOChannel<HighSpeedNetIO> { public:
 		memset(&serv, 0, sizeof(serv));
 		serv.sin_family = AF_INET;
 		serv.sin_addr.s_addr = htonl(INADDR_ANY); /* set our address to any interface */
+        // serv.sin_addr.s_addr = inet_addr("52.28.231.123"); /* set our address to any interface */
 		serv.sin_port = htons(port);              /* set the server port number */
 		mysocket = socket(AF_INET, SOCK_STREAM, 0);
 		int reuse = 1;
@@ -164,11 +165,14 @@ class HighSpeedNetIO : public IOChannel<HighSpeedNetIO> { public:
 			perror("error: bind");
 			exit(1);
 		}
+        printf("binded!\n");
 		if (listen(mysocket, 1) < 0) {
 			perror("error: listen");
 			exit(1);
 		}
+        printf("listened!\n");
 		int sock = accept(mysocket, (struct sockaddr *)&dest, &socksize);
+        printf("accepted!\n");
 		close(mysocket);
 		return sock;
 	}
@@ -187,6 +191,7 @@ class HighSpeedNetIO : public IOChannel<HighSpeedNetIO> { public:
 			close(sock);
 			usleep(1000);
 		}
+        printf("connected!\n");
 		return sock;
 	}
 
