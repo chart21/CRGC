@@ -392,18 +392,18 @@ int main(int argc, char *argv[])
         circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
         //auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
-        //predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
+        predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
 
         bool *inputA = new bool[circuit->details.bitlengthInputA];
         bool *inputB = new bool[circuit->details.bitlengthInputB];
         bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
 
-        //evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
+        evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
 
         bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
-        //obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
+        obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
 
-        //verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
+        verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
         scir = transformCircuitToShrinkedCircuit(circuit);
     }
 
@@ -416,7 +416,7 @@ int main(int argc, char *argv[])
     rgc::NetIO * io = new rgc::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
     // rgc::HighSpeedNetIO * io = new rgc::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
     int circuitThread=3;
-    bool bin=true;
+    bool bin=false;
     if( party==1 ){
         
         Gen<rgc::NetIO> *gen = new Gen<rgc::NetIO>(io);

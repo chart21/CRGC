@@ -9,5 +9,6 @@ void transformBristolCircuitToTransformedCircuit(BristolCircuit *bristolCircuit,
 TransformedCircuit* transformBristolCircuitToTransformedCircuitN(BristolCircuit *bristolCircuit);
 void deleteRevealGates(TransformedCircuit *circuit, uint_fast64_t* circuitLineOfWireIndex);
 ShrinkedCircuit* transformCircuitToShrinkedCircuit(TransformedCircuit* circuit);
+TransformedCircuit* transformShrinkedCircuitToTransformedCircuit(ShrinkedCircuit* circuit);
 
 #endif

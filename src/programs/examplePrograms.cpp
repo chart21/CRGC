@@ -12,29 +12,20 @@ void mult3() {
 
 int BITSIZE = 16;
 
-Integer product(BITSIZE, 1);
+Integer product(BITSIZE, 0, PUBLIC);
 
 
-	Integer a[3];
-	Integer b[3];
-  for (int i=0; i<3; i++)
-    a[i] = Integer(BITSIZE, 0, ALICE); //dummy inputs
+	Integer a;
+	Integer b;
 
-  for (int i=0; i<3; i++)
-    b[i] = Integer(BITSIZE, 0, BOB); //dummy inputs
+    a = Integer(BITSIZE, 0, ALICE); //dummy inputs
 
-	for( int i=0; i < 3; i++ ) {
 
-    // reconstruct "secret shared" inputs
-    a[i] = a[i] + b[i];
-    // multiply value into product
-    product = product * a[i];
-  }
+    b = Integer(BITSIZE, 0, BOB); //dummy inputs
 
-  std::cout << "Product (binary notation): ";
-  for(int i=BITSIZE-1; i>=0; i--) {
-     std::cout << product[i].reveal();
-  }
+
+
+  std::cout << (a+b).reveal<uint64_t>();
   std::cout << endl;
 }
 

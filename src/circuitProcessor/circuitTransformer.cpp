@@ -172,3 +172,22 @@ ShrinkedCircuit* transformCircuitToShrinkedCircuit(TransformedCircuit* circuit)
     //*shrinkedCircuit = {circuit->details, shrinkedGates};
     return shrinkedCircuit;
 }
+
+TransformedCircuit* transformShrinkedCircuitToTransformedCircuit(ShrinkedCircuit* circuit)
+{
+    auto transformedCircuit = new TransformedCircuit(circuit->details);
+    auto transformedGates = transformedCircuit->gates;
+    //auto shrinkedGates = new ShrinkedGate[circuit->details.numGates];
+    for (auto i = 0; i < circuit->details.numGates; i++)
+    {
+        transformedGates[i] = {circuit->gates[i].leftParentID, 
+                                circuit->gates[i].rightParentOffset + circuit->gates[i].leftParentID, 
+                                circuit->details.bitlengthInputA + circuit->details.bitlengthInputB + i, 
+                                circuit->gates[i].truthTable[0][0], circuit->gates[i].truthTable[0][1], 
+                                circuit->gates[i].truthTable[1][0], circuit->gates[i].truthTable[1][1]};
+
+    }
+    // auto shrinkedCircuit = new ShrinkedCircuit{circuit->details, shrinkedGates};
+    //*shrinkedCircuit = {circuit->details, shrinkedGates};
+    return transformedCircuit;
+}
