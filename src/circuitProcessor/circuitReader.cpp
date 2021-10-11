@@ -608,7 +608,7 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
 }
 
 template <typename IO>
-ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
+void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec){
     //chrono::time_point<std::chrono::system_clock> start, end_read, end_dec,a,b;
     //start = std::chrono::system_clock::now();
 
@@ -702,12 +702,12 @@ ShrinkedCircuit* Eva<IO>::importCompressedCircuit( int thr_dec){
     //t_dec_sum += chrono::duration_cast<chrono::microseconds>(end_dec - start).count();
     //t_dec_sum += chrono::duration_cast<chrono::milliseconds>(end_dec - start).count();
     //cout<<"finished dec, elapsed seconds: "<< chrono::duration_cast<chrono::milliseconds>(end_dec - start).count() <<endl;
-
-    return scir;
+    circuit = scir;
+    return;
 }
 
 template <typename IO>
-ShrinkedCircuit* Eva<IO>::importBin(){
+void Eva<IO>::importBin(ShrinkedCircuit* &circuit){
     //std::chrono::time_point<std::chrono::system_clock> start, end;
     //start = std::chrono::system_clock::now();
 
@@ -740,6 +740,25 @@ ShrinkedCircuit* Eva<IO>::importBin(){
     //std::chrono::duration<double> elapsed_seconds = end - start;
 
     //std::cout<<"finished import bin, elapsed ms:" << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-    return scir;
+    circuit = scir;
+    return;
+
+}
+
+template <typename IO>
+void Eva<IO>::importObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath){
+
+    if(!destinationPath.empty()){
+        std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
+        for (auto i = 0; i < details.bitlengthInputA; i++)
+        {
+            outputFile >> valArr[i];
+        }
+        outputFile.close();
+    }
+    else
+        recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
+
+    return;
 
 }

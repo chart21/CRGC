@@ -36,11 +36,12 @@ class Eva{ public:
         }
     }
     
-    ShrinkedCircuit* importBin();
+    void importObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
+    void importBin(ShrinkedCircuit* &circuit);
     TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
 
     /* import compressed Circuit */
-    ShrinkedCircuit* importCompressedCircuit( int thr_dec);
+    void importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec);
 
 };
 

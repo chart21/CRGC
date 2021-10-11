@@ -13,10 +13,12 @@ class FileIO: public IOChannel<FileIO> { public:
 	FILE * stream = nullptr;
 	char * buffer = nullptr;
 	FileIO(const char * file, bool read) {
-		if (read)
+		if (read){
 			stream = fopen(file, "rb+");
-		else
+		}
+		else{
 			stream = fopen(file, "wb+");
+		}
 		buffer = new char[FILE_BUFFER_SIZE];
 		memset(buffer, 0, FILE_BUFFER_SIZE);
 		setvbuf(stream, buffer, _IOFBF, FILE_BUFFER_SIZE);
@@ -46,6 +48,7 @@ class FileIO: public IOChannel<FileIO> { public:
 				fprintf(stderr,"error: file_send_data %d\n", res);
 		}
 	}
+
 	void recv_data_internal(void  * data, int len) {
 		int sent = 0;
 		while(sent < len) {
@@ -53,9 +56,10 @@ class FileIO: public IOChannel<FileIO> { public:
 			if (res >= 0)
 				sent+=res;
 			else 
-				fprintf(stderr,"error: file_recv_data %d\n", res);
+				fprintf(stderr,"error: file_recv_input %d\n", res);
 		}
 	}
+
 };
 
 }

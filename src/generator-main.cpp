@@ -301,34 +301,38 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, 
 }
 
 template <typename T>
-void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, int thr, bool bin){
+void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, bool* valArr, int thr, bool bin){
     if(bin) 
         obj->exportBin(scir);
     else
         obj->exportCompressedCircuit(scir,thr);
+    obj->exportObfuscatedInput(valArr,scir->details);
     return;
 }
 
 template <typename T>
-void forwarderIm(Eva<T> *obj, int thr, bool bin){
+void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* valArr, int thr, bool bin){
     if(bin)
-        obj->importBin();
+        obj->importBin(scir);
     else
-        obj->importCompressedCircuit(thr);
+        obj->importCompressedCircuit(scir,thr);
+    valArr = new bool[scir->details.bitlengthInputA];
+    obj->importObfuscatedInput(valArr, scir->details);
     return;
 }
 
-void compressBenchmark( ShrinkedCircuit *scir, std::string circuitName, bool bin){
+void compressBenchmark( ShrinkedCircuit *scir, bool* valArr, std::string circuitName, bool bin){
     ShrinkedCircuit* imported;
     int circuitThread = 10;
     uint64_t ctime=0;
     uint64_t dtime=0;
-    int len = bin==true?1:10;
+    int len = bin==true?1:1;
     std::string filepath = CIRCUITPATH + circuitName + (bin==true? ".bin" : "_compressed.dat");
+
     for(int i=0;i<len;i++){
         emp::FileIO *cio = new emp::FileIO( filepath.c_str(),false );
         Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(cio);
-        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, circuitThread, bin);
+        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, valArr, circuitThread, bin);
         cio->flush();
         delete cio;
         delete gen;
@@ -336,12 +340,7 @@ void compressBenchmark( ShrinkedCircuit *scir, std::string circuitName, bool bin
 
         emp::FileIO *dio = new emp::FileIO( filepath.c_str(),true );
         Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(dio);
-        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, circuitThread, bin);
-        if(i==len-1) {
-            eva->io->reset();
-            if(bin) imported = eva->importBin();
-            else imported = eva->importCompressedCircuit(circuitThread);
-        }
+        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, imported, valArr, circuitThread, bin);
         dio->flush();
         delete dio;
         delete eva;
@@ -387,10 +386,11 @@ int main(int argc, char *argv[])
 
     TransformedCircuit *circuit;
     ShrinkedCircuit *scir;
+    bool *obfuscatedValArr;
     if(party!=2){
     /* to do: for cpp format, load input */
         circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
-        //auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
+        auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
 
         predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
 
@@ -400,32 +400,31 @@ int main(int argc, char *argv[])
 
         evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
 
-        bool *obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
+        obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
         obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
 
         verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
         scir = transformCircuitToShrinkedCircuit(circuit);
     }
 
-    //here tranfer the obfuscated circuit, 3 typ: compressor, transformedCircuit(bin), txt
     if( party==0 ){
-        compressBenchmark(scir, circuitName, false);
+        compressBenchmark(scir, obfuscatedValArr,circuitName, false);
         return 0;
     }
 
-    rgc::NetIO * io = new rgc::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
-    // rgc::HighSpeedNetIO * io = new rgc::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
+    emp::NetIO * io = new emp::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
+    // emp::HighSpeedNetIO * io = new emp::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
     int circuitThread=3;
     bool bin=false;
     if( party==1 ){
-        
-        Gen<rgc::NetIO> *gen = new Gen<rgc::NetIO>(io);
-        funcTime( "send", forwarderEx<rgc::NetIO>, gen, scir, circuitThread, bin);
+        Gen<emp::NetIO> *gen = new Gen<emp::NetIO>(io);
+        funcTime( "send", forwarderEx<emp::NetIO>, gen, scir, obfuscatedValArr, circuitThread, bin);
         // gen->io->flush();
     }
     else {
-        Eva<rgc::NetIO> *eva = new Eva<rgc::NetIO>(io);
-        funcTime( "receive", forwarderIm<rgc::NetIO>, eva, circuitThread, bin);
+
+        Eva<emp::NetIO> *eva = new Eva<emp::NetIO>(io);
+        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, obfuscatedValArr, circuitThread, bin);
         // eva->io->flush();
     }
     delete io;

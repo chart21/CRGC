@@ -26,7 +26,7 @@ public:
 
         }
     }
-    void exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string destinationPath);
+    void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
     void exportBin(ShrinkedCircuit* circuit);
     
     /* export compressed circuit to HDD */

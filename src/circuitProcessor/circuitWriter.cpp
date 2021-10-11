@@ -37,14 +37,18 @@ void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destina
 }
 
 template <typename IO>
-void Gen<IO>::exportObfuscatedInput(bool* valArr, CircuitDetails details, std::string destinationPath)
+void Gen<IO>::exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath)
 {
-    std::ofstream inputFile (destinationPath + "_rgc_inputA.txt");
-    for (auto i = 0; i < details.bitlengthInputA; i++)
-    {
-        inputFile << valArr[i];
+    if(!destinationPath.empty()){
+        std::ofstream inputFile (destinationPath + "_rgc_inputA.txt");
+        for (auto i = 0; i < details.bitlengthInputA; i++)
+        {
+            inputFile << valArr[i];
+        }
+        inputFile.close();
     }
-    inputFile.close();
+    else
+        send_data_gen( valArr, details.bitlengthInputA*sizeof(bool) );
     
 }
 
