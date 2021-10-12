@@ -19,6 +19,7 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
 
 TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);
 
+
 template <typename IO>
 class Eva{ public:
     IO *io = nullptr;

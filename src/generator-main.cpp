@@ -48,6 +48,38 @@ auto funcTime(std::string printText, F func, Args &&...args)
     return time;
 }
 
+struct Agency{
+    uint_fast64_t numThreads = 1;    
+    std::string fileFormat = "cpp";
+    std::string circuitName = "adder64";
+    std::string circuitFormat = "bristol";
+    int party = 0;
+
+    TransformedCircuit *circuit = nullptr;
+    ShrinkedCircuit *scir = nullptr;
+    bool *inputA = nullptr;
+    bool *inputB = nullptr;
+    bool *output = nullptr;
+    bool *obfuscatedValArr = nullptr;
+
+    ~Agency(){
+        if(scir) delete scir;
+        if(circuit) delete circuit;
+        if(inputA) delete [] inputA;
+        if(inputB) delete [] inputB;
+        if(output) delete [] output;
+        if(obfuscatedValArr) delete [] obfuscatedValArr;
+    }
+    void loadTransformedCircuit();
+    void loadTransferredCircuit(ShrinkedCircuit* scir, bool *valArr);
+    void predictLeakage(uint_fast64_t *parents);
+    void evaluateCircuit();
+    void obfuscateCircuit(uint_fast64_t *parents);
+    void verifyIntegrityOfObfuscatedCircuit();
+    void verifyIntegrityOfExportedRGC();
+    void evaluateObfuscatedCircuit();
+};
+
 // void generateCircuitRAM(std::vector<BristolGate> *gateVec, CircuitDetails *details, bool print, std::string programName)
 // {
 //     if (programName == "mult3")
@@ -59,7 +91,7 @@ auto funcTime(std::string printText, F func, Args &&...args)
 //         std::cout << "Program not found, make sure you added it in CircuitLinker.cpp." << '\n';
 // }
 
-TransformedCircuit *loadTransformedCircuit(std::string circuitName, std::string fileFormat, std::string circuitFormat)
+void Agency::loadTransformedCircuit()
 {
 
     if (fileFormat == "cpp")
@@ -72,12 +104,12 @@ TransformedCircuit *loadTransformedCircuit(std::string circuitName, std::string 
         //auto flipped = new bool[empDetails.numWires];
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails, flipped);
         
-        auto circuit = local->importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
+        this->circuit = local->importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
         std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
-        std::cout << "---INFO--- numGates: " << circuit->details.numGates << '\n';
+        std::cout << "---INFO--- numGates: " << this->circuit->details.numGates << '\n';
         //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
         delete local;
-        return circuit;
+        // return circuit;
     }
     else if (fileFormat == "txt")
     {
@@ -85,13 +117,27 @@ TransformedCircuit *loadTransformedCircuit(std::string circuitName, std::string 
         auto details = importBristolCircuitDetails(filepath + ".txt", circuitFormat);
         //auto flipped = new bool[details.numWires];
         //auto bristolCircuit = importBristolCircuitExNotForLeakagePrediction(filepath + ".txt", details, flipped);
-        auto circuit = importBristolCircuitExNot(filepath + ".txt", details);
+        this->circuit = importBristolCircuitExNot(filepath + ".txt", details);
         //auto unflippedCircuit = new UnflippedCircuit{bristolCircuit, flipped};
-        return circuit;
+        // return circuit;
     }
+    this->inputA = new bool[this->circuit->details.bitlengthInputA];
+    this->inputB = new bool[this->circuit->details.bitlengthInputB];
+    this->output = new bool[this->circuit->details.numOutputs * this->circuit->details.bitlengthOutputs];
+    this->obfuscatedValArr = new bool[this->circuit->details.bitlengthInputA];
 }
 
-void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_fast64_t *parents, std::string circuitFormat, std::string fileFormat)
+void Agency::loadTransferredCircuit(ShrinkedCircuit* scir, bool *valArr)
+{
+    this->scir = scir;
+    this->circuit = transformShrinkedCircuitToTransformedCircuit(this->scir);
+    this->inputA = new bool[this->circuit->details.bitlengthInputA];
+    this->inputB = new bool[this->circuit->details.bitlengthInputB];
+    this->output = new bool[this->circuit->details.numOutputs * this->circuit->details.bitlengthOutputs];
+    this->obfuscatedValArr = valArr;
+}
+
+void Agency::predictLeakage(uint_fast64_t *parents)
 {
 
     auto po = new bool[circuit->details.numWires];
@@ -143,59 +189,16 @@ void predictLeakage(TransformedCircuit *circuit, uint_fast64_t numThreads, uint_
     delete[] po;
 }
 
-void evaluateCircuit(TransformedCircuit *circuit, uint_fast64_t numThreads, int argc, char *argv[], bool *inputA, bool *inputB, bool *output, std::string circuitName, std::string circuitFormat, std::string fileFormat)
+void Agency::evaluateCircuit()
 {
     //auto circuit = importBristolCircuitExNot(filepath+ ".txt", details);
 
     std::string filepath = CIRCUITPATH + circuitName;
-    if (argc > 3)
-    {
-        uint_fast64_t a;
-        if (check_number(argv[3]))
-        {
-            uint_fast64_t a = std::stoul(argv[3]);
-            converIntToBoolArr(a, circuit->details.bitlengthInputA, inputA);
-        }
-        else
-        {
-            if (argv[3] == std::string("r"))
-                generateRandomInput(circuit->details.bitlengthInputA, inputA);
-            else
-                importBinaryInput(filepath + "_inputA.txt", circuit->details.bitlengthInputA, inputA);
-        }
-    }
-    else
-        generateRandomInput(circuit->details.bitlengthInputA, inputA);
 
-    if (argc > 4)
-    {
-        uint_fast64_t b;
-        if (check_number(argv[4]))
-        {
-            uint_fast64_t b = std::stoul(argv[4]);
-            converIntToBoolArr(b, circuit->details.bitlengthInputB, inputB);
-        }
-        else
-        {
-            if (argv[4] == std::string("r"))
-                generateRandomInput(circuit->details.bitlengthInputB, inputB);
-            else
-                importBinaryInput(filepath + "_inputB.txt", circuit->details.bitlengthInputB, inputB);
-        }
-    }
-    else
-        generateRandomInput(circuit->details.bitlengthInputB, inputB);
-
-
-    
     if(circuitFormat == "emp" || fileFormat == "cpp")
         funcTime("evaluate circuit", evaluateSortedTransformedCircuit, circuit, inputA, inputB, output);
     else
         funcTime("evaluate circuit", evaluateTransformedCircuit, circuit, inputA, inputB, output);
-
-
-
-    
 
 
     int inA = convertBoolArrToInt(inputA, circuit->details.bitlengthInputA);
@@ -206,7 +209,7 @@ void evaluateCircuit(TransformedCircuit *circuit, uint_fast64_t numThreads, int 
     std::cout << "---Evaluation--- out" << iout << "\n";
 }
 
-void obfuscateCircuit(TransformedCircuit *circuit, bool *inputA, uint_fast64_t *parents, bool *obfuscatedValArr, uint_fast64_t numThreads)
+void Agency::obfuscateCircuit(uint_fast64_t *parents)
 {
 
     bool *flipped = new bool[circuit->details.numWires];
@@ -256,7 +259,7 @@ void obfuscateCircuit(TransformedCircuit *circuit, bool *inputA, uint_fast64_t *
     delete[] isObfuscated;
 }
 
-void verifyIntegrityOfObfuscatedCircuit(TransformedCircuit *circuit, bool *obfuscatedValArr, bool *inputA, bool *inputB, bool *output, uint_fast64_t numThreads)
+void Agency::verifyIntegrityOfObfuscatedCircuit()
 {
     auto outputRGC = new bool[circuit->details.bitlengthOutputs * circuit->details.numOutputs];
     
@@ -277,7 +280,7 @@ void verifyIntegrityOfObfuscatedCircuit(TransformedCircuit *circuit, bool *obfus
     delete[] outputRGC;
 }
 
-void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, bool *inputB, uint_fast64_t numThreads)
+void Agency::verifyIntegrityOfExportedRGC()
 {
     std::string filepath = CIRCUITPATH;
 
@@ -290,7 +293,7 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, 
 
     evaluateTransformedCircuit(newCircuit, newInputA, inputB, newOut2);
 
-    if (equalBoolArr(outputRGC, newOut2, circuit->details.bitlengthOutputs))
+    if (equalBoolArr(output, newOut2, circuit->details.bitlengthOutputs))
         std::cout << "---Success--- Evaluation of original circuit and constructed RGC are equal" << '\n';
     else
         std::cout << "---Warning--- Evaluation of original circuit and constructed RGC are not equal" << '\n';
@@ -300,13 +303,24 @@ void verifyIntegrityOfExportedRGC(TransformedCircuit *circuit, bool *outputRGC, 
     auto iout2 = convertBoolArrToInt(newOut2, newDetails.bitlengthOutputs);
 }
 
+void Agency::evaluateObfuscatedCircuit(){
+    evaluateTransformedCircuit(this->circuit, this->obfuscatedValArr, this->inputB, this->output);
+
+    auto inA = convertBoolArrToInt(this->obfuscatedValArr, this->circuit->details.bitlengthInputA);
+    auto inB = convertBoolArrToInt(this->inputB, this->circuit->details.bitlengthInputB);
+    auto iout = convertBoolArrToInt(this->output, this->circuit->details.bitlengthOutputs);
+    std::cout << "---Evaluation--- inA" << inA << "\n";
+    std::cout << "---Evaluation--- inB" << inB << "\n";
+    std::cout << "---Evaluation--- out" << iout << "\n";
+}
+
 template <typename T>
-void forwarderEx(Gen<T> *obj, ShrinkedCircuit* scir, bool* valArr, int thr, bool bin){
+void forwarderEx(Gen<T> *obj, const Agency* agency, int thr, bool bin){
     if(bin) 
-        obj->exportBin(scir);
+        obj->exportBin(agency->scir);
     else
-        obj->exportCompressedCircuit(scir,thr);
-    obj->exportObfuscatedInput(valArr,scir->details);
+        obj->exportCompressedCircuit(agency->scir,thr);
+    obj->exportObfuscatedInput(agency->obfuscatedValArr,agency->scir->details);
     return;
 }
 
@@ -321,18 +335,18 @@ void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* valArr, int thr, boo
     return;
 }
 
-void compressBenchmark( ShrinkedCircuit *scir, bool* valArr, std::string circuitName, bool bin){
+void compressBenchmark( Agency* &agency, bool bin){
     ShrinkedCircuit* imported;
     int circuitThread = 10;
     uint64_t ctime=0;
     uint64_t dtime=0;
     int len = bin==true?1:1;
-    std::string filepath = CIRCUITPATH + circuitName + (bin==true? ".bin" : "_compressed.dat");
+    std::string filepath = CIRCUITPATH + agency->circuitName + (bin==true? ".bin" : "_compressed.dat");
 
     for(int i=0;i<len;i++){
         emp::FileIO *cio = new emp::FileIO( filepath.c_str(),false );
         Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(cio);
-        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, scir, valArr, circuitThread, bin);
+        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, agency, circuitThread, bin);
         cio->flush();
         delete cio;
         delete gen;
@@ -340,94 +354,139 @@ void compressBenchmark( ShrinkedCircuit *scir, bool* valArr, std::string circuit
 
         emp::FileIO *dio = new emp::FileIO( filepath.c_str(),true );
         Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(dio);
+        bool* valArr = nullptr;
         dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, imported, valArr, circuitThread, bin);
         dio->flush();
+        if(valArr) delete [] valArr;
         delete dio;
         delete eva;
     }
-    cout << areShrinkedCircuitsEqual(imported, scir) << ": " << ctime/len << ", " << dtime/len << endl;
+    cout << areShrinkedCircuitsEqual(imported, agency->scir) << ": " << ctime/len << ", " << dtime/len << endl;
 }
 
 
-int main(int argc, char *argv[])
-{
-
-    uint_fast64_t numThreads = 1;    
-    std::string fileFormat = "cpp";
-    std::string circuitName = "adder64";
-    int party = 0;
-    int port = 8080;
-
+void parse( int argc, char *argv[], Agency* &agency){
     if (argc > 1)
     {
-        circuitName = argv[1];
+        agency->circuitName = argv[1];
     }
 
     if (argc > 2)
     {
-        fileFormat = argv[2];
+        agency->fileFormat = argv[2];
     }
 
-    std::string circuitFormat = "bristol";
+    
     if (argc > 5)
     {
-        circuitFormat = argv[5];
+        agency->circuitFormat = argv[5];
     }
 
     if (argc > 6)
     {
-        numThreads = std::stoul(argv[6]);
+        agency->numThreads = std::stoul(argv[6]);
     }
 
     if (argc > 7)
     {
-        party = std::stoi(argv[7]);
+        agency->party = std::stoi(argv[7]);
     }
 
-    TransformedCircuit *circuit;
-    ShrinkedCircuit *scir;
-    bool *obfuscatedValArr;
-    if(party!=2){
+
+}
+
+void parseInput(int argc, char *argv[], Agency* &agency){
+    std::string filepath = CIRCUITPATH + agency->circuitName;
+    if (argc > 3)
+    {
+        uint_fast64_t a;
+        if (check_number(argv[3]))
+        {
+            uint_fast64_t a = std::stoul(argv[3]);
+            converIntToBoolArr(a, agency->circuit->details.bitlengthInputA, agency->inputA);
+        }
+        else
+        {
+            if (argv[3] == std::string("r"))
+                generateRandomInput(agency->circuit->details.bitlengthInputA, agency->inputA);
+            else
+                importBinaryInput(filepath + "_inputA.txt", agency->circuit->details.bitlengthInputA, agency->inputA);
+        }
+    }
+    else
+        generateRandomInput(agency->circuit->details.bitlengthInputA, agency->inputA);
+
+    if (argc > 4)
+    {
+        uint_fast64_t b;
+        if (check_number(argv[4]))
+        {
+            uint_fast64_t b = std::stoul(argv[4]);
+            converIntToBoolArr(b, agency->circuit->details.bitlengthInputB, agency->inputB);
+        }
+        else
+        {
+            if (argv[4] == std::string("r"))
+                generateRandomInput(agency->circuit->details.bitlengthInputB, agency->inputB);
+            else
+                importBinaryInput(filepath + "_inputB.txt", agency->circuit->details.bitlengthInputB, agency->inputB);
+        }
+    }
+    else
+        generateRandomInput(agency->circuit->details.bitlengthInputB, agency->inputB);
+}
+
+int main(int argc, char *argv[])
+{
+
+    Agency* agency = new Agency();
+    int port = 8080;
+    parse(argc, argv, agency);
+        
+    
+    if(agency->party!=2){
     /* to do: for cpp format, load input */
-        circuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
-        auto parents = new uint_fast64_t[circuit->details.numWires * 2]();
+        agency->loadTransformedCircuit();
+        auto parents = new uint_fast64_t[agency->circuit->details.numWires * 2]();
+        agency->predictLeakage(parents);
 
-        predictLeakage(circuit, numThreads, parents, circuitFormat, fileFormat);
-
-        bool *inputA = new bool[circuit->details.bitlengthInputA];
-        bool *inputB = new bool[circuit->details.bitlengthInputB];
-        bool *output = new bool[circuit->details.numOutputs * circuit->details.bitlengthOutputs];
-
-        evaluateCircuit(circuit, numThreads, argc, argv, inputA, inputB, output, circuitName, circuitFormat, fileFormat);
-
-        obfuscatedValArr = new bool[circuit->details.bitlengthInputA];
-        obfuscateCircuit(circuit, inputA, parents, obfuscatedValArr, numThreads);
-
-        verifyIntegrityOfObfuscatedCircuit(circuit, obfuscatedValArr, inputA, inputB, output, numThreads);
-        scir = transformCircuitToShrinkedCircuit(circuit);
+        parseInput(argc, argv, agency);
+        agency->evaluateCircuit();
+        agency->obfuscateCircuit(parents);
+        agency->verifyIntegrityOfObfuscatedCircuit();
+        agency->scir = transformCircuitToShrinkedCircuit(agency->circuit);
     }
 
-    if( party==0 ){
-        compressBenchmark(scir, obfuscatedValArr,circuitName, false);
+    if( agency->party==0 ){
+        compressBenchmark( agency, false);
         return 0;
     }
 
-    emp::NetIO * io = new emp::NetIO(party==1 ? nullptr : "127.0.0.1", port); //assume server as local
+    emp::NetIO * io = new emp::NetIO(agency->party==1 ? nullptr : "127.0.0.1", port); //assume server as local
     // emp::HighSpeedNetIO * io = new emp::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
     int circuitThread=3;
     bool bin=false;
-    if( party==1 ){
+    if( agency->party==1 ){
         Gen<emp::NetIO> *gen = new Gen<emp::NetIO>(io);
-        funcTime( "send", forwarderEx<emp::NetIO>, gen, scir, obfuscatedValArr, circuitThread, bin);
+        funcTime( "send", forwarderEx<emp::NetIO>, gen, agency, circuitThread, bin);
+
         // gen->io->flush();
     }
     else {
 
         Eva<emp::NetIO> *eva = new Eva<emp::NetIO>(io);
-        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, obfuscatedValArr, circuitThread, bin);
+        bool* valArr;
+        ShrinkedCircuit *scir;
+        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, valArr, circuitThread, bin);
+        
+        agency->loadTransferredCircuit(scir,valArr);
+        parseInput(argc, argv, agency);
+        agency->evaluateObfuscatedCircuit();
+
         // eva->io->flush();
     }
     delete io;
+    delete agency;
     // auto originalCircuit = loadTransformedCircuit(circuitName, fileFormat, circuitFormat);
     // funcTime("compare circuit similarity", compareCircuitSimilarityMT, originalCircuit, circuit, numThreads);
     //std::cout<<areCircuitsEqual(circuit,originalCircuit)<<std::endl;

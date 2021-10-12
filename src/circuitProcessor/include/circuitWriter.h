@@ -14,6 +14,7 @@ template <typename IO>
 class Gen {
 public:
     IO *io = nullptr;
+
     Gen(IO *io):io(io) {}
     Gen() {}
     void send_data_gen(const void * data, uint64_t nbyte){
