@@ -177,8 +177,8 @@ void query() {
 }
 
 void insurance() {
-  uint_fast64_t LEN = 100;
-  uint_fast64_t BITSIZE = 8;
+  uint_fast64_t LEN = 140000;
+  uint_fast64_t BITSIZE = 32;
   //Integer product(BITSIZE, 1);
   Integer result = Integer(BITSIZE*4, 0, PUBLIC);
 

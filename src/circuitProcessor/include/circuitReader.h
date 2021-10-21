@@ -37,7 +37,7 @@ class Eva{ public:
         }
     }
     
-    void importObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
+    void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath="");
     void importBin(ShrinkedCircuit* &circuit);
     TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
 

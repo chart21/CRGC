@@ -746,8 +746,9 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit){
 }
 
 template <typename IO>
-void Eva<IO>::importObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath){
+void Eva<IO>::importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
 
+    valArr = new bool[details.bitlengthInputA];
     if(!destinationPath.empty()){
         std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
         for (auto i = 0; i < details.bitlengthInputA; i++)

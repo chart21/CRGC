@@ -49,7 +49,8 @@ auto funcTime(std::string printText, F func, Args &&...args)
 }
 
 struct Agency{
-    uint_fast64_t numThreads = 1;    
+    uint_fast64_t numThreads = 1; 
+    int compressThreads = 1;    
     std::string fileFormat = "cpp";
     std::string circuitName = "adder64";
     std::string circuitFormat = "bristol";
@@ -304,7 +305,8 @@ void Agency::verifyIntegrityOfExportedRGC()
 }
 
 void Agency::evaluateObfuscatedCircuit(){
-    evaluateTransformedCircuit(this->circuit, this->obfuscatedValArr, this->inputB, this->output);
+    // evaluateTransformedCircuit(this->circuit, this->obfuscatedValArr, this->inputB, this->output);
+    funcTime("evaluate circuit", evaluateTransformedCircuit, this->circuit, this->obfuscatedValArr, this->inputB, this->output);
 
     auto inA = convertBoolArrToInt(this->obfuscatedValArr, this->circuit->details.bitlengthInputA);
     auto inB = convertBoolArrToInt(this->inputB, this->circuit->details.bitlengthInputB);
@@ -325,12 +327,12 @@ void forwarderEx(Gen<T> *obj, const Agency* agency, int thr, bool bin){
 }
 
 template <typename T>
-void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* valArr, int thr, bool bin){
+void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* &valArr, int thr, bool bin){
     if(bin)
         obj->importBin(scir);
     else
         obj->importCompressedCircuit(scir,thr);
-    valArr = new bool[scir->details.bitlengthInputA];
+    
     obj->importObfuscatedInput(valArr, scir->details);
     return;
 }
@@ -390,6 +392,11 @@ void parse( int argc, char *argv[], Agency* &agency){
     if (argc > 7)
     {
         agency->party = std::stoi(argv[7]);
+    }
+
+    if (argc > 8)
+    {
+        agency->compressThreads = std::stoi(argv[8]);
     }
 
 
@@ -462,13 +469,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    emp::NetIO * io = new emp::NetIO(agency->party==1 ? nullptr : "127.0.0.1", port); //assume server as local
+    emp::NetIO * io = new emp::NetIO(agency->party==1 ? nullptr : "18.185.102.38", port); //assume server as local
     // emp::HighSpeedNetIO * io = new emp::HighSpeedNetIO(party==1 ? nullptr : "192.168.23.100", 6112, 8080); //assume server as local
-    int circuitThread=3;
-    bool bin=false;
+
+    bool bin=true;
     if( agency->party==1 ){
         Gen<emp::NetIO> *gen = new Gen<emp::NetIO>(io);
-        funcTime( "send", forwarderEx<emp::NetIO>, gen, agency, circuitThread, bin);
+        funcTime( "send", forwarderEx<emp::NetIO>, gen, agency, agency->compressThreads, bin);
 
         // gen->io->flush();
     }
@@ -477,7 +484,7 @@ int main(int argc, char *argv[])
         Eva<emp::NetIO> *eva = new Eva<emp::NetIO>(io);
         bool* valArr;
         ShrinkedCircuit *scir;
-        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, valArr, circuitThread, bin);
+        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, valArr, agency->compressThreads, bin);
         
         agency->loadTransferredCircuit(scir,valArr);
         parseInput(argc, argv, agency);
