@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
+#include <algorithm>
 
 #define TBL_SHR
 //#define BP
@@ -68,6 +69,14 @@ void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it
     //c = chrono::system_clock::now();
 }
 
+void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, unsigned char* &inputBuf, uint32_t &inputBufLen){
+    size_t l;
+    uint8_t *inValArr = new uint8_t[ROUND_UP(lenA,64)];
+    std::copy(valArr,valArr+lenA,inValArr);
+    inputBuf = encHlp8(inValArr,lenA,&l,TYPE);
+    inputBufLen = (uint32_t)l;
+    delete [] inValArr;
+}
 
 void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs, vector<uint32_t> &bufLens, int thr_enc){
     //uint_fast64_t len = cir->details.numGates;
@@ -169,6 +178,14 @@ void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it,
         delete [] outTable;
     }
 
+}
+
+void decompressObfuscatedInput(unsigned char* bufInput, size_t dataInputLen, bool* &valArr){
+    size_t l;
+    uint8_t* outInput=decHlp8( bufInput, dataInputLen, &l,TYPE);
+    std::copy(outInput,outInput+dataInputLen,valArr);
+    delete [] bufInput;
+    delete [] outInput;
 }
 
 void decompressShrinkedCircuit(vector<unsigned char*> &bufGates, vector<unsigned char*> &bufTables, 

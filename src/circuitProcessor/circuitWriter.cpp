@@ -53,16 +53,17 @@ void Gen<IO>::exportObfuscatedInput(bool* valArr, const CircuitDetails &details,
 }
 
 template <typename IO>
-void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
+void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int thr_enc){
     //chrono::time_point<std::chrono::system_clock> start, end_enc, end_write;
 
     vector<unsigned char*> bufs(thr_enc*2+2);
     vector<uint32_t> bufLens(thr_enc*2+2);
-    
+    unsigned char* inputBuf;
+    uint32_t inputBufLen;
     //start = std::chrono::system_clock::now();
 
     compressShrinkedCircuit(cir, bufs, bufLens, thr_enc);
-
+    if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, inputBuf, inputBufLen);
     //end_enc = std::chrono::system_clock::now();
 
     //if(chrono::duration_cast<chrono::microseconds>(end_enc - start).count()>1000000)
@@ -97,7 +98,10 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
         delete [] bufs[i];
         bufs[i]=nullptr;
     }
-
+    send_data_gen(&inputBufLen, sizeof(uint32_t) );
+    send_data_gen(inputBuf, sizeof(inputBuf[0])*inputBufLen);
+    delete [] inputBuf;
+    inputBuf = nullptr;
     //fclose(enc);
 
     //end_write = std::chrono::system_clock::now();
@@ -108,7 +112,7 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc){
 }
 
 template <typename IO>
-void Gen<IO>::exportBin(ShrinkedCircuit* circuit){
+void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
     //std::chrono::time_point<std::chrono::system_clock> start, end;
     //start = std::chrono::system_clock::now();
 
@@ -140,6 +144,8 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit){
     // io->send_data(circuit->gates, circuit->details.numGates*sizeof(ShrinkedGate) );
 
     send_data_gen(circuit->gates, (size_t)circuit->details.numGates*sizeof(ShrinkedGate) );
+    send_data_gen(valArr, (size_t)circuit->details.bitlengthInputA*sizeof(bool) );
+    
     //end = std::chrono::system_clock::now();
     //std::chrono::duration<double> elapsed_seconds = end - start;
 

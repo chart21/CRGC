@@ -608,7 +608,7 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
 }
 
 template <typename IO>
-void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec){
+void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, int thr_dec){
     //chrono::time_point<std::chrono::system_clock> start, end_read, end_dec,a,b;
     //start = std::chrono::system_clock::now();
 
@@ -687,6 +687,10 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec){
         ll-=seg;
 
     }
+    uint32_t bufInputLen;
+    recv_data_eva(&bufInputLen, sizeof(uint32_t));
+    unsigned char* bufInput = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,32)];
+    recv_data_eva(bufInput, sizeof(bufInput[0])*bufInputLen);
     delete [] outLens;
     // fclose(denc);
     //end_read = std::chrono::system_clock::now();
@@ -697,6 +701,8 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec){
     //    <<", " << chrono::duration_cast<chrono::milliseconds>(end_read - a).count() <<endl;
     
     decompressShrinkedCircuit(bufGates, bufTables, dataLens, scir, thr_enc, thr_dec, seg);
+    valArr = new bool[details.bitlengthInputA];
+    decompressObfuscatedInput(bufInput, scir->details.bitlengthInputA, valArr);
     //end_dec = std::chrono::system_clock::now();
     //elapsed_seconds = end_dec - start;
     //t_dec_sum += chrono::duration_cast<chrono::microseconds>(end_dec - start).count();
@@ -707,7 +713,7 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec){
 }
 
 template <typename IO>
-void Eva<IO>::importBin(ShrinkedCircuit* &circuit){
+void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
     //std::chrono::time_point<std::chrono::system_clock> start, end;
     //start = std::chrono::system_clock::now();
 
@@ -735,6 +741,9 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit){
     //}
     // io->recv_data(gates, details.numGates*sizeof(ShrinkedGate));
     recv_data_eva(gates, details.numGates*sizeof(ShrinkedGate));
+    valArr = new bool[details.bitlengthInputA];
+    recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
+
     //fclose(f);
     //end = std::chrono::system_clock::now();
     //std::chrono::duration<double> elapsed_seconds = end - start;
@@ -746,7 +755,7 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit){
 }
 
 template <typename IO>
-void Eva<IO>::importObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath){
+void Eva<IO>::importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
 
     if(!destinationPath.empty()){
         std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
