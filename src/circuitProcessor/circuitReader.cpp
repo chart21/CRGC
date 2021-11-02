@@ -689,8 +689,9 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, 
     }
     uint32_t bufInputLen;
     recv_data_eva(&bufInputLen, sizeof(uint32_t));
-    unsigned char* bufInput = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,32)];
+    unsigned char* bufInput = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
     recv_data_eva(bufInput, sizeof(bufInput[0])*bufInputLen);
+
     delete [] outLens;
     // fclose(denc);
     //end_read = std::chrono::system_clock::now();
@@ -701,6 +702,7 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, 
     //    <<", " << chrono::duration_cast<chrono::milliseconds>(end_read - a).count() <<endl;
     
     decompressShrinkedCircuit(bufGates, bufTables, dataLens, scir, thr_enc, thr_dec, seg);
+    cout<<"b5"<<endl;
     valArr = new bool[details.bitlengthInputA];
     decompressObfuscatedInput(bufInput, scir->details.bitlengthInputA, valArr);
     //end_dec = std::chrono::system_clock::now();

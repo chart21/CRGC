@@ -60,9 +60,11 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int t
     vector<uint32_t> bufLens(thr_enc*2+2);
     unsigned char* inputBuf;
     uint32_t inputBufLen;
+    cout<<"b1"<<endl;
     //start = std::chrono::system_clock::now();
 
     compressShrinkedCircuit(cir, bufs, bufLens, thr_enc);
+    cout<<"b2"<<endl;
     if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, inputBuf, inputBufLen);
     //end_enc = std::chrono::system_clock::now();
 
@@ -98,7 +100,7 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int t
         delete [] bufs[i];
         bufs[i]=nullptr;
     }
-    send_data_gen(&inputBufLen, sizeof(uint32_t) );
+    send_data_gen( &inputBufLen, sizeof(uint32_t) );
     send_data_gen(inputBuf, sizeof(inputBuf[0])*inputBufLen);
     delete [] inputBuf;
     inputBuf = nullptr;

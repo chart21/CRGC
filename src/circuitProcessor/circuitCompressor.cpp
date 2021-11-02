@@ -29,6 +29,8 @@ void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it
                 uint64_t* in, uint8_t* inTable, uint64_t gate_num, size_t l, size_t offset){
     chrono::time_point<std::chrono::system_clock> a, b, c, d;
     //a = chrono::system_clock::now();
+    in = new uint64_t[ROUND_UP(l*2,64)];
+    inTable = new uint8_t[ROUND_UP((l>>1)+1,8)];
 
     uint8_t gate=0;
 
@@ -65,7 +67,8 @@ void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it
 
     *(bufs_it+1) = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg,TYPE);
     *(bufLens_it+1) = (uint32_t)olg;
-
+    delete [] in;
+    delete [] inTable;
     //c = chrono::system_clock::now();
 }
 
@@ -101,30 +104,31 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
 
     vector<thread> threads;    
     int ll = cir->details.numGates;
-    a = chrono::system_clock::now();
-    uint64_t* in = new uint64_t[ROUND_UP(ll*2,64)];
-    uint8_t* inTable = new uint8_t[ROUND_UP((ll>>1)+1,8)];
-    b = chrono::system_clock::now();
+    
+    // uint64_t* in = new uint64_t[ROUND_UP(ll*2,64)];
+    // uint8_t* inTable = new uint8_t[ROUND_UP((ll>>1)+1,8)];
+    
     
     for(int t=0;t<thr_enc;t++) {
         size_t l = ll>seg?seg:ll;
         size_t off = seg*t;
         vector<unsigned char*>::iterator bufs_it=bufs.begin()+t*2+1;
         vector<uint32_t>::iterator bufLens_it=bufLens.begin()+t*2+1;
-        threads.push_back(thread(encThread, cir->gates+off, bufs_it, bufLens_it, in+off*2, inTable+(off>>1), cir->details.numGates, l, t));
-        ll-=seg;        
+        uint64_t* in = nullptr;
+        uint8_t* inTable = nullptr;
+        // threads.push_back(thread(encThread, cir->gates+off, bufs_it, bufLens_it, in+off*2, inTable+(off>>1), cir->details.numGates, l, t));
+        threads.push_back(thread(encThread, cir->gates+off, bufs_it, bufLens_it, in, inTable, cir->details.numGates, l, t));
+        ll-=seg;
+
     }
-    c = chrono::system_clock::now();
 
 
-    d = chrono::system_clock::now();
     for (auto &th:threads) {
         th.join();
     }
 
-    e = chrono::system_clock::now();
-    delete [] in;
-    delete [] inTable;
+    // delete [] in;
+    // delete [] inTable;
     
     size_t oll;
     bufs.back()=(encHlp32(bufLens.data(),bufLens.size()-1,&oll,TYPE));
@@ -146,9 +150,10 @@ void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it,
 
         size_t l = *dataLens_it;
         size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
-    
+
         uint64_t* outGates=decHlp64( *(bufGate_it+i), l*2, &olg,TYPE);
         delete [] *(bufGate_it+i);
+
         uint8_t* outTable=decHlp8( *(bufTable_it+i), tbll, &olg,TYPE);
         delete [] *(bufTable_it+i);
 
@@ -182,7 +187,7 @@ void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it,
 
 void decompressObfuscatedInput(unsigned char* bufInput, size_t dataInputLen, bool* &valArr){
     size_t l;
-    uint8_t* outInput=decHlp8( bufInput, dataInputLen, &l,TYPE);
+    uint8_t* outInput = decHlp8( bufInput, dataInputLen, &l,TYPE);
     std::copy(outInput,outInput+dataInputLen,valArr);
     delete [] bufInput;
     delete [] outInput;

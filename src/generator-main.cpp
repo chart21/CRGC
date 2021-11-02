@@ -27,24 +27,30 @@
 #include "programs/include/circuitLinker.h"
 
 #include <chrono>
-
+//#define DEBUG
 #define time_S t1 = startClock();
 #define time_E stopClock(t1);
 
 //#define CIRCUITPATH "/home/christopher/Documents/C-RGCG/src/circuits/"
 #define CIRCUITPATH "../src/circuits/"
-
+#define US
 template <typename F, typename... Args>
 auto funcTime(std::string printText, F func, Args &&...args)
 {
     std::chrono::high_resolution_clock::time_point t1 =
         std::chrono::high_resolution_clock::now();
     func(std::forward<Args>(args)...);
+#ifdef US
+    auto time = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::high_resolution_clock::now() - t1)
+                    .count();
+    std::cout << "---TIMING--- " << time << "us " << printText << '\n';
+#else
     auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::high_resolution_clock::now() - t1)
                     .count();
-
     std::cout << "---TIMING--- " << time << "ms " << printText << '\n';
+#endif
     return time;
 }
 
@@ -341,7 +347,7 @@ void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* &valArr, int thr, bo
 
 void compressBenchmark( Agency* &agency, bool bin){
     ShrinkedCircuit* imported;
-    int circuitThread = 10;
+    //int circuitThread = 10;
     uint64_t ctime=0;
     uint64_t dtime=0;
     int len = bin==true?1:1;
@@ -350,7 +356,7 @@ void compressBenchmark( Agency* &agency, bool bin){
     for(int i=0;i<len;i++){
         emp::FileIO *cio = new emp::FileIO( filepath.c_str(),false );
         Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(cio);
-        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, agency, circuitThread, bin);
+        ctime += funcTime( "compress", forwarderEx<emp::FileIO>, gen, agency, agency->compressThreads, bin);
         cio->flush();
         delete cio;
         delete gen;
@@ -359,7 +365,7 @@ void compressBenchmark( Agency* &agency, bool bin){
         emp::FileIO *dio = new emp::FileIO( filepath.c_str(),true );
         Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(dio);
         bool* valArr = nullptr;
-        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, imported, valArr, circuitThread, bin);
+        dtime += funcTime( "decompress", forwarderIm<emp::FileIO>, eva, imported, valArr, agency->compressThreads, bin);
         dio->flush();
         if(valArr) delete [] valArr;
         delete dio;
@@ -456,6 +462,7 @@ int main(int argc, char *argv[])
     if(agency->party!=2){
     /* to do: for cpp format, load input */
         agency->loadTransformedCircuit();
+#ifndef DEBUG
         auto parents = new uint_fast64_t[agency->circuit->details.numWires * 2]();
         agency->predictLeakage(parents);
 
@@ -463,6 +470,7 @@ int main(int argc, char *argv[])
         agency->evaluateCircuit();
         agency->obfuscateCircuit(parents);
         agency->verifyIntegrityOfObfuscatedCircuit();
+#endif
         agency->scir = transformCircuitToShrinkedCircuit(agency->circuit);
     }
 
