@@ -312,7 +312,10 @@ void Agency::verifyIntegrityOfExportedRGC()
 
 void Agency::evaluateObfuscatedCircuit(){
     // evaluateTransformedCircuit(this->circuit, this->obfuscatedValArr, this->inputB, this->output);
-    funcTime("evaluate circuit", evaluateTransformedCircuit, this->circuit, this->obfuscatedValArr, this->inputB, this->output);
+    if(circuitFormat == "emp" || fileFormat == "cpp")
+        funcTime("evaluate circuit", evaluateSortedTransformedCircuit, this->circuit, this->obfuscatedValArr, this->inputB, this->output);
+    else
+        funcTime("evaluate circuit", evaluateTransformedCircuit, this->circuit, this->obfuscatedValArr, this->inputB, this->output);
 
     auto inA = convertBoolArrToInt(this->obfuscatedValArr, this->circuit->details.bitlengthInputA);
     auto inB = convertBoolArrToInt(this->inputB, this->circuit->details.bitlengthInputB);
