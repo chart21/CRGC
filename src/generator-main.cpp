@@ -203,14 +203,14 @@ void Agency::evaluateCircuit()
     std::string filepath = CIRCUITPATH + circuitName;
 
     if(circuitFormat == "emp" || fileFormat == "cpp")
-        funcTime("evaluate circuit", evaluateSortedTransformedCircuit, circuit, inputA, inputB, output);
+        funcTime("evaluate circuit", evaluateSortedTransformedCircuit, this->circuit, this->inputA, this->inputB, this->output);
     else
-        funcTime("evaluate circuit", evaluateTransformedCircuit, circuit, inputA, inputB, output);
+        funcTime("evaluate circuit", evaluateTransformedCircuit, this->circuit, this->inputA, this->inputB, this->output);
 
 
-    int inA = convertBoolArrToInt(inputA, circuit->details.bitlengthInputA);
-    int inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
-    int iout = convertBoolArrToInt(output, circuit->details.bitlengthOutputs);
+    int inA = convertBoolArrToInt(this->inputA, circuit->details.bitlengthInputA);
+    int inB = convertBoolArrToInt(this->inputB, circuit->details.bitlengthInputB);
+    int iout = convertBoolArrToInt(this->output, circuit->details.bitlengthOutputs);
     std::cout << "---Evaluation--- inA" << inA << "\n";
     std::cout << "---Evaluation--- inB" << inB << "\n";
     std::cout << "---Evaluation--- out" << iout << "\n";
@@ -268,18 +268,18 @@ void Agency::obfuscateCircuit(uint_fast64_t *parents)
 
 void Agency::verifyIntegrityOfObfuscatedCircuit()
 {
-    auto outputRGC = new bool[circuit->details.bitlengthOutputs * circuit->details.numOutputs];
+    auto outputRGC = new bool[this->circuit->details.bitlengthOutputs * circuit->details.numOutputs];
     
-    evaluateTransformedCircuit(circuit, obfuscatedValArr, inputB, outputRGC);
+    evaluateTransformedCircuit(this->circuit, obfuscatedValArr, inputB, outputRGC);
 
-    if (equalBoolArr(outputRGC, output, circuit->details.bitlengthOutputs))
+    if (equalBoolArr(outputRGC, this->output, this->circuit->details.bitlengthOutputs))
         std::cout << "---Success--- Evaluation of original circuit and constructed RGC are equal" << '\n';
     else
         std::cout << "---Warning--- Evaluation of original circuit and constructed RGC are not equal" << '\n';
 
-    auto inA = convertBoolArrToInt(obfuscatedValArr, circuit->details.bitlengthInputA);
-    auto inB = convertBoolArrToInt(inputB, circuit->details.bitlengthInputB);
-    auto iout = convertBoolArrToInt(outputRGC, circuit->details.bitlengthOutputs);
+    auto inA = convertBoolArrToInt(obfuscatedValArr, this->circuit->details.bitlengthInputA);
+    auto inB = convertBoolArrToInt(inputB, this->circuit->details.bitlengthInputB);
+    auto iout = convertBoolArrToInt(outputRGC, this->circuit->details.bitlengthOutputs);
     std::cout << "---Evaluation--- inA" << inA << "\n";
     std::cout << "---Evaluation--- inB" << inB << "\n";
     std::cout << "---Evaluation--- out" << iout << "\n";
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
     if(agency->party!=2){
     /* to do: for cpp format, load input */
         agency->loadTransformedCircuit();
-#ifndef DEBUG
+
         auto parents = new uint_fast64_t[agency->circuit->details.numWires * 2]();
         agency->predictLeakage(parents);
 
@@ -473,7 +473,7 @@ int main(int argc, char *argv[])
         agency->evaluateCircuit();
         agency->obfuscateCircuit(parents);
         agency->verifyIntegrityOfObfuscatedCircuit();
-#endif
+
         agency->scir = transformCircuitToShrinkedCircuit(agency->circuit);
     }
 
