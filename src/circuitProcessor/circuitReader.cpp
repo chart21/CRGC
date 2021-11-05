@@ -223,7 +223,7 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     }
     delete[] flipped;
     f.close();
-    details.numGates = gateCounter;
+    //details.numGates = gateCounter;
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
     uint_fast64_t oldNumWires = details.numWires;
@@ -756,8 +756,8 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
 
 }
 
-template <typename IO>
-void Eva<IO>::importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
+
+void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
 
     if(!destinationPath.empty()){
         std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
@@ -767,8 +767,8 @@ void Eva<IO>::importObfuscatedInput(bool* &valArr, const CircuitDetails &details
         }
         outputFile.close();
     }
-    else
-        recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
+    //else
+    //    recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
 
     return;
 
