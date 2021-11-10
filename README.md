@@ -21,7 +21,7 @@ The generator executable (party A) performs the following steps:
 5. It evaluates the CRGC with party A's obfuscated input and the sample plain input for party B.
 6. It assesses whether the circuit was generated correctly (i.e., the output of step 2 and step 4 match).
 7. It provides further analysis of the CRGC constructed specifically for party A's input.
-8. It sends the CRGC to the evaluator via network sockets
+8. It sends the CRGC to the evaluator via network sockets, or save it as local binary file.
 
 The evaluator (party B) performs the following steps:
 
@@ -30,31 +30,41 @@ The evaluator (party B) performs the following steps:
 
 ## Results
 
-| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
-|-----------------------------|-------------------------------|-------------------------------|-----------------------------|
-| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 23.94%                      |
-| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 26.65%                      |
-| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 31.84%                      |
-| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 35.51%                      |
-| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 33.88%                      |
-| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
+| Function                    | Evaluate speed (gates/us)   |
+|-----------------------------|-------------------------------|
+| 64-bit Adder                | 46    |
+| 64-bit Subtract             | 54        |
+| 64x64 -> 64 bit Multiplier  | 187    |
+| AES-256(k,m)                | 273     |
+| SHA256                      | 252   |
+| SHA512                      | 241  |
 
 
-| Function                    | Explanation | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
-|-----------------------------|-------------------------------|-------------------------------|-----------------------------|-----------------------------|
-| Set-Intersect 200x200 8-bit| A has 200 8-bit inputs. B has 200 8-bit inputs and wants to find the intersect of both Arrays | 267900 out of 269500 (99.41%) | 0 out of 1024 (0%)            | 6.09%                       |
-| Linear Search and arithmetics 4096 8-bit| A has an array of 4096 indices with 3 values each. B wants to find a specific index and run arithmetics on the three values | 2437057 out of 2437089 (> 99.99%) | 0 out of 131072 (0%)            | 22.15%                     |
-| Max element in a search window of a 64x64 8-bit 2D Array|  A has a 64x64 8-bit 2D Array with values. B wants to find the maximum value in a specified search window | 1202392 out of 1202408 (> 99.99%) | 1 out of 32768 (<0.01%)            | 28.98%                       |
+| Function                    | Explanation | Evaluate speed (million gates/s)    | 
+|-----------------------------|-------------------------------|-------------------------------|
+| Set-Intersect 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 191.614 | 
+| Linear Search and arithmetics 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 156.897 | 
+| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 185.076  |
 
 
-- **Perfectly obfuscated gates**: Perfectly obfuscated gates are gates that may be obfuscated completely at random for at least one secret input without destroying the circuit's integrity. A reusable garbled circuit provides improved obfuscation and circuit privacy with a higher proportion of those gates. 
-- **Secret input bits of A leaked**: Any non-perfectly obfuscated gate's truth table may leak information of the circuit's construction. In some cases, this information can be used to learn a secret input of party A with certainty. A reusable garbled circuit provides improved input privacy with a lower proportion of input leakage. Note that inputs are only leaked if the evaluator knows the original boolean circuit's exact (or almost exact) construction.
-- **Circuit similarity**:  A reusable garbled circuit can only be constructed dependent on one secret input of party A (but supports arbitrary inputs of party B). After constructing a circuit based on a specific input, one can analyze the similarity of the constructed circuit and the original boolean circuit. A percentage of 30% means that given a random gate in the reusable garbled circuit, it has a 30% chance to have an identical truth table as the same gate in the original boolean circuit. A lower percentage of circuit similarity provides improved obfuscation and circuit privacy.  
+- **Evaluate speed**: Benchmark two endpoints are AWS instance with type m5zn.metal, 100Gbits bandwidth. Use 100 compression threads through network transfer.
+
 
 ## Getting Started
 
-First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repo, cd into it, and run the following commands:
+First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repo, you can either run 
 
+```
+git clone --recurse-submodules https://github.com/chart21/Reusable-Garbled-Circuit-Generator-CPP.git
+```
+
+or initialize and fetch the [TurboPFor](https://github.com/firebolt007/TurboPFor-Integer-Compression.git) submodule, which are adapted from the repository [TurboPFor](https://github.com/powturbo/TurboPFor-Integer-Compression.git) manually after git clone
+
+```
+git submodule update --init --recursive
+```
+
+then run the following codes
 
 ```
 cmake . -B ./build
@@ -62,89 +72,100 @@ cd build
 make -j
 ```
 
-
-
-
-``./build/generator adder64 txt`` converts the adder64 circuit and a random input for party A into a CRGC. It exports the CRGC and the obfuscated input of party A to the circuits folder.
-
-``./build/evaluator adder64 txt`` reads an adder64 RGC and obfuscated input of party A from the circuit folder. It evaluates the circuit with a random input for party B.
-
-
 ### Optional arguments
+``--party=< 0|1|2 >`` 1 for generator, 2 for evaluator 
+
+``--circuit=< circuit name >``
+
+``--type=< cpp|txt >`` only generator needs this option, to specify the original circuit format. cpp as default.
+
+``--inputa=< input >`` generator must specify input a, or input a will be random. This option make no sense to evaluator
+
+``--inputb=< input >`` evaluator can specify input b, or it will be random.
+
+``--format=< emp|bristol >`` only make sense if circuit type is txt, apparently only generator needs this option.
+
+``--thread=< thread >`` only generator needs this option, to specify how many threads are used to construct the circuit.
+
+``--disk`` if specify, generator writes the generated circuit to hard disk instead of transfering through network, evaluator reads from the disk. Data format can be specified, bin as default.
+
+``--bin`` if **--disk** is specified, ex/import circuit as binary, if **--disk** is not specified, transfer circuit through network in bin, in this case, generator and evaluator should both set as **--bin**. Be incompatible with **--txt** and **--compress**.
+
+``--compress`` if **--disk** is specified, ex/import circuit as compressed file, if **--disk** is not specified, transfer circuit through network in compressed data, in this case, generator and evaluator should both set as **--compress**. Be incompatible with **--txt** and **--bin**.
+
+``--txt`` if **--disk** is specified, ex/import circuit as rgc txt file, if **--disk** is not specified, this option makes no sense, circuit will be transferred through network in compressed format. Be incompatible with **--bin** and **--compress**.
+
+``--compression=< compress threads >`` if **--comress** is set, thread number can be sepcified.
+
+### Example 
 
 #### generator executable
+```
+./build/generator --party=1 --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --compress --compression=100
+```
 
-``1st param`` specify the filename for the circuit or CPP function you want to execute. Circuit files have to be located in **./src/circuits**. C++ files have to be located **./src/programs**. (default: adder64)
+Sets this end as **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input supposed to be from party B. Then the generator listens to connection from an evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with obfuscated input A in **compress** format. The data is compressed in **100** threads.
 
-``2nd param`` specify the file format: cpp/txt/bin (default: txt) 
+```
+./build/generator --party=1 --circuit=myCircuit --disk --txt
+```
 
-``3rd param`` set the first input of the circuit. Use **r** for random input. (default: Random input)
-
-``4th param`` set the second input of the circuit. Use **r** for random input. (default: Random input)
-
-``5th param`` specify the format of the circuit (emp/bristol). Use emp for circuit files generated generated by emp. (default: bristol)
-
-``6th param`` set the number of threads that should be used. Many of our functions benefit from multithreading. (default: 1)
-
-
-
-
-
+Sets this end as **generator**. Transforms the circuit file **./circuits/myCircuit.txt** generated by **emp** with a random secret inputa using 1 Thread. Tests the integrity of the circuit's logic with a random input supposed to be from party B. Then export the generated obfuscated circuit and input A as **binary** file in **disk**.
 
 
 #### evalator executable
 
-
-
-
-### Example 
 ```
-./build/generator myCPPFunction cpp 200 300 bristol 40
+./build/generator --party=2 --circuit=myCircuit --inputb=20 --format=bristol --disk --bin
 ```
 
-Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. It tests the integrity of the circuit's logic with an exemplary input of **300** that party B might query. The bristol keyword is irrelevant for imported C++ functions.
-
-```
-./build/generator myCircuit txt r r emp 1
-```
-Transforms the circuit file **./circuits/myCircuit.txt** generated by **emp** with a random secret input using **1** Thread. It evaluates the circuit with a random input for party B. 
+Sets this end as **evaluator**. Import the binary file **./circuits/myCircuit.bin** in hard disk to the circuit struct. Evaluate the circuit with input **20** of Party B.
 
 
 #### Example Outputs
 
 
-> ./build/generator myCPPFunction cpp 200 300 bristol 40
+> ./build/generator --party=1 --circuit=query --type=cpp --bin
 
 
 ```
----TIMING--- 7073ms converting program to circuit
----INFO--- numGates: 79918167
----TIMING--- 224ms getting Parents of each Wire
----TIMING--- 502ms identifying potentially obfuscated fixed gates
----TIMING--- 547ms identifying potentially intermediary gates
----INFO--- potentially obfuscated and integrity-breaking gates: 6888560
----TIMING--- 64ms predict leaked inputs
+---TIMING--- 1046064us converting program to circuit
+read: 0
+---INFO--- numGates: 9100000
+---TIMING--- 41126us getting Parents of each Wire
+---TIMING--- 63259us identifying potentially obfuscated fixed gates
+---TIMING--- 320300us identifying potentially intermediary gates
+---INFO--- potentially obfuscated fixed and intermediary gates: 3220032
+---TIMING--- 21336us predict leaked inputs
 ---INFO--- 0 leaked inputs: 
----TIMING--- 405ms evaluate circuit
----Evaluation--- inA200
----Evaluation--- inB300
+---TIMING--- 49661us evaluate circuit
+---Evaluation--- inA-1
+---Evaluation--- inB1181228270
 ---Evaluation--- out0
----TIMING--- 942ms flip circuit
----TIMING--- 503ms identify fixed Gates
----INFO--- obfuscated gates: 50990467
----TIMING--- 190ms identify intermediary gates
----INFO--- obfuscated and integrity-breaking gates: 79838167
----TIMING--- 437ms obfuscate gates
+---TIMING--- 127636us flip circuit
+---TIMING--- 70419us identify fixed Gates
+---INFO--- obfuscated gates: 1
+---TIMING--- 451681us identify intermediary gates
+---INFO--- obfuscated fixed and intermediary gates: 1
+---TIMING--- 26443us obfuscate gates
 ---Success--- Evaluation of original circuit and constructed RGC are equal
 ---Evaluation--- inA18446744073709551615
----Evaluation--- inB300
+---Evaluation--- inB1181228270
 ---Evaluation--- out0
----TIMING--- 7038ms converting program to circuit
----INFO--- numGates: 79918167
-Ratio of identical gates compared to original circuit: 0.00100102
----TIMING--- 175ms compare circuit similarity
+connected
+tmp0
+---TIMING--- 129515us send
 ```
+> ./build/generator --party=2 --circuit=query --bin
 
+```
+connected
+---TIMING--- 133045us receive
+---TIMING--- 53469us evaluate circuit
+---Evaluation--- inA18446744073709551615
+---Evaluation--- inB3287501720
+---Evaluation--- out0
+```
 
 ### Compiling a C++ function to a reusable garbled circuit using our library
 
@@ -156,7 +177,7 @@ You can directly convert C++ functions to a boolean circuit and a CRGC using our
 
 Run cmake, make, and the following command to convert your program into a CRGC:  
 ```
-./build/generator *FILENAME OF YOUR CPP FILE* cpp *inputA* *inputB* bristol *number of Threads*
+./build/generator --party=1 --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
 ```
 
 
@@ -187,7 +208,7 @@ This saves a boolean circuit.txt file that you can use to generate a reusable ga
 
 
 ```
-./build/generator *FILENAME OF YOUR CIRCUIT FILE* txt *inputA* *inputB* emp *number of Threads*
+./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
 ```
 
 ### Compiling a C function to a reusable garbled circuit using CBMC-GC2
@@ -213,6 +234,5 @@ make
 This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-./build/generator *FILENAME OF YOUR CIRCUIT FILE* txt *inputA* *inputB* bristol *number of Threads*
+./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
 ```
-

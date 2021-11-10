@@ -36,7 +36,7 @@
 //#define CIRCUITPATH "/home/christopher/Documents/C-RGCG/src/circuits/"
 #define CIRCUITPATH "../src/circuits/"
 #define PORT 8080
-#define US
+//#define US
 
 template <typename F, typename... Args>
 auto funcTime(std::string printText, F func, Args &&...args)
