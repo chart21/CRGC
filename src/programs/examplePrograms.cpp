@@ -32,8 +32,8 @@ Integer product(BITSIZE, 0, PUBLIC);
 
 void setIntersect()
 {
-    uint_fast64_t LEN = 1000;
-    uint_fast64_t BITSIZE = 8;
+    uint_fast64_t LEN = 40000;
+    uint_fast64_t BITSIZE = 32;
 
     //Integer product(BITSIZE, 1);
     Integer intersect[LEN];
@@ -104,8 +104,8 @@ void setIntersect()
 
 //Find maximum element in an interval range of a 2D arr
 void maxIn2DArr() {  
-  uint_fast64_t LEN = 5000;
-  uint_fast64_t BITSIZE = 16; 
+  uint_fast64_t LEN = 386;
+  uint_fast64_t BITSIZE = 32; 
 
   Integer coordinates[2];
 
@@ -155,8 +155,8 @@ void maxIn2DArr() {
 
 //Check if value b is in array a
 void query() {
-  uint_fast64_t LEN = 5000; //Specify length of input A
-  uint_fast64_t BITSIZE = 16; //Specify bitlength of inputs
+  uint_fast64_t LEN = 140000; //Specify length of input A
+  uint_fast64_t BITSIZE = 32; //Specify bitlength of inputs
   
   Bit result = Bit(false);
 

@@ -22,8 +22,10 @@ void generateRandomInput(size_t bitlength, bool* input)
 bool equalBoolArr(bool* arr1, bool* arr2, size_t bitlength)
 {
 for (auto i = 0; i < bitlength; i++)
-  if(arr2[i] != arr1[i])
-    return false;
+    if(arr2[i] != arr1[i]){
+        std::cout<<i<<": "<<arr2[i]<<", "<<arr1[i]<<std::endl;
+        return false; 
+    }
 return true;
 }
 

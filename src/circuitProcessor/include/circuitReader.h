@@ -19,6 +19,8 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
 
 TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetails details);
 
+void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath="");
+
 
 template <typename IO>
 class Eva{ public:
@@ -37,12 +39,12 @@ class Eva{ public:
         }
     }
     
-    void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath="");
-    void importBin(ShrinkedCircuit* &circuit);
+    
+    void importBin(ShrinkedCircuit* &circuit, bool* &valArr);
     TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
 
     /* import compressed Circuit */
-    void importCompressedCircuit(ShrinkedCircuit* &circuit, int thr_dec);
+    void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, int thr_dec);
 
 };
 

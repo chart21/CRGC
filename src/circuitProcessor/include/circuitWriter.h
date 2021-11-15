@@ -10,6 +10,8 @@
 
 void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destinationPath);
 
+void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
+
 template <typename IO>
 class Gen {
 public:
@@ -17,6 +19,7 @@ public:
 
     Gen(IO *io):io(io) {}
     Gen() {}
+
     void send_data_gen(const void * data, uint64_t nbyte){
         uint64_t send = 0;
         while(send<nbyte){
@@ -27,10 +30,10 @@ public:
 
         }
     }
-    void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
-    void exportBin(ShrinkedCircuit* circuit);
+    
+    void exportBin(ShrinkedCircuit* circuit, bool* valArr);
     
     /* export compressed circuit to HDD */
-    void exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc=1);
+    void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int thr_enc=1);
 };
 #endif
