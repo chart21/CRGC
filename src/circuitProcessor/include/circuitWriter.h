@@ -34,6 +34,7 @@ public:
     void exportBin(ShrinkedCircuit* circuit, bool* valArr);
     
     /* export compressed circuit to HDD */
-    void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int thr_enc=1);
+    void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1);
+    // void sendThread();
 };
 #endif

@@ -1,12 +1,155 @@
 #include "include/circuitWriter.h"
 #include "include/circuitStructs.h"
-#include "include/circuitCompressor.h"
-//include "include/circuitTransfer.h"
-//#include "emp-tool/emp-tool.h"
+// #include "include/circuitCompressor.h"
 #include "include/circuitHighSpeedNetIO.h"
+#include "include/helperFunctions.h"
+
+#include "../../TurboPFor-Integer-Compression/vp4.h"
+#include "../../TurboPFor-Integer-Compression/circuitutil.h"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+#include <memory>
+
+#define TBL_SHR
+//#define BP
+#define SEG(n,th) (n+th-n%th)/th
+#define ROUND_UP(_n_, _a_) (((_n_) + ((_a_)-1)) & ~((_a_)-1))
+#define P4NENC_BOUND(n, size) ((n + 127) / 128 + (n + 32) * (size))
+#define P4NDEC_BOUND(n, size) (ROUND_UP(n, 32) * (size))
+
+#define TYPE 1
+
+#define DETAILS_NUM 6
+#define UNT 8
+#define LIMIT 500000
+
+using namespace std;
+
+// std::mutex mtx_send;
+// vector<unsigned char*> bufs_send;
+// vector<uint32_t> bufLens_send;
+// vector<condition_variable> cd_send(202);
+
+std::mutex mtx_send;
+std::mutex mtx_write;
+unsigned char* bufs_send;
+uint32_t bufLens_send;
+condition_variable cd_sent;
+condition_variable cd_wrote;
+int id_sent=-1;
+int id_wrote=-1;
+
+// vector<unique_ptr<condition_variable>> cd_send(100,unique_ptr<condition_variable>(new condition_variable));
+
+
+void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
+
+    uint64_t* in = new uint64_t[ROUND_UP(l*2,64)];
+    uint8_t* inTable = new uint8_t[ROUND_UP((l>>1)+1,8)];
+
+    uint8_t gate=0;
+    for(uint64_t i=0;i<l;i++){
+        in[i] = gates_in[i].leftParentID;
+        in[i+l] = gates_in[i].rightParentOffset;
+        
+        if(i%2==0){
+            gate=0;
+
+            gate ^= gates_in[i].truthTable[0][0];
+            gate ^= gates_in[i].truthTable[0][1]<<1;
+            gate ^= gates_in[i].truthTable[1][0]<<2;
+            gate ^= gates_in[i].truthTable[1][1]<<3;
+        }
+        else{
+            gate ^= gates_in[i].truthTable[0][0]<<4;
+            gate ^= gates_in[i].truthTable[0][1]<<5;
+            gate ^= gates_in[i].truthTable[1][0]<<6;
+            gate ^= gates_in[i].truthTable[1][1]<<7;
+
+            inTable[i>>1]=gate;
+        }
+    }
+    if(l%2!=0) inTable[l>>1]=gate;
+
+    size_t olg1, olg2;
+    unsigned char* bufs_tmp1 = encHlp64(in,l*2,&olg1,TYPE);
+    unsigned char* bufs_tmp2 = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg2,TYPE);
+
+    std::unique_lock<std::mutex> lck(mtx_write);
+    while(id_sent!=offset*2) cd_sent.wait(lck);
+    bufs_send = bufs_tmp1;
+    bufLens_send = (uint32_t)olg1;
+    id_wrote++;
+
+    cd_wrote.notify_one();
+
+    while(id_sent!=offset*2+1) cd_sent.wait(lck);
+    bufs_send = bufs_tmp2;
+    bufLens_send = (uint32_t)olg2;
+    id_wrote++;
+
+    cd_wrote.notify_one();
+
+    delete [] in;
+    delete [] inTable;
+}
+
+
+void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, int len){
+    size_t l;
+    uint8_t *inValArr = new uint8_t[ROUND_UP(lenA,64)];
+    std::copy(valArr,valArr+lenA,inValArr);
+    // inputBuf = encHlp8(inValArr,lenA,&l,TYPE);
+    // inputBufLen = (uint32_t)l;
+    unsigned char* bufs_tmp = encHlp8(inValArr,lenA,&l,TYPE);
+
+    std::unique_lock<std::mutex> lck(mtx_write);
+    while(id_sent!=len-2) cd_sent.wait(lck);
+    bufs_send = bufs_tmp;
+    bufLens_send = (uint32_t)l;
+    id_wrote++;
+
+    cd_wrote.notify_one();
+    delete [] inValArr;
+}
+
+
+void compressShrinkedCircuit(ShrinkedCircuit* cir, int package){
+    uint64_t inDetails[ROUND_UP(DETAILS_NUM,64)];
+    inDetails[0] = cir->details.numWires;
+	inDetails[1] = cir->details.numGates;
+    inDetails[2] = cir->details.numOutputs;
+    inDetails[3] = cir->details.bitlengthInputA;
+    inDetails[4] = cir->details.bitlengthInputB;    
+    inDetails[5] = cir->details.bitlengthOutputs;
+
+    size_t old;
+    unsigned char* bufs_tmp = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
+    bufs_send = bufs_tmp;
+    bufLens_send = old;
+    id_wrote = 0;
+    cd_sent.notify_one();
+
+    size_t seg = SEG(cir->details.numGates,package);
+    seg = seg%2==0?seg:seg+1;            
+    vector<thread> threads;    
+    int ll = cir->details.numGates;
+    
+    for(int i=0;i<package;i++) {
+        size_t l = ll>seg?seg:ll;
+        threads.push_back(thread(encThread, cir->gates+i*seg, l, i));
+        ll-=seg;
+    }
+
+    for (auto &th:threads) {
+        th.join();
+    }
+}
 
 
 void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destinationPath)
@@ -51,75 +194,62 @@ void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::str
     //    send_data_gen( valArr, details.bitlengthInputA*sizeof(bool) );
     
 }
-
+/*
 template <typename IO>
-void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int thr_enc){
-    //chrono::time_point<std::chrono::system_clock> start, end_enc, end_write;
-
-    vector<unsigned char*> bufs(thr_enc*2+2);
-    vector<uint32_t> bufLens(thr_enc*2+2);
-    unsigned char* inputBuf;
-    uint32_t inputBufLen;
-    cout<<"b1"<<endl;
-    //start = std::chrono::system_clock::now();
-
-    compressShrinkedCircuit(cir, bufs, bufLens, thr_enc);
-    cout<<"b2"<<endl;
-    if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, inputBuf, inputBufLen);
-    //end_enc = std::chrono::system_clock::now();
-
-    //if(chrono::duration_cast<chrono::microseconds>(end_enc - start).count()>1000000)
-    //t_enc_sum += chrono::duration_cast<chrono::microseconds>(end_enc - start).count();
-    //t_enc_sum += chrono::duration_cast<chrono::milliseconds>(end_enc - start).count();
-    //cout<<"finished enc, elapsed seconds: "<<chrono::duration_cast<chrono::milliseconds>(end_enc - start).count()<<endl;
-
-
-    size_t len=bufLens.size()-1;
-    //fwrite(&len,(size_t),1,enc);
-    // io->send_data( &len, sizeof(size_t) );
-    send_data_gen( &len, sizeof(size_t) );
-
-    //fwrite(&(bufLens.back()),sizeof(bufLens.back()),1,enc);
-    // io->send_data( &(bufLens.back()), sizeof(bufLens.back()) );
-    send_data_gen( &(bufLens.back()), sizeof(bufLens.back()) );
-
-    //cout<<bufLens.back()<<endl;
-    //fwrite(bufs.back(),sizeof(bufs.back()[0]), bufLens.back(), enc);
-    // io->send_data( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
-    send_data_gen( bufs.back(), sizeof(bufs.back()[0])*bufLens.back() );
-
-    delete [] bufs.back();
-    bufs.back()=nullptr;
-    bufs.pop_back();
-    bufLens.pop_back();
-    cout<<"detail write finish"<<endl;
+void Gen<IO>::sendThread() {
+    size_t len = bufLens_send.size();
+    
     for(int i=0;i<len;i++){
-        //fwrite(bufs[i],sizeof(bufs[i][0]), bufLens[i], enc);
-        // io->send_data( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
-        send_data_gen( bufs[i], sizeof(bufs[i][0])*bufLens[i] );
-        delete [] bufs[i];
-        bufs[i]=nullptr;
-    }
-    send_data_gen( &inputBufLen, sizeof(uint32_t) );
-    send_data_gen(inputBuf, sizeof(inputBuf[0])*inputBufLen);
-    delete [] inputBuf;
-    inputBuf = nullptr;
-    //fclose(enc);
 
-    //end_write = std::chrono::system_clock::now();
-    //elapsed_seconds = end_write - start;
-    //t_write_sum += chrono::duration_cast<chrono::microseconds>(end_write - start).count();
-    //t_write_sum += chrono::duration_cast<chrono::milliseconds>(end_write - start).count();
-    //cout<<"finished write, elapsed seconds:" << chrono::duration_cast<chrono::milliseconds>(end_write - start).count() <<endl;
+        std::unique_lock<std::mutex> lck(mtx_send);
+        while(bufs_send[i]==nullptr) cd_send[i].wait(lck);
+
+        send_data_gen( &(bufLens_send[i]), sizeof(bufLens_send[0]) );
+        send_data_gen( bufs_send[i], sizeof(bufs_send[i][0])*bufLens_send[i] );
+        delete [] bufs_send[i];
+        bufs_send[i]=nullptr;
+    }
+
+}
+*/
+template <typename IO>
+void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package){
+
+    // bufs_send.assign(package*2+2,nullptr);
+    // bufLens_send.assign(package*2+2,0);
+    size_t len = package*2+2;
+
+    // cd_send.assign(package*2+2,unique_ptr<condition_variable>(new condition_variable));
+    cout<<"package: "<<package<<endl;
+    send_data_gen( &package, sizeof(int) );
+
+    thread sendThread([&]() {
+        for(int i=0;i<len;i++){
+            std::unique_lock<std::mutex> lck(mtx_send);
+            while(id_wrote!=i) cd_wrote.wait(lck);
+
+            send_data_gen( &(bufLens_send), sizeof(bufLens_send) );
+            send_data_gen( bufs_send, sizeof(bufs_send[0])*bufLens_send );
+            id_sent = i;
+            delete [] bufs_send;
+            bufs_send = nullptr;
+            cd_sent.notify_all();
+
+            //cout<<i<<"th buf len: "<<bufLens_send<<endl;
+        }
+    });
+
+    compressShrinkedCircuit(cir, package);
+
+    if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, len);
+    else {bufLens_send = -1; }
+    sendThread.join();
+  
 }
 
 template <typename IO>
 void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
-    //std::chrono::time_point<std::chrono::system_clock> start, end;
-    //start = std::chrono::system_clock::now();
 
-    //FILE *f;
-    //f = fopen((destinationPath+".bin").c_str(),"w");
     uint64_t cir_param[6];
     cir_param[0] = circuit->details.numWires;
 	cir_param[1] = circuit->details.numGates;
@@ -129,31 +259,11 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
     cir_param[5] = circuit->details.bitlengthOutputs;
     cout<<"tmp"<<circuit->gates[0].leftParentID<<endl;
 
-    //io->send_data( cir_param, 6*sizeof(uint64_t) );
     send_data_gen( cir_param, (size_t)6*sizeof(uint64_t) );
-    //fwrite(cir_param, 1, 6*sizeof(uint64_t), f);
-    //std::cout<<circuit->details.numGates<<std::endl;
-    //for(int i=0;i<circuit->details.numGates;i++){
-        //fwrite(&(circuit->gates[i].leftParentID),1,sizeof(uint64_t),f);
-        //fwrite(&(circuit->gates[i].rightParentOffset),1,sizeof(uint64_t),f);
-        //fwrite(circuit->gates[i].truthTable,1,1,f);
-        //fwrite(circuit->gates, 1, circuit->details.numGates*sizeof(ShrinkedGate), f);
 
-        //send_data_gen(&(circuit->gates[i]), sizeof(ShrinkedGate) );
-    //}
-
-
-    // io->send_data(circuit->gates, circuit->details.numGates*sizeof(ShrinkedGate) );
 
     send_data_gen(circuit->gates, (size_t)circuit->details.numGates*sizeof(ShrinkedGate) );
     send_data_gen(valArr, (size_t)circuit->details.bitlengthInputA*sizeof(bool) );
     
-    //end = std::chrono::system_clock::now();
-    //std::chrono::duration<double> elapsed_seconds = end - start;
-
-    //std::cout << "finished export bin, elapsed ms:" << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() <<std::endl;
-        
-    
-    //fclose(f);
     return;
 }

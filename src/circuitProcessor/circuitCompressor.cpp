@@ -25,6 +25,7 @@
 #define UNT 8
 #define LIMIT 500000
 
+/*
 void encThread( ShrinkedGate* gates_in, vector<unsigned char*>::iterator bufs_it, vector<uint32_t>::iterator bufLens_it, 
                 uint64_t* in, uint8_t* inTable, uint64_t gate_num, size_t l, size_t offset){
     chrono::time_point<std::chrono::system_clock> a, b, c, d;
@@ -81,7 +82,7 @@ void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, unsigned char* &i
     delete [] inValArr;
 }
 
-void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs, vector<uint32_t> &bufLens, int thr_enc){
+void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs, vector<uint32_t> &bufLens, int package){
     //uint_fast64_t len = cir->details.numGates;
     chrono::time_point<std::chrono::system_clock> a, b, c, d, e, f;
     f = chrono::system_clock::now();
@@ -98,7 +99,7 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
     bufs[0] = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
     bufLens[0] = (uint32_t)old;
     
-    size_t seg = SEG(cir->details.numGates,thr_enc);
+    size_t seg = SEG(cir->details.numGates,pacakge);
     //size_t seg = ROUND_UP(cir->details.numGates,thr_enc)/thr_enc;
     seg = seg%2==0?seg:seg+1;            
 
@@ -108,8 +109,7 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
     // uint64_t* in = new uint64_t[ROUND_UP(ll*2,64)];
     // uint8_t* inTable = new uint8_t[ROUND_UP((ll>>1)+1,8)];
     
-    
-    for(int t=0;t<thr_enc;t++) {
+    for(int t=0;t<package;t++) {
         size_t l = ll>seg?seg:ll;
         size_t off = seg*t;
         vector<unsigned char*>::iterator bufs_it=bufs.begin()+t*2+1;
@@ -122,7 +122,6 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
 
     }
 
-
     for (auto &th:threads) {
         th.join();
     }
@@ -133,14 +132,11 @@ void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs,
     size_t oll;
     bufs.back()=(encHlp32(bufLens.data(),bufLens.size()-1,&oll,TYPE));
     bufLens.back()=(oll);
-    
-    
-    // cout << "pre info time: " << chrono::duration_cast<chrono::microseconds>(a-f).count() << ", malloc time: " << chrono::duration_cast<chrono::microseconds>(b-a).count() << ", create thread time: " << chrono::duration_cast<chrono::microseconds>(c-b).count()
-    //      << ", thread join time: " << chrono::duration_cast<chrono::microseconds>(e-d).count() << endl;
-    //cout<<"finished enc"<<endl;
 }
 
+*/
 
+/*
 void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it, vector<unsigned char*>::iterator bufTable_it, 
                 vector<size_t>::iterator dataLens_it, int offset, int ss, int seg){
     size_t olg=0;
@@ -216,7 +212,7 @@ void decompressShrinkedCircuit(vector<unsigned char*> &bufGates, vector<unsigned
     }
 }
 
-
+*/
 bool areCircuitsEqual(TransformedCircuit* importedCircuit, TransformedCircuit* originalCircuit){
     if(importedCircuit->details.numWires != originalCircuit->details.numWires) {cout<<"!wires"<<endl; return false;}
 	if(importedCircuit->details.numGates != originalCircuit->details.numGates) {cout<<"!gates"<<endl; return false;}

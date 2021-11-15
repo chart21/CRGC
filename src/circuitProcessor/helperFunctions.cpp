@@ -7,7 +7,6 @@
 #include <bitset>
 #include <chrono>
 
-
 void generateRandomInput(size_t bitlength, bool* input)
 {
     //bool *input = new bool[bitlength];

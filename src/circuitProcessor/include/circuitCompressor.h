@@ -19,11 +19,11 @@ using namespace std;
 
 
 /* compress a shrinked Circuit using one of the integer and bit compression libraries */
-void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs, vector<uint32_t> &bufLens, int thr_enc);
-void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, unsigned char* &inputBuf, uint32_t &inputBufLen);
+// void compressShrinkedCircuit(ShrinkedCircuit* cir, vector<unsigned char*> &bufs, vector<uint32_t> &bufLens, int thr_enc);
+// void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, unsigned char* &inputBuf, uint32_t &inputBufLen);
 
-void decompressShrinkedCircuit(vector<unsigned char*> &bufGates, vector<unsigned char*> &bufTables, vector<size_t> &dataLens, ShrinkedCircuit* scir,int thr_enc, int thr_dec, size_t seg);
-void decompressObfuscatedInput(unsigned char* bufInput, size_t dataInputLen, bool* &valArr);
+// void decompressShrinkedCircuit(vector<unsigned char*> &bufGates, vector<unsigned char*> &bufTables, vector<size_t> &dataLens, ShrinkedCircuit* scir,int thr_enc, int thr_dec, size_t seg);
+// void decompressObfuscatedInput(unsigned char* bufInput, size_t dataInputLen, bool* &valArr);
 /* export compressed circuit to HDD */
 //void exportCompressedCircuit( ShrinkedCircuit* cir, int thr_enc=1);
 

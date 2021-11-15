@@ -1,15 +1,41 @@
 #include "include/circuitReader.h"
 #include "include/circuitStructs.h"
 #include "include/helperFunctions.h"
-#include "include/circuitCompressor.h"
+// #include "include/circuitCompressor.h"
 #include "../../TurboPFor-Integer-Compression/vp4.h"
 #include "../../TurboPFor-Integer-Compression/circuitutil.h"
 //#include "emp-tool/emp-tool.h"
 #include "include/circuitHighSpeedNetIO.h"
 #include <fstream>
 #include <vector>
+#include <mutex>
+#include <thread>
+#include <condition_variable>
+#include <memory>
+
+#define TBL_SHR
+//#define BP
+#define SEG(n,th) (n+th-n%th)/th
+#define ROUND_UP(_n_, _a_) (((_n_) + ((_a_)-1)) & ~((_a_)-1))
+#define P4NENC_BOUND(n, size) ((n + 127) / 128 + (n + 32) * (size))
+#define P4NDEC_BOUND(n, size) (ROUND_UP(n, 32) * (size))
+
+#define TYPE 1
+
+#define DETAILS_NUM 6
+#define UNT 8
+#define LIMIT 500000
 
 using namespace std;
+std::mutex mtx_recv;
+std::mutex mtx_read;
+unsigned char* bufs_recv;
+uint32_t bufLens_recv;
+condition_variable cd_recv;
+condition_variable cd_read;
+int id_recv=-1;
+int id_read=-1;
+// vector<unique_ptr<condition_variable>> cd_recv(100,unique_ptr<condition_variable>(new condition_variable));
 
 void splitString(std::string s, std::vector<std::string> &v)
 {
@@ -607,42 +633,148 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
     return circuit;
 }
 
+// void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it, vector<unsigned char*>::iterator bufTable_it, 
+//                 vector<size_t>::iterator dataLens_it, int offset, int ss, int seg){
+void decThread(ShrinkedGate* gates, int l, int offset){
+    size_t olg=0;
+    size_t g_pr=0;
+    size_t t_pr=0;
+
+    size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
+
+    std::unique_lock<std::mutex> lck(mtx_read);
+    while(id_recv!=offset*2+1) cd_recv.wait(lck); // what if cd_recv satisfied but keep looping
+    //unsigned char *dest1 = (unsigned char*) malloc(sizeof(unsigned char)*bufLens_recv);
+    unsigned char *dest1 = new unsigned char[bufLens_recv];
+    memcpy(dest1,bufs_recv,(size_t)bufLens_recv);
+    delete [] bufs_recv;
+    bufs_recv = nullptr;
+    id_read++;
+    cd_read.notify_one();
+
+    while(id_recv!=offset*2+2) cd_recv.wait(lck);
+    unsigned char *dest2 = new unsigned char[bufLens_recv];
+    memcpy(dest2,bufs_recv,(size_t)bufLens_recv);
+    delete [] bufs_recv;
+    bufs_recv = nullptr;
+    id_read++;
+    cd_read.notify_one();
+
+    uint64_t* outGates=decHlp64( dest1, l*2, &olg,TYPE);
+
+    uint8_t* outTable=decHlp8( dest2, tbll, &olg,TYPE);
+
+
+    
+    for(int j=0;j<l;j++){
+        gates[j].leftParentID = outGates[j];
+        gates[j].rightParentOffset = outGates[j+l];
+
+        if(j%2==0){
+            gates[j].truthTable[0][0] = outTable[j>>1]&0b01;
+            gates[j].truthTable[0][1] = outTable[j>>1]&0b10;
+            gates[j].truthTable[1][0] = outTable[j>>1]&0b100;
+            gates[j].truthTable[1][1] = outTable[j>>1]&0b1000;
+
+        }
+        else{
+            gates[j].truthTable[0][0] = outTable[j>>1]&0b10000;
+            gates[j].truthTable[0][1] = outTable[j>>1]&0b100000;
+            gates[j].truthTable[1][0] = outTable[j>>1]&0b1000000;
+            gates[j].truthTable[1][1] = outTable[j>>1]&0b10000000;
+
+        }
+    }
+
+        delete [] outGates;
+        delete [] outTable;
+}
+
+void decompressObfuscatedInput(size_t dataInputLen, bool* &valArr, int len){
+    std::unique_lock<std::mutex> lck(mtx_read);
+    while(id_recv!=len-1) cd_recv.wait(lck);
+    unsigned char dest[bufLens_recv];
+    memcpy(dest,bufs_recv,bufLens_recv);
+    delete [] bufs_recv;
+    bufs_recv = nullptr;
+
+    size_t l;
+    uint8_t* outInput = decHlp8( dest, dataInputLen, &l,TYPE);
+    std::copy(outInput,outInput+dataInputLen,valArr);
+    delete [] outInput;
+}
+
+
+ShrinkedCircuit* decompressShrinkedCircuit(int package, CircuitDetails details) {
+    ShrinkedCircuit* scir = new ShrinkedCircuit(details);
+    
+    size_t seg = SEG(details.numGates,package);
+    seg = seg%2==0?seg:seg+1;
+    int ll = details.numGates;
+
+    vector<thread> threads;
+    for(int i=0;i<package;i++){
+        size_t l = ll>seg?seg:ll;
+        threads.push_back(thread(decThread,scir->gates+i*seg,l,i));
+        ll-=seg;
+    }
+    
+    for(auto &th:threads) {
+        th.join();
+    }
+    return scir;
+}
+
+/*
 template <typename IO>
-void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, int thr_dec){
-    //chrono::time_point<std::chrono::system_clock> start, end_read, end_dec,a,b;
-    //start = std::chrono::system_clock::now();
+void Eva<IO>::recvThread(size_t package, CircuitDetails details) {
+    
 
-    // FILE * denc;
-    // denc = fopen((filepath+"_compressed.dat").c_str(),"r");
-    // denc = fopen("/home/ubuntu/BristolCircuitCompressor/src/circuits/insurance10_compressed.dat","r");
-    // if(denc==NULL) std::cout<<"failed to open dec file"<<std::endl;
+    size_t seg = SEG(details.numGates,package);
+    seg = seg%2==0?seg:seg+1;
+    int ll = details.numGates;
 
-    size_t len;
-    //fread(&len, sizeof(size_t), 1, denc);
-    // io->recv_data( &len, sizeof(size_t) );
-    recv_data_eva( &len, sizeof(size_t) );
+    for(int j=0;j<package;j++){
+        size_t l = ll>seg?seg:ll;
 
-    uint32_t bufLensSize;
-    //fread(&bufLensSize,sizeof(uint32_t), 1, denc);
-    // io->recv_data( &bufLensSize, sizeof(uint32_t) );
-    recv_data_eva( &bufLensSize, sizeof(uint32_t) );
-    unsigned char* bufLens = new unsigned char[P4NENC_BOUND(len,32)];
+        bufs_recv[1+j*2] = new unsigned char[P4NENC_BOUND(l*2,64)];
+        recv_data_eva( &(bufLens_recv[1+j*2]),sizeof(bufLens_recv[0]));
+        recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
+        cd_recv[1+j*2].notify_one();
+        
+        size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
+        bufs_recv[2+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
+        recv_data_eva( &(bufLens_recv[2+j*2]),sizeof(bufLens_recv[0]));
+        recv_data_eva( bufs_recv[2+j*2], sizeof(bufs_recv[2+j*2][0])*bufLens_recv[2+j*2] );
+        cd_recv[2+j*2].notify_one();
+        ll-=seg;
+    }
 
-    //size_t test1 = fread(bufLens,sizeof(bufLens[0]), bufLensSize, denc);
-    // io->recv_data( bufLens, sizeof(bufLens[0])*bufLensSize );
-    recv_data_eva( bufLens, sizeof(bufLens[0])*bufLensSize );
+    recv_data_eva(&(bufLens_recv.back()), sizeof(uint32_t));
+    bufs_recv.back() = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
+    recv_data_eva(bufs_recv.back(), sizeof(bufs_recv.back()[0])*bufLens_recv.back());
+    cd_recv.back().notify_one();
+
+}
+*/
+template <typename IO>
+void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){   
+    int package;
+    recv_data_eva( &package, sizeof(int) );
+    cout<<"package: "<<package<<endl;
+
+    // cd_recv.assign(package*2+2,unique_ptr<condition_variable>(new condition_variable));
+
+    bufs_recv = new unsigned char[P4NENC_BOUND(DETAILS_NUM,64)];
+    recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
+    recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
+    id_recv = 0;
+
 
     size_t old;
-    uint32_t* outLens = decHlp32(bufLens, len, &old,TYPE);
-    delete [] bufLens;
-
-    unsigned char* bufDetails = new unsigned char[P4NENC_BOUND(DETAILS_NUM,64)];
-
-    //size_t bld=fread(bufDetails,sizeof(bufDetails[0]), outLens[0], denc);
-    // io->recv_data( bufDetails, sizeof(bufDetails[0])*outLens[0] );
-    recv_data_eva( bufDetails, sizeof(bufDetails[0])*outLens[0] );
-    uint64_t* outDetails = decHlp64(bufDetails, DETAILS_NUM, &old,TYPE);
-    delete [] bufDetails;
+    uint64_t* outDetails = decHlp64(bufs_recv, DETAILS_NUM, &old,TYPE);
+    id_read = 0;
+    delete [] bufs_recv;
 
     CircuitDetails details;
     details.numWires = outDetails[0];
@@ -653,78 +785,53 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, 
     details.bitlengthOutputs = outDetails[5];
 
 
-    ShrinkedCircuit* scir = new ShrinkedCircuit(details);
+    thread recvThread([&]() {
+        size_t seg = SEG(details.numGates,package);
+        seg = seg%2==0?seg:seg+1;
 
-    vector<unsigned char*> bufGates;
-    vector<unsigned char*> bufTables;
-    vector<size_t> dataLens;
-    size_t thr_enc = (len-1)/2;
-    size_t seg = SEG(scir->details.numGates,thr_enc);
-    // size_t seg = ROUND_UP(scir->details.numGates,thr_enc)/thr_enc;
-    seg = seg%2==0?seg:seg+1;
-    int ll = details.numGates;
-    //a = std::chrono::system_clock::now();
-    cout<<"details read finish"<<endl;
-    int offset=0;
-    for(int j=0;j<thr_enc;j++){
-        size_t l = ll>seg?seg:ll;
+        int ll = details.numGates;
+        std::unique_lock<std::mutex> lck(mtx_recv);
+        for(int j=0;j<package;j++){
+            size_t l = ll>seg?seg:ll;
+            while(id_read!=j*2) cd_read.wait(lck);
+            bufs_recv = new unsigned char[P4NENC_BOUND(l*2,64)];
+            recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
+            recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
+            id_recv++;
 
-        unsigned char* bufGate = new unsigned char[P4NENC_BOUND(l*2,64)];
-        //size_t blg=fread(bufGate,sizeof(bufGate[0]), outLens[1+j*2], denc);
-        // io->recv_data( bufGate, sizeof(bufGate[0])*outLens[1+j*2] );
-        recv_data_eva( bufGate, sizeof(bufGate[0])*outLens[1+j*2] );
-        bufGates.push_back(bufGate);
-        
-        size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
-        unsigned char* bufTable = new unsigned char[P4NENC_BOUND( tbll ,8)];
-        //size_t blt=fread(bufTable,sizeof(bufTable[0]), outLens[j*2+2], denc);
-        // io->recv_data( bufTable, sizeof(bufTable[0])*outLens[2+j*2] );
-        recv_data_eva( bufTable, sizeof(bufTable[0])*outLens[2+j*2] );
-        bufTables.push_back(bufTable);
+            //cout<<(1+j*2)<<"th buf len: "<<bufLens_recv<<endl;
+            cd_recv.notify_all();
+            
+            size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
+            while(id_read!=j*2+1) cd_read.wait(lck);
+            bufs_recv = new unsigned char[P4NENC_BOUND( tbll ,8)];
+            recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
+            recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
+            id_recv++;
+            //cout<<(2+j*2)<<"th buf len: "<<bufLens_recv<<endl;
+            cd_recv.notify_all();
 
-        dataLens.push_back(l);
+            ll-=seg;
+        }
+        while(id_read!=package*2) cd_read.wait(lck);
+        recv_data_eva(&(bufLens_recv), sizeof(uint32_t));
+        bufs_recv = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
+        recv_data_eva(bufs_recv, sizeof(bufs_recv[0])*bufLens_recv);
+        id_recv++;
+        cd_recv.notify_all();
+    });
 
-        ll-=seg;
 
-    }
-    uint32_t bufInputLen;
-    recv_data_eva(&bufInputLen, sizeof(uint32_t));
-    unsigned char* bufInput = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
-    recv_data_eva(bufInput, sizeof(bufInput[0])*bufInputLen);
-
-    delete [] outLens;
-    // fclose(denc);
-    //end_read = std::chrono::system_clock::now();
-    //chrono::duration<double> elapsed_seconds = end_read - start;
-    //t_read_sum += chrono::duration_cast<chrono::microseconds>(end_read - start).count();
-    //t_read_sum += chrono::duration_cast<chrono::milliseconds>(end_read - start).count();
-    //cout<<"finished read, elapsed seconds: "<< chrono::duration_cast<chrono::milliseconds>(end_read - start).count() 
-    //    <<", " << chrono::duration_cast<chrono::milliseconds>(end_read - a).count() <<endl;
-    
-    decompressShrinkedCircuit(bufGates, bufTables, dataLens, scir, thr_enc, thr_dec, seg);
-    cout<<"b5"<<endl;
+    scir = decompressShrinkedCircuit( package, details);
     valArr = new bool[details.bitlengthInputA];
-    decompressObfuscatedInput(bufInput, scir->details.bitlengthInputA, valArr);
-    //end_dec = std::chrono::system_clock::now();
-    //elapsed_seconds = end_dec - start;
-    //t_dec_sum += chrono::duration_cast<chrono::microseconds>(end_dec - start).count();
-    //t_dec_sum += chrono::duration_cast<chrono::milliseconds>(end_dec - start).count();
-    //cout<<"finished dec, elapsed seconds: "<< chrono::duration_cast<chrono::milliseconds>(end_dec - start).count() <<endl;
-    circuit = scir;
+    decompressObfuscatedInput(scir->details.bitlengthInputA, valArr, package*2+2);
+    recvThread.join();
     return;
 }
 
 template <typename IO>
 void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
-    //std::chrono::time_point<std::chrono::system_clock> start, end;
-    //start = std::chrono::system_clock::now();
-
-    //FILE *f;
-    //f = fopen((filepath+".bin").c_str(),"r");
     uint64_t cir_param[6];
-    //fread((char*)cir_param, 1, 6*sizeof(uint64_t), f);
-    //fread(cir_param, 1, 6*sizeof(uint64_t), f);
-    // io->recv_data(cir_param, 6*sizeof(uint64_t) );
     recv_data_eva(cir_param, 6*sizeof(uint64_t) );
     CircuitDetails details;
     details.numWires = cir_param[0];
@@ -735,22 +842,11 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
     details.bitlengthOutputs = cir_param[5];
     auto scir = new ShrinkedCircuit(details);
     ShrinkedGate* gates = scir->gates;
-    //for(int i=0;i<details.numGates;i++){
-        //fread(&gates[i].leftParentID,1,sizeof(uint64_t),f);
-        //fread(&gates[i].rightParentOffset,1,sizeof(uint64_t),f);
-        //fread(gates[i].truthTable,1,1,f);
-        //fread(gates,1,details.numGates*sizeof(ShrinkedGate),f);
-    //}
-    // io->recv_data(gates, details.numGates*sizeof(ShrinkedGate));
+
     recv_data_eva(gates, details.numGates*sizeof(ShrinkedGate));
     valArr = new bool[details.bitlengthInputA];
     recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
 
-    //fclose(f);
-    //end = std::chrono::system_clock::now();
-    //std::chrono::duration<double> elapsed_seconds = end - start;
-
-    //std::cout<<"finished import bin, elapsed ms:" << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
     circuit = scir;
     return;
 

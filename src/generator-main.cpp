@@ -16,6 +16,7 @@
 #include "circuitProcessor/include/circuitTransformer.h"
 #include "circuitProcessor/circuitReader.cpp"
 #include "circuitProcessor/circuitWriter.cpp"
+#include "circuitProcessor/circuitCompressor.cpp"
 
 #include "circuitProcessor/include/leakagePredictor.h"
 
@@ -36,8 +37,8 @@
 //#define CIRCUITPATH "/home/christopher/Documents/C-RGCG/src/circuits/"
 #define CIRCUITPATH "../src/circuits/"
 #define PORT 8080
-#define US
 
+/*
 template <typename F, typename... Args>
 auto funcTime(std::string printText, F func, Args &&...args)
 {
@@ -57,7 +58,7 @@ auto funcTime(std::string printText, F func, Args &&...args)
 #endif
     return time;
 }
-
+*/
 struct Agency{
     uint_fast64_t numThreads = 1; 
     int compressThreads = 1;    
@@ -353,8 +354,10 @@ template <typename T>
 void forwarderEx(Gen<T> *obj, const Agency* agency, bool bin){
     if(bin) 
         obj->exportBin(agency->scir,agency->obfuscatedValArr);
-    else
+    else {
         obj->exportCompressedCircuit(agency->scir,agency->obfuscatedValArr,agency->compressThreads);
+        // obj->exportCompressedCircuit(agency->scir,agency->obfuscatedValArr);
+    }
     //obj->exportObfuscatedInput(agency->obfuscatedValArr,agency->scir->details,inApath);
     return;
 }
@@ -364,7 +367,7 @@ void forwarderIm(Eva<T> *obj, ShrinkedCircuit* &scir, bool* &valArr, int thr, bo
     if(bin)
         obj->importBin(scir,valArr);
     else
-        obj->importCompressedCircuit(scir,valArr,thr);
+        obj->importCompressedCircuit(scir,valArr);
     
     //obj->importObfuscatedInput(valArr, scir->details,inApath);
     return;

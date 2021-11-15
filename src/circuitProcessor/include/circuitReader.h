@@ -44,7 +44,8 @@ class Eva{ public:
     TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
 
     /* import compressed Circuit */
-    void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr, int thr_dec);
+    void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr);
+    // void recvThread(size_t package, CircuitDetails details);
 
 };
 
