@@ -27,14 +27,14 @@
 #define LIMIT 500000
 
 using namespace std;
-std::mutex mtx_recv;
-std::mutex mtx_read;
-unsigned char* bufs_recv;
-uint32_t bufLens_recv;
-condition_variable cd_recv;
-condition_variable cd_read;
-int id_recv=-1;
-int id_read=-1;
+vector<std::mutex> mtx_recv(100);
+//std::mutex mtx_read;
+vector<unsigned char*> bufs_recv;
+vector<uint32_t> bufLens_recv;
+vector<condition_variable> cd_recv(100);
+//condition_variable cd_read;
+//int id_recv=-1;
+//int id_read=-1;
 // vector<unique_ptr<condition_variable>> cd_recv(100,unique_ptr<condition_variable>(new condition_variable));
 
 void splitString(std::string s, std::vector<std::string> &v)
@@ -642,27 +642,16 @@ void decThread(ShrinkedGate* gates, int l, int offset){
 
     size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
 
-    std::unique_lock<std::mutex> lck(mtx_read);
-    while(id_recv!=offset*2+1) cd_recv.wait(lck); // what if cd_recv satisfied but keep looping
-    //unsigned char *dest1 = (unsigned char*) malloc(sizeof(unsigned char)*bufLens_recv);
-    unsigned char *dest1 = new unsigned char[bufLens_recv];
-    memcpy(dest1,bufs_recv,(size_t)bufLens_recv);
-    delete [] bufs_recv;
-    bufs_recv = nullptr;
-    id_read++;
-    cd_read.notify_one();
+    std::unique_lock<std::mutex> lck(mtx_recv[offset]);
+    while(bufs_recv[offset*2+1]==nullptr) cd_recv[offset].wait(lck); // what if cd_recv satisfied but keep looping
 
-    while(id_recv!=offset*2+2) cd_recv.wait(lck);
-    unsigned char *dest2 = new unsigned char[bufLens_recv];
-    memcpy(dest2,bufs_recv,(size_t)bufLens_recv);
-    delete [] bufs_recv;
-    bufs_recv = nullptr;
-    id_read++;
-    cd_read.notify_one();
+    uint64_t* outGates=decHlp64( bufs_recv[offset*2+1], l*2, &olg,TYPE);
+    delete [] bufs_recv[offset*2+1];
+    bufs_recv[offset*2+1] = nullptr;
 
-    uint64_t* outGates=decHlp64( dest1, l*2, &olg,TYPE);
-
-    uint8_t* outTable=decHlp8( dest2, tbll, &olg,TYPE);
+    uint8_t* outTable=decHlp8( bufs_recv[offset*2+2], tbll, &olg,TYPE);
+    delete [] bufs_recv[offset*2+2];
+    bufs_recv[offset*2+2] = nullptr;
 
 
     
@@ -690,16 +679,16 @@ void decThread(ShrinkedGate* gates, int l, int offset){
         delete [] outTable;
 }
 
-void decompressObfuscatedInput(size_t dataInputLen, bool* &valArr, int len){
-    std::unique_lock<std::mutex> lck(mtx_read);
-    while(id_recv!=len-1) cd_recv.wait(lck);
-    unsigned char dest[bufLens_recv];
-    memcpy(dest,bufs_recv,bufLens_recv);
-    delete [] bufs_recv;
-    bufs_recv = nullptr;
+void decompressObfuscatedInput(size_t dataInputLen, bool* &valArr, int package){
+    std::unique_lock<std::mutex> lck(mtx_recv[package]);
+    while(bufs_recv[package*2+1]==nullptr) cd_recv[package].wait(lck);
 
     size_t l;
-    uint8_t* outInput = decHlp8( dest, dataInputLen, &l,TYPE);
+    uint8_t* outInput = decHlp8( bufs_recv[package*2+1], dataInputLen, &l,TYPE);
+    delete [] bufs_recv[package*2+1];
+    bufs_recv[package*2+1] = nullptr;
+
+    
     std::copy(outInput,outInput+dataInputLen,valArr);
     delete [] outInput;
 }
@@ -762,19 +751,20 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
     int package;
     recv_data_eva( &package, sizeof(int) );
     cout<<"package: "<<package<<endl;
-
+    bufs_recv.assign(package*2+2,nullptr);
+    bufLens_recv.assign(package*2+2,0);
     // cd_recv.assign(package*2+2,unique_ptr<condition_variable>(new condition_variable));
 
-    bufs_recv = new unsigned char[P4NENC_BOUND(DETAILS_NUM,64)];
-    recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
-    recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
-    id_recv = 0;
+    bufs_recv[0] = new unsigned char[P4NENC_BOUND(DETAILS_NUM,64)];
+    recv_data_eva( &(bufLens_recv[0]),sizeof(bufLens_recv[0]));
+    recv_data_eva( bufs_recv[0], sizeof(bufs_recv[0][0])*bufLens_recv[0] );
+
 
 
     size_t old;
-    uint64_t* outDetails = decHlp64(bufs_recv, DETAILS_NUM, &old,TYPE);
-    id_read = 0;
-    delete [] bufs_recv;
+    uint64_t* outDetails = decHlp64(bufs_recv[0], DETAILS_NUM, &old,TYPE);
+
+    delete [] bufs_recv[0];
 
     CircuitDetails details;
     details.numWires = outDetails[0];
@@ -790,41 +780,42 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
         seg = seg%2==0?seg:seg+1;
 
         int ll = details.numGates;
-        std::unique_lock<std::mutex> lck(mtx_recv);
         for(int j=0;j<package;j++){
             size_t l = ll>seg?seg:ll;
-            while(id_read!=j*2) cd_read.wait(lck);
-            bufs_recv = new unsigned char[P4NENC_BOUND(l*2,64)];
-            recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
-            recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
-            id_recv++;
+
+            bufs_recv[1+j*2] = new unsigned char[P4NENC_BOUND(l*2,64)];
+            recv_data_eva( &(bufLens_recv[1+j*2]),sizeof(bufLens_recv[1+j*2]));
+            recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
+
 
             //cout<<(1+j*2)<<"th buf len: "<<bufLens_recv<<endl;
-            cd_recv.notify_all();
+            //cd_recv.notify_all();
             
             size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
-            while(id_read!=j*2+1) cd_read.wait(lck);
-            bufs_recv = new unsigned char[P4NENC_BOUND( tbll ,8)];
-            recv_data_eva( &(bufLens_recv),sizeof(bufLens_recv));
-            recv_data_eva( bufs_recv, sizeof(bufs_recv[0])*bufLens_recv );
-            id_recv++;
-            //cout<<(2+j*2)<<"th buf len: "<<bufLens_recv<<endl;
-            cd_recv.notify_all();
+
+            bufs_recv[2+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
+            recv_data_eva( &(bufLens_recv[2+j*2]),sizeof(bufLens_recv[2+j*2]));
+            recv_data_eva( bufs_recv[2+j*2], sizeof(bufs_recv[2+j*2][0])*bufLens_recv[2+j*2] );
+
+            //cout<<(2+j*2)<<"th buf len: "<<bufLens_recv[1+j*2]<<","<<bufLens_recv[2+j*2]<<endl;
+
+            cd_recv[j].notify_one();
 
             ll-=seg;
         }
-        while(id_read!=package*2) cd_read.wait(lck);
-        recv_data_eva(&(bufLens_recv), sizeof(uint32_t));
-        bufs_recv = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
-        recv_data_eva(bufs_recv, sizeof(bufs_recv[0])*bufLens_recv);
-        id_recv++;
-        cd_recv.notify_all();
+
+        recv_data_eva(&(bufLens_recv[package*2+1]), sizeof(uint32_t));
+        bufs_recv[package*2+1] = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
+        recv_data_eva(bufs_recv[package*2+1], sizeof(bufs_recv[package*2+1][0])*bufLens_recv[package*2+1]);
+        cout<<bufLens_recv[package*2+1]<<endl;
+        cd_recv[package].notify_one();
     });
 
 
     scir = decompressShrinkedCircuit( package, details);
     valArr = new bool[details.bitlengthInputA];
-    decompressObfuscatedInput(scir->details.bitlengthInputA, valArr, package*2+2);
+
+    decompressObfuscatedInput(scir->details.bitlengthInputA, valArr, package);
     recvThread.join();
     return;
 }

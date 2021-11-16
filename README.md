@@ -30,14 +30,15 @@ The evaluator (party B) performs the following steps:
 
 ## Results
 
-| Function                    | Evaluate speed (gates/us)   |
-|-----------------------------|-------------------------------|
-| 64-bit Adder                | 46    |
-| 64-bit Subtract             | 54        |
-| 64x64 -> 64 bit Multiplier  | 187    |
-| AES-256(k,m)                | 273     |
-| SHA256                      | 252   |
-| SHA512                      | 241  |
+| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
+|-----------------------------|-------------------------------|-------------------------------|-----------------------------|
+| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 23.94%                      |
+| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 26.65%                      |
+| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 31.84%                      |
+| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 35.51%                      |
+| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 33.88%                      |
+| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
+
 
 
 | Function                    | Explanation | Evaluate speed (million gates/s)    | 
