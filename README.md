@@ -83,6 +83,10 @@ make -j
 
 ``--inputb=< input >`` evaluator can specify input b, or it will be random.
 
+``--ip=< ip address >`` set the server address, only evaluator need this option.
+
+``--port=< port >`` set the network port, defaul as 8080.
+
 ``--format=< emp|bristol >`` only make sense if circuit type is txt, apparently only generator needs this option.
 
 ``--thread=< thread >`` only generator needs this option, to specify how many threads are used to construct the circuit.
@@ -130,7 +134,6 @@ Sets this end as **evaluator**. Import the binary file **./circuits/myCircuit.bi
 
 ```
 ---TIMING--- 1046064us converting program to circuit
-read: 0
 ---INFO--- numGates: 9100000
 ---TIMING--- 41126us getting Parents of each Wire
 ---TIMING--- 63259us identifying potentially obfuscated fixed gates
@@ -153,14 +156,13 @@ read: 0
 ---Evaluation--- inB1181228270
 ---Evaluation--- out0
 connected
-tmp0
----TIMING--- 129515us send
+---TIMING--- 129515us sending RGC to Evaluator
 ```
 > ./build/generator --party=2 --circuit=query --bin
 
 ```
 connected
----TIMING--- 133045us receive
+---TIMING--- 133045us receiving RGC from Generator
 ---TIMING--- 53469us evaluate circuit
 ---Evaluation--- inA18446744073709551615
 ---Evaluation--- inB3287501720
