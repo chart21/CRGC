@@ -65,6 +65,8 @@ struct Agency{
     std::string circuitName = "adder64";
     std::string circuitFormat = "bristol";
     std::string transferFormat = "bin";
+    std::string ip_address = "127.0.0.1";
+    int port = 8080;
     int party = 0;
 
     bool network = true;
@@ -404,9 +406,9 @@ void Agency::exportCircuit(){
     std::string filepath = CIRCUITPATH + this->circuitName;
     bool bin = this->transferFormat=="bin";
     if(this->network){
-        emp::NetIO * io = new emp::NetIO( nullptr, PORT); //generator doesn't need server address
+        emp::NetIO * io = new emp::NetIO( nullptr, this->port); //generator doesn't need server address
         Gen<emp::NetIO> *gen = new Gen<emp::NetIO>(io);
-        funcTime( "send", forwarderEx<emp::NetIO>, gen, this, bin);
+        funcTime( "sending RGC to Evaluator", forwarderEx<emp::NetIO>, gen, this, bin);
         delete io;
         delete gen;
     }
@@ -417,7 +419,7 @@ void Agency::exportCircuit(){
         filepath += (bin==true? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
         Gen<emp::FileIO> *gen = new Gen<emp::FileIO>(fio);
-        funcTime( "compress", forwarderEx<emp::FileIO>, gen, this, bin);
+        funcTime( "writing RGC to disk", forwarderEx<emp::FileIO>, gen, this, bin);
         fio->flush();
         delete fio;
         delete gen;
@@ -432,9 +434,9 @@ void Agency::importCircuit()
     std::string filepath = CIRCUITPATH + this->circuitName;
     bool bin = this->transferFormat=="bin";
     if(this->network){
-        emp::NetIO * io = new emp::NetIO( "127.0.0.1", PORT); //assume server as local
+        emp::NetIO * io = new emp::NetIO( this->ip_address.c_str(), this->port); //assume server as local
         Eva<emp::NetIO> *eva = new Eva<emp::NetIO>(io);
-        funcTime( "receive", forwarderIm<emp::NetIO>, eva, scir, valArr, this->compressThreads, bin);
+        funcTime( "receiving RGC from Generator", forwarderIm<emp::NetIO>, eva, scir, valArr, this->compressThreads, bin);
         this->loadTransferredCircuit(scir,valArr);
             //exportCircuitSeparateFiles(agency->circuit,CIRCUITPATH+agency->circuitName+"2");
         delete io;
@@ -451,7 +453,7 @@ void Agency::importCircuit()
 
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),true );
         Eva<emp::FileIO> *eva = new Eva<emp::FileIO>(fio);
-        funcTime( "read", forwarderIm<emp::FileIO>, eva, scir, valArr, this->compressThreads, bin);
+        funcTime( "reading RGC from disk", forwarderIm<emp::FileIO>, eva, scir, valArr, this->compressThreads, bin);
         this->loadTransferredCircuit(scir,valArr);
         delete fio;
         delete eva;
@@ -503,6 +505,8 @@ void parseOption(int argc, char *argv[], Agency* &agency, vector<char*> &inputs)
         {"format", required_argument, NULL, 'f'},
         {"thread", required_argument, NULL, 'n'},
         {"party", required_argument, NULL, 'p'},
+        {"ip", required_argument, NULL, 'i'},
+        {"port", required_argument, NULL, 'h'},
         {"compression", required_argument, NULL, 'k'},
         {"bin", no_argument, NULL, 'x'},
         {"compress", no_argument, NULL, 'y'},
@@ -510,7 +514,7 @@ void parseOption(int argc, char *argv[], Agency* &agency, vector<char*> &inputs)
         {"disk", no_argument, NULL, 'w'},
         {NULL, 0, NULL, 0}
     };
-    int opt = getopt_long(argc, argv, "c:t:a:b:f:p:n:k:xyzw", long_options, NULL);
+    int opt = getopt_long(argc, argv, "c:t:a:b:f:p:i:h:n:k:xyzw", long_options, NULL);
     while (opt != -1) {
         switch (opt) {
         case 'c':
@@ -539,6 +543,14 @@ void parseOption(int argc, char *argv[], Agency* &agency, vector<char*> &inputs)
 
         case 'p':
             agency->party = std::stoi(optarg);
+            break;
+
+        case 'i':
+            agency->ip_address = optarg;
+            break;
+
+        case 'h':
+            agency->port = std::stoi(optarg);
             break;
 
         case 'k':

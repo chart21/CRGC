@@ -41,11 +41,11 @@ The evaluator (party B) performs the following steps:
 | SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
 
 
-| Function                    | Explanation | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
-|-----------------------------|-------------------------------|-------------------------------|-----------------------------|-----------------------------|
-| Set-Intersect 200x200 8-bit| A has 200 8-bit inputs. B has 200 8-bit inputs and wants to find the intersect of both Arrays | 267900 out of 269500 (99.41%) | 0 out of 1024 (0%)            | 6.09%                       |
-| Linear Search and arithmetics 4096 8-bit| A has an array of 4096 indices with 3 values each. B wants to find a specific index and run arithmetics on the three values | 2437057 out of 2437089 (> 99.99%) | 0 out of 131072 (0%)            | 22.15%                     |
-| Max element in a search window of a 64x64 8-bit 2D Array|  A has a 64x64 8-bit 2D Array with values. B wants to find the maximum value in a specified search window | 1202392 out of 1202408 (> 99.99%) | 1 out of 32768 (<0.01%)            | 28.98%                       |
+| Function                    | Explanation | Evaluate speed (million gates/s)    | 
+|-----------------------------|-------------------------------|-------------------------------|
+| Set-Intersect 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 191.614 | 
+| Linear Search and arithmetics 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 156.897 | 
+| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 185.076  |
 
 
 - **Evaluate speed**: Benchmark two endpoints are AWS instance with type m5zn.metal, 100Gbits bandwidth. Use 100 compression threads through network transfer.
@@ -83,6 +83,10 @@ make -j
 ``--inputa=< input >`` generator must specify input a, or input a will be random. This option make no sense to evaluator
 
 ``--inputb=< input >`` evaluator can specify input b, or it will be random.
+
+``--ip=< ip address >`` set the server address, only evaluator need this option.
+
+``--port=< port >`` set the network port, defaul as 8080.
 
 ``--format=< emp|bristol >`` only make sense if circuit type is txt, apparently only generator needs this option.
 
@@ -131,7 +135,6 @@ Sets this end as **evaluator**. Import the binary file **./circuits/myCircuit.bi
 
 ```
 ---TIMING--- 1046064us converting program to circuit
-read: 0
 ---INFO--- numGates: 9100000
 ---TIMING--- 41126us getting Parents of each Wire
 ---TIMING--- 63259us identifying potentially obfuscated fixed gates
@@ -154,14 +157,13 @@ read: 0
 ---Evaluation--- inB1181228270
 ---Evaluation--- out0
 connected
-tmp0
----TIMING--- 129515us send
+---TIMING--- 129515us sending RGC to Evaluator
 ```
 > ./build/generator --party=2 --circuit=query --bin
 
 ```
 connected
----TIMING--- 133045us receive
+---TIMING--- 133045us receiving RGC from Generator
 ---TIMING--- 53469us evaluate circuit
 ---Evaluation--- inA18446744073709551615
 ---Evaluation--- inB3287501720

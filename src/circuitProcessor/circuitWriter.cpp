@@ -127,7 +127,7 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
     cir_param[3] = circuit->details.bitlengthInputA;
     cir_param[4] = circuit->details.bitlengthInputB;    
     cir_param[5] = circuit->details.bitlengthOutputs;
-    cout<<"tmp"<<circuit->gates[0].leftParentID<<endl;
+
 
     //io->send_data( cir_param, 6*sizeof(uint64_t) );
     send_data_gen( cir_param, (size_t)6*sizeof(uint64_t) );

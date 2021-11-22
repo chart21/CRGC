@@ -254,7 +254,7 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
-    cout<<"read: "<<gates[0].truthTable[0][1]<<endl;
+
     delete[] gates;
 
     // TransformedCircuit *circuit = new TransformedCircuit;
@@ -598,7 +598,7 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
-    cout<<"read: "<<gates[0].leftParentID<<endl;
+
     delete[] gates;
 
     // TransformedCircuit *circuit = new TransformedCircuit;
@@ -759,6 +759,7 @@ void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
 
 void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
 
+    valArr = new bool[details.bitlengthInputA];
     if(!destinationPath.empty()){
         std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
         for (auto i = 0; i < details.bitlengthInputA; i++)
