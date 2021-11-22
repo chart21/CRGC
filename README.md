@@ -30,21 +30,22 @@ The evaluator (party B) performs the following steps:
 
 ## Results
 
-| Function                    | Evaluate speed (gates/us)   |
-|-----------------------------|-------------------------------|
-| 64-bit Adder                | 46    |
-| 64-bit Subtract             | 54        |
-| 64x64 -> 64 bit Multiplier  | 187    |
-| AES-256(k,m)                | 273     |
-| SHA256                      | 252   |
-| SHA512                      | 241  |
+
+| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
+|-----------------------------|-------------------------------|-------------------------------|-----------------------------|
+| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 23.94%                      |
+| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 26.65%                      |
+| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 31.84%                      |
+| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 35.51%                      |
+| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 33.88%                      |
+| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
 
 
-| Function                    | Explanation | Evaluate speed (million gates/s)    | 
-|-----------------------------|-------------------------------|-------------------------------|
-| Set-Intersect 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 191.614 | 
-| Linear Search and arithmetics 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 156.897 | 
-| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 185.076  |
+| Function                    | Explanation | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
+|-----------------------------|-------------------------------|-------------------------------|-----------------------------|-----------------------------|
+| Set-Intersect 200x200 8-bit| A has 200 8-bit inputs. B has 200 8-bit inputs and wants to find the intersect of both Arrays | 267900 out of 269500 (99.41%) | 0 out of 1024 (0%)            | 6.09%                       |
+| Linear Search and arithmetics 4096 8-bit| A has an array of 4096 indices with 3 values each. B wants to find a specific index and run arithmetics on the three values | 2437057 out of 2437089 (> 99.99%) | 0 out of 131072 (0%)            | 22.15%                     |
+| Max element in a search window of a 64x64 8-bit 2D Array|  A has a 64x64 8-bit 2D Array with values. B wants to find the maximum value in a specified search window | 1202392 out of 1202408 (> 99.99%) | 1 out of 32768 (<0.01%)            | 28.98%                       |
 
 
 - **Evaluate speed**: Benchmark two endpoints are AWS instance with type m5zn.metal, 100Gbits bandwidth. Use 100 compression threads through network transfer.
