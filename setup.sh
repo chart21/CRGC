@@ -5,6 +5,7 @@ echo "--- Intall Dependencies for Linux Ubuntu ---"
 
 apt-get install -y software-properties-common
 apt-get update
+apt-get upgrade
 apt-get install -y cmake git build-essential libssl-dev libgmp-dev python wget xxd
 apt-get install -y libboost-dev
 apt-get install -y libboost-{chrono,log,program-options,date-time,thread,system,filesystem,regex,test}-dev
