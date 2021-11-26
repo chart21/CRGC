@@ -26,7 +26,7 @@ wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/ins
 python install.py --deps --tool --ot --sh2pc
 
 echo "--- Fetch TurboPFor ---"
-cd CGRC
+cd CRGC-dep/Reusable-Garbled-Circuit-Generator-CPP
 git submodule update --init --recursive
 
 echo "--- Build CRGC ---"
