@@ -20,6 +20,6 @@ git submodule update --init --recursive
 
 echo "--- Build CRGC ---"
 cmake --version
-cmake . -B ./build
+cmake . -B./build
 cd build
 make -j
