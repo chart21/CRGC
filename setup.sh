@@ -1,4 +1,4 @@
-#! bin/bash
+#! /bin/bash
 
 cd ..
 echo "--- Intall Dependencies for Linux Ubuntu ---"
