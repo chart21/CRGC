@@ -18,6 +18,6 @@ cd Reusable-Garbled-Circuit-Generator-CPP
 git submodule update --init --recursive
 
 echo "--- Build CRGC ---"
-cmake -S . -B ./build
+cmake -S ./ -B ./build
 cd build
 make -j
