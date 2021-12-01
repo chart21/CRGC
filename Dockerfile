@@ -9,5 +9,4 @@ RUN mkdir CRGC-dep
 WORKDIR /home/CRGC-dep/
 RUN git clone https://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@github.com/chart21/Reusable-Garbled-Circuit-Generator-CPP.git
 WORKDIR /home/CRGC-dep/Reusable-Garbled-Circuit-Generator-CPP/
-RUN git checkout -b transfer origin/transfer
 RUN ./setup.sh
