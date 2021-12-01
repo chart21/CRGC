@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
         
     }
     else{
-        emp::NetIO * io = new emp::NetIO( evaluator->ip_address.c_str(), PORT);
+        emp::NetIO * io = new emp::NetIO( "187.197.97.27", evaluator->port);
         evaluator->reader = new Reader<emp::NetIO>(io);
         evaluator->readCircuit(evaluator->network,"receiving"); 
         delete io;

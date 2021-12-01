@@ -9,10 +9,10 @@
 //Generator: Send an "uncompressed", or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
 //Evaluator: Receive an "uncompressed", or "compressed" CRGC from the evaluator via network sockets. "off": Do not recive a CRGC via network. 
 
-#define IP "127.0.0.1" //Target IP to send CRGC to. Irrelevant if Network is set to "off".
+#define IP "187.197.97.27" //Target IP to send CRGC to. Irrelevant if Network is set to "off".
 #define PORT 8080 //Target Port to send CRGC to. Irrelevant if Network is set to "off".
 
-#define DISK "off" 
+#define STORE "off" 
 //Generator: "off": Generator does not store CRGC locally after construction, "compress": Store CRGC as compressed file, "bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 //Evaluator: If Network is set as "off": Import CRGC from "txt", "bin", or "compressed" file. If Network is not "off" store CRGC as "txt", "bin", or "compressed" file.
 

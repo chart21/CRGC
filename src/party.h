@@ -53,7 +53,7 @@ struct Party{
     std::string circuitFormat = CIRCUIT_FORMAT;
     std::string circuitName = CIRCUIT_NAME;
     std::string network = NETWORK;
-    std::string disk = DISK;
+    std::string disk = STORE;
     
     int port = PORT;
 
@@ -77,7 +77,7 @@ void forwardExportFunctions(Party *party, ShrinkedCircuit* &scir, bool* &valArr,
 void Party::writeCircuit(string format, string print){
 
     if(format=="off") return;
-    if (format=="bin" | format=="uncompressed") {
+    if (format=="bin" || format=="uncompressed") {
         funcTime( print, forwardExportFunctions, this, circuitData.scir, circuitData.obfuscatedValArr, true);
         //this->writer->exportBin(Party::circuitData.scir,Party::circuitData.obfuscatedValArr);
     }
