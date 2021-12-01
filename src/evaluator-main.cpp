@@ -87,7 +87,7 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
         {"inputa", required_argument, NULL, 'a'},
         {"inputb", required_argument, NULL, 'b'},
         {"port", required_argument, NULL, 'p'},
-        {"ip", required_argument, NULL, 'p'},
+        {"ip", required_argument, NULL, 'i'},
         {"network", required_argument, NULL, 'y'},
         {"disk", required_argument, NULL, 'z'},
         {NULL, 0, NULL, 0}
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
     }
     else{
         emp::NetIO * io = new emp::NetIO( evaluator->ip_address.c_str(), PORT);
+        //Reader<emp::NetIO> * r = new Reader<emp::NetIO>(io);
         evaluator->reader = new Reader<emp::NetIO>(io);
         evaluator->readCircuit(evaluator->network,"receiving"); 
         delete io;
