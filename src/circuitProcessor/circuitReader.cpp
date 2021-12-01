@@ -28,14 +28,10 @@
 
 using namespace std;
 vector<std::mutex> mtx_recv(100);
-//std::mutex mtx_read;
+
 vector<unsigned char*> bufs_recv;
 vector<uint32_t> bufLens_recv;
 vector<condition_variable> cd_recv(100);
-//condition_variable cd_read;
-//int id_recv=-1;
-//int id_read=-1;
-// vector<unique_ptr<condition_variable>> cd_recv(100,unique_ptr<condition_variable>(new condition_variable));
 
 void splitString(std::string s, std::vector<std::string> &v)
 {
@@ -249,7 +245,6 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     }
     delete[] flipped;
     f.close();
-    //details.numGates = gateCounter;
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
     uint_fast64_t oldNumWires = details.numWires;
@@ -275,17 +270,13 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
 
     TransformedCircuit *circuit = new TransformedCircuit(details);
     TransformedGate *transformedGates = circuit->gates;
-    // TransformedGate *transformedGates = new TransformedGate[details.numGates];
+
     for (auto i = 0; i < details.numGates; i++)
     {
-        transformedGates[i] = gates[i]; //does that really copy?
+        transformedGates[i] = gates[i];
     }
     cout<<"read: "<<gates[0].truthTable[0][1]<<endl;
     delete[] gates;
-
-    // TransformedCircuit *circuit = new TransformedCircuit;
-    // *circuit = {details, transformedGates};
-
     return circuit;
 }
 
@@ -293,7 +284,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
 {
     BristolGate *gates = new BristolGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
-    //flipped = new bool[details.numWires];
     for (auto i = 0; i < details.numWires; i++)
     {
         exchangeGate[i] = i;
@@ -319,12 +309,10 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
                 if (output < details.numWires - details.numOutputs * details.bitlengthOutputs)
                 {
                     exchangeGate[output] = exchangeGate[parent];
-                    //flipped[output] = not flipped[output];
                     flipped[exchangeGate[output]] = not flipped[exchangeGate[output]];
                 }
                 else
                 {
-                    //gates[gateCounter] = BristolGate { 'X', };
                     gates[gateCounter] = BristolGate{exchangeGate[parent], exchangeGate[parent], output, 'X'};
 
                     gateCounter++;
@@ -351,8 +339,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
             }
         }
     }
-    //delete[] flipped;
-
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
     uint_fast64_t oldNumWires = details.numWires;
@@ -374,31 +360,24 @@ BristolCircuit* importBristolCircuitExNotForLeakagePrediction(std::string filepa
         gates[i].leftParentID = adjustedWire[gates[i].leftParentID];
         gates[i].rightParentID = adjustedWire[gates[i].rightParentID];
         gates[i].outputID = adjustedWire[gates[i].outputID];
-        //flipped[adjustedWire[i]] = flipped[i];
         flipped[gates[i].outputID] = flipped[adjustedWire[gates[i].outputID]];
-        //std::cout << flipped[i];
+        
     }
     delete[] adjustedWire;
 
-    // BristolGate *bristolGates = new BristolGate[details.numGates];
+
     BristolCircuit *circuit = new BristolCircuit(details);
     BristolGate *bristolGates = circuit->gates;
     for (auto i = 0; i < details.numGates; i++)
     {
-        bristolGates[i] = gates[i]; //does that really copy?
+        bristolGates[i] = gates[i]; 
     }
-    
     delete[] gates;
-
-    // BristolCircuit *circuit = new BristolCircuit;
-    // *circuit = {details, bristolGates};
-
     return circuit;
 }
 
 void importBinaryInput(std::string filepath, uint_fast64_t bitlength, bool *valArr)
 {
-    //auto valArr = new bool[bitlength];
     char ch;
     std::fstream fin(filepath, std::fstream::in);
     uint_fast64_t counter = 0;
@@ -435,7 +414,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
 
     BristolGate *gates = new BristolGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
-    //bool *flipped = new bool[details.numWires];
     for (auto i = 0; i < details.numWires; i++)
     {
         exchangeGate[i] = i;
@@ -457,8 +435,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
             }
             else
             {
-                //gates[gateCounter] = BristolGate { 'X', };
-
                 gates[gateCounter] = BristolGate{exchangeGate[(*gateVec)[i].leftParentID], exchangeGate[(*gateVec)[i].leftParentID], (*gateVec)[i].outputID, 'X'};
 
                 gateCounter++;
@@ -477,7 +453,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
         }
     }
 
-    //delete[] flipped;
     details.numGates=gateCounter;
     uint_fast64_t deleteCounter = 0;
     uint_fast64_t *adjustedWire = new uint_fast64_t[details.numWires];
@@ -497,7 +472,6 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
 
     for (auto i = 0; i < details.numGates; i++)
     {
-        //std::cout << gates[i].leftParentID <<' ' <<  gates[i].rightParentID <<' ' << gates[i].outputID <<' ' << gates[i].truthTable <<'\n';
         gates[i].leftParentID = adjustedWire[gates[i].leftParentID];
         gates[i].rightParentID = adjustedWire[gates[i].rightParentID];
         gates[i].outputID = adjustedWire[gates[i].outputID];
@@ -507,15 +481,11 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
 
     BristolCircuit *circuit = new BristolCircuit(details);
     BristolGate *bristolGates = circuit->gates;
-    // BristolGate *bristolGates = new BristolGate[details.numGates];
     for (auto i = 0; i < details.numGates; i++)
     {
-        bristolGates[i] = gates[i]; //does that really copy?
+        bristolGates[i] = gates[i];
     }
     delete[] gates;
-
-    // BristolCircuit *circuit = new BristolCircuit;
-    // *circuit = {details, bristolGates};
 
     return circuit;
 }
@@ -610,22 +580,18 @@ TransformedCircuit* importTransformedCircuitExNotForLeakagePredictionFromRAM(std
 
     TransformedCircuit *circuit = new TransformedCircuit(details);
     TransformedGate *transformedGates = circuit->gates;
-    // TransformedGate *transformedGates = new TransformedGate[details.numGates];
+
     for (auto i = 0; i < details.numGates; i++)
     {
-        transformedGates[i] = gates[i]; //does that really copy?
+        transformedGates[i] = gates[i]; 
     }
-    // cout<<"read: "<<gates[0].leftParentID<<endl;
+    
     delete[] gates;
-
-    // TransformedCircuit *circuit = new TransformedCircuit;
-    // *circuit = {details, transformedGates};
 
     return circuit;
 }
 
-// void decThread(ShrinkedGate* gates, vector<unsigned char*>::iterator bufGate_it, vector<unsigned char*>::iterator bufTable_it, 
-//                 vector<size_t>::iterator dataLens_it, int offset, int ss, int seg){
+
 void decThread(ShrinkedGate* gates, int l, int offset){
     size_t olg=0;
     size_t g_pr=0;
@@ -705,38 +671,6 @@ ShrinkedCircuit* decompressShrinkedCircuit(int package, CircuitDetails details) 
     return scir;
 }
 
-/*
-template <typename IO>
-void Eva<IO>::recvThread(size_t package, CircuitDetails details) {
-    
-
-    size_t seg = SEG(details.numGates,package);
-    seg = seg%2==0?seg:seg+1;
-    int ll = details.numGates;
-
-    for(int j=0;j<package;j++){
-        size_t l = ll>seg?seg:ll;
-
-        bufs_recv[1+j*2] = new unsigned char[P4NENC_BOUND(l*2,64)];
-        recv_data_eva( &(bufLens_recv[1+j*2]),sizeof(bufLens_recv[0]));
-        recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
-        cd_recv[1+j*2].notify_one();
-        
-        size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
-        bufs_recv[2+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
-        recv_data_eva( &(bufLens_recv[2+j*2]),sizeof(bufLens_recv[0]));
-        recv_data_eva( bufs_recv[2+j*2], sizeof(bufs_recv[2+j*2][0])*bufLens_recv[2+j*2] );
-        cd_recv[2+j*2].notify_one();
-        ll-=seg;
-    }
-
-    recv_data_eva(&(bufLens_recv.back()), sizeof(uint32_t));
-    bufs_recv.back() = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
-    recv_data_eva(bufs_recv.back(), sizeof(bufs_recv.back()[0])*bufLens_recv.back());
-    cd_recv.back().notify_one();
-
-}
-*/
 template <typename IO>
 void Reader<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){   
     int package;
@@ -779,16 +713,12 @@ void Reader<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
             recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
 
 
-            //cout<<(1+j*2)<<"th buf len: "<<bufLens_recv<<endl;
-            //cd_recv.notify_all();
-            
+
             size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
 
             bufs_recv[2+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
             recv_data_eva( &(bufLens_recv[2+j*2]),sizeof(bufLens_recv[2+j*2]));
             recv_data_eva( bufs_recv[2+j*2], sizeof(bufs_recv[2+j*2][0])*bufLens_recv[2+j*2] );
-
-            //cout<<(2+j*2)<<"th buf len: "<<bufLens_recv[1+j*2]<<","<<bufLens_recv[2+j*2]<<endl;
 
             cd_recv[j].notify_one();
 
@@ -845,8 +775,6 @@ void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::st
         }
         outputFile.close();
     }
-    //else
-    //    recv_data_eva(valArr, details.bitlengthInputA*sizeof(bool));
 
     return;
 
