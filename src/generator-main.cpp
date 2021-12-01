@@ -1,6 +1,6 @@
 #include "circuitProcessor/include/circuitReader.h"
 #include "circuitProcessor/include/circuitWriter.h"
-#include "partyConfig.h"
+#include "party.h"
 #include <emp-tool/io/file_io_channel.h>
 
 
@@ -8,13 +8,12 @@
 #define time_S t1 = startClock();
 #define time_E stopClock(t1);
 
-
-
-
-
-
 class Generator: public Party {
 public:
+    uint_fast64_t numThreads = NUM_THREADS; 
+    int compressThreads = COMRPRESS_THREADS;    
+    
+
     void loadTransformedCircuit();
 
     void predictLeakage(uint_fast64_t *parents);
@@ -214,6 +213,73 @@ void Generator::verifyIntegrityOfExportedRGC()
     auto iout2 = convertBoolArrToInt(newOut2, newDetails.bitlengthOutputs);
 }
 
+void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<char*> &inputs){
+    static struct option long_options[] =
+    {
+        {"circuit", required_argument, NULL, 'c'},
+        {"type", required_argument, NULL, 't'},
+        {"inputa", required_argument, NULL, 'a'},
+        {"inputb", required_argument, NULL, 'b'},
+        {"format", required_argument, NULL, 'f'},
+        {"port", required_argument, NULL, 'i'},
+        {"thread", required_argument, NULL, 'n'},
+        {"compression", required_argument, NULL, 'k'},
+        {"network", required_argument, NULL, 'y'},
+        {"disk", required_argument, NULL, 'z'},
+        {NULL, 0, NULL, 0}
+    };
+    int opt = getopt_long(argc, argv, "c:t:a:b:f:i:h:n:k:y:z:", long_options, NULL);
+    while (opt != -1) {
+        switch (opt) {
+        case 'c':
+            party->circuitName = optarg;
+            break;
+
+        case 't':
+            party->fileFormat = optarg;
+            break;
+
+        case 'a':
+            inputs[0] = optarg;
+            break;
+
+        case 'b':
+            inputs[1] = optarg;
+            break;
+
+        case 'f':
+            party->circuitFormat = optarg;
+            break;
+
+        case 'i':
+            party->port = std::stoi(optarg);
+            break;
+
+        case 'n':
+            party->numThreads = std::stoul(optarg);
+            break;
+
+        case 'k':
+            party->compressThreads = std::stoi(optarg);
+            break;
+        
+        case 'y':
+            party->network = optarg;
+            break;
+
+        case 'z':
+            party->disk = optarg;
+            break;
+
+        default: /* '?' */
+            fprintf(stderr, "Usage: %s [-t nsecs] [-n] name\n",
+                    argv[0]);
+            exit(EXIT_FAILURE);
+        }
+        opt = getopt_long(argc, argv, "c:t:a:b:f:i:h:n:k:y:z:", long_options, NULL);
+    }
+    
+}
 
 int main(int argc, char *argv[])
 {
@@ -221,9 +287,7 @@ int main(int argc, char *argv[])
     Generator* generator = new Generator();
 
     vector<char*> inputs(2,nullptr);
-    parseCLIOptions(argc, argv, generator,inputs);
-
-    
+    parseGeneratorCLIOptions(argc, argv, generator,inputs);
     
     generator->loadTransformedCircuit();
 
@@ -242,7 +306,7 @@ int main(int argc, char *argv[])
     if(generator->network!="off") {
         emp::NetIO * io = new emp::NetIO( nullptr, generator->port); //generator doesn't need server address
         generator->writer = new Writer<emp::NetIO>(io);
-        generator->writeCircuit(generator->network);
+        generator->writeCircuit(generator->network,"sending");
         delete io;
     }
 
@@ -250,7 +314,7 @@ int main(int argc, char *argv[])
         std::string filepath = CIRCUITPATH + generator->circuitName+(generator->disk=="bin"? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
         generator->writer = new Writer<emp::FileIO>(fio);
-        generator->writeCircuit(generator->disk); 
+        generator->writeCircuit(generator->disk,"exporting"); 
         delete fio;
     }
     delete generator;
