@@ -52,6 +52,16 @@ The evaluator (party B) performs the following steps:
 
 
 ## Getting Started
+Set up repository locally:
+```
+./setup.sh
+```
+Set up repository in a Docker container:
+```
+docker build -t crgc:latest .
+docker run -it crgc:latest
+```
+### Manually
 
 First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repo, you can either run 
 
@@ -59,7 +69,7 @@ First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterw
 git clone --recurse-submodules https://github.com/chart21/Reusable-Garbled-Circuit-Generator-CPP.git
 ```
 
-or initialize and fetch the [TurboPFor](https://github.com/firebolt007/TurboPFor-Integer-Compression.git) submodule, which are adapted from the repository [TurboPFor](https://github.com/powturbo/TurboPFor-Integer-Compression.git) manually after git clone
+or initialize and fetch the [TurboPFor](https://github.com/firebolt007/TurboPFor-Integer-Compression.git) submodule, which (adapted from the repository [TurboPFor](https://github.com/powturbo/TurboPFor-Integer-Compression.git)) manually after running git clone
 
 ```
 git submodule update --init --recursive
@@ -74,42 +84,41 @@ make -j
 ```
 
 ### Optional arguments
-
+Our library provides a generator and an evaluator executable that come with the following optional arguments.
 #### Generator
 
-``--circuit=< circuit name >`` name of the cpp function or file to convert to a CRGC
+``--circuit=< circuit name >`` name of the cpp function or file to convert to a CRGC.
 
 ``--type=< cpp|txt >`` "cpp": Convert cpp program to CRGC, "txt": convert bristol circuit stored as txt file to CRGC
 
-``--format=< emp|bristol >`` Only relevant for circuits imported from a file. "bristol": circuits  stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC 
+``--format=< emp|bristol >`` Only relevant for circuits imported from a txt file. "bristol": circuits  stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC 
 
-``--thread=< thread >`` number of threads to use for leakage prediction and circuit construction, does not affect evaluation
+``--thread=< thread >`` Number of threads to use for leakage prediction and circuit construction, does not affect evaluation.
 
-``--inputa=< input >`` Default as random.
+``--inputa=< input >`` "r": Generate a random generator input, FILENAME: Import the generator input from a txt file (input is treated as binary value), Integer: Set argument as generator input (input is treated as integer value).
 
-``--inputb=< input >`` Specify an exemplary input evaluator may query.
-
-``--port=< port >`` Target Port to send CRGC to. Irrelevant if Network is set to "off".
+``--inputb=< input >`` Not relevant. Specify an exemplary input evaluator may query. "r": Generate a random evaluator input, FILENAME: Import the evaluator input from a txt file (input is treated as binary value), Integer: Set argument as evaluator input (input is treated as integer value).
 
 ``--network=< off|compressed|uncompressed >`` Send an "uncompressed", or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
+
+``--port=< port >`` Target port to send CRGC to. Irrelevant if Network is set to "off".
+
 
 ``--disk=< off|compressed|bin|txt >`` 
 
 "off": Generator does not store CRGC locally after construction. 
 
-"compressed": Store CRGC as compressed file. 
-
-"bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
+"compressed": Store CRGC as compressed file after construction,"bin": Store CRGC as bin file,
+"txt": Store CRGC as txt file 
 
 ``--compression=< compress threads >`` number of threads to use for compressing a CRGC.
 
 #### Evaluator
-``--ip=< ip address >`` Target IP to send CRGC to. Irrelevant if Network is set to "off".
+``--ip=< ip address >`` Generator's IP to receive CRGC from. Irrelevant if Network is set to "off".
 
-``--port=< port >`` Target Port to send CRGC to. Irrelevant if Network is set to "off".
+``--port=< port >`` Generator's Port to receive CRGC from. Irrelevant if Network is set to "off".
 
-``--disk=< off|compressed|bin|txt >`` If Network is set as "off": Import CRGC from "txt", "bin", or "compressed" file. If Network is not "off" store CRGC as "txt", "bin", or "compressed" file.
-
+``--disk=< off|compressed|bin|txt >`` If Network is set as "off": Import CRGC from a local "txt", "bin", or "compressed" file. If Network is not "off" store CRGC as "txt", "bin", or "compressed" file.
 
 ``--network=< off|compressed|uncompressed >`` Receive an "uncompressed", or "compressed" CRGC from the evaluator via network sockets. "off": Do not recive a CRGC via network. 
 
@@ -120,16 +129,21 @@ make -j
 ./build/generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=100
 ```
 
-Sets this end as **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input supposed to be from party B. Then the generator listens to connection from an evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with obfuscated input A in **compressed** format. The data is compressed in **100** threads.
+Act as the **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input assumed to be from party B. Then the generator listens to a connection from the evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with its obfuscated input A in **compressed** format. The data is compressed using **100** threads.
 
 
 #### evalator executable
 
 ```
-./build/evaluator --circuit=myCircuit --inputb=20 --disk=bin
+./build/evaluator --circuit=myCircuit --inputb=20 --network=compressed --disk=bin
+```
+Act as the **evaluator**. Receive a **compressed** CRGC from the generator over the network. Evaluate the circuit with an evaluator input of **20**. Store the CRGC as a **.bin** file on the local harddrive.
+
+```
+./build/evaluator --circuit=myCircuit --inputb=30 --disk=bin
 ```
 
-Sets this end as **evaluator**. Import the binary file **./circuits/myCircuit.bin** in hard disk to the circuit struct. Evaluate the circuit with input **20** of Party B.
+Act as the **evaluator**. Import the CRGC and obfuscated generator input from the local binary file **./circuits/myCircuit.bin**. Evaluate the circuit with input **30** of Party B.
 
 
 #### Example Outputs
