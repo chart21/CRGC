@@ -236,7 +236,7 @@ This saves a boolean circuit.txt file that you can use to generate a reusable ga
 
 
 ```
-./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
+./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads> ...
 ```
 
 ### Compiling a C function to a reusable garbled circuit using CBMC-GC2
@@ -262,5 +262,5 @@ make
 This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
+./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads> ...
 ```
