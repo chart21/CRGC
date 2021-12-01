@@ -4,8 +4,8 @@
 // #include "include/circuitCompressor.h"
 #include "../../TurboPFor-Integer-Compression/vp4.h"
 #include "../../TurboPFor-Integer-Compression/circuitutil.h"
-//#include "emp-tool/emp-tool.h"
-#include "include/circuitHighSpeedNetIO.h"
+// #include "emp-tool/emp-tool.h"
+// #include "include/circuitHighSpeedNetIO.h"
 #include <fstream>
 #include <vector>
 #include <mutex>
@@ -520,13 +520,9 @@ BristolCircuit* importBristolCircuitExNotForLeakagePredictionFromRAM(std::vector
     return circuit;
 }
 
-template <typename IO>
-TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details)
+TransformedCircuit* importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details)
 {
-    if(io) {
-        // io->recv_data(&details, sizeof(details));
-        recv_data_eva(&details, sizeof(details));
-    }
+
     TransformedGate *gates = new TransformedGate[details.numGates];
     uint_fast64_t *exchangeGate = new uint_fast64_t[details.numWires];
     bool *flipped = new bool[details.numWires];
@@ -540,12 +536,7 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
 
     for (auto i = 0; i < details.numGates; i++)
     {
-        if(io){
-            BristolGate bg;
-            // io->recv_data(&bg, sizeof(BristolGate));
-            recv_data_eva(&bg, sizeof(BristolGate));
-            gateVec->push_back(bg);
-        }
+        
         if ((*gateVec)[i].truthTable == 'I') //not gate
         {
 
@@ -624,7 +615,7 @@ TransformedCircuit* Eva<IO>::importTransformedCircuitExNotForLeakagePredictionFr
     {
         transformedGates[i] = gates[i]; //does that really copy?
     }
-    cout<<"read: "<<gates[0].leftParentID<<endl;
+    // cout<<"read: "<<gates[0].leftParentID<<endl;
     delete[] gates;
 
     // TransformedCircuit *circuit = new TransformedCircuit;
@@ -747,10 +738,10 @@ void Eva<IO>::recvThread(size_t package, CircuitDetails details) {
 }
 */
 template <typename IO>
-void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){   
+void Reader<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){   
     int package;
     recv_data_eva( &package, sizeof(int) );
-    cout<<"package: "<<package<<endl;
+
     bufs_recv.assign(package*2+2,nullptr);
     bufLens_recv.assign(package*2+2,0);
     // cd_recv.assign(package*2+2,unique_ptr<condition_variable>(new condition_variable));
@@ -807,7 +798,7 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
         recv_data_eva(&(bufLens_recv[package*2+1]), sizeof(uint32_t));
         bufs_recv[package*2+1] = new unsigned char[P4NENC_BOUND(details.bitlengthInputA,8)];
         recv_data_eva(bufs_recv[package*2+1], sizeof(bufs_recv[package*2+1][0])*bufLens_recv[package*2+1]);
-        cout<<bufLens_recv[package*2+1]<<endl;
+
         cd_recv[package].notify_one();
     });
 
@@ -821,7 +812,7 @@ void Eva<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
 }
 
 template <typename IO>
-void Eva<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
+void Reader<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
     uint64_t cir_param[6];
     recv_data_eva(cir_param, 6*sizeof(uint64_t) );
     CircuitDetails details;

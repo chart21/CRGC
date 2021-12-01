@@ -12,15 +12,22 @@ void exportCircuitSeparateFiles(TransformedCircuit* circuit, std::string destina
 
 void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::string destinationPath="");
 
+class Writer_base{
+public:
+    virtual void send_data_gen(const void * data, uint64_t nbyte)=0;
+    virtual void exportBin(ShrinkedCircuit* circuit, bool* valArr)=0;
+    virtual void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1)=0;
+};
+
 template <typename IO>
-class Gen {
+class Writer: public Writer_base {
 public:
     IO *io = nullptr;
 
-    Gen(IO *io):io(io) {}
-    Gen() {}
+    Writer(IO *io):io(io) {}
+    Writer() {}
 
-    void send_data_gen(const void * data, uint64_t nbyte){
+    void send_data_gen(const void * data, uint64_t nbyte) override{
         uint64_t send = 0;
         while(send<nbyte){
             size_t n = nbyte-send>BUF_W? BUF_W : nbyte-send;
@@ -31,10 +38,10 @@ public:
         }
     }
     
-    void exportBin(ShrinkedCircuit* circuit, bool* valArr);
+    void exportBin(ShrinkedCircuit* circuit, bool* valArr) override;
     
     /* export compressed circuit to HDD */
-    void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1);
+    void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1) override;
     // void sendThread();
 };
 #endif

@@ -1,7 +1,5 @@
 #include "include/circuitWriter.h"
 #include "include/circuitStructs.h"
-// #include "include/circuitCompressor.h"
-#include "include/circuitHighSpeedNetIO.h"
 #include "include/helperFunctions.h"
 
 #include "../../TurboPFor-Integer-Compression/vp4.h"
@@ -30,22 +28,11 @@
 
 using namespace std;
 
-// std::mutex mtx_send;
-// vector<unsigned char*> bufs_send;
-// vector<uint32_t> bufLens_send;
-// vector<condition_variable> cd_send(202);
 
-//vector<std::mutex> mtx_send(100);
 std::mutex mtx_send;
 vector<unsigned char*> bufs_send;
 vector<uint32_t> bufLens_send;
 vector<condition_variable> cd_send(100);
-//condition_variable cd_wrote;
-//int id_sent=-1;
-//int id_wrote=-1;
-
-// vector<unique_ptr<condition_variable>> cd_send(100,unique_ptr<condition_variable>(new condition_variable));
-
 
 void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
 
@@ -77,9 +64,6 @@ void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
     if(l%2!=0) inTable[l>>1]=gate;
 
     size_t olg1, olg2;
-    //unsigned char* bufs_tmp1 = encHlp64(in,l*2,&olg1,TYPE);
-    //unsigned char* bufs_tmp2 = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg2,TYPE);
-
 
     bufs_send[offset*2+1] = encHlp64(in,l*2,&olg1,TYPE);
     bufLens_send[offset*2+1] = (uint32_t)olg1;
@@ -177,37 +161,16 @@ void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::str
         }
         inputFile.close();
     }
-    //else
-    //    send_data_gen( valArr, details.bitlengthInputA*sizeof(bool) );
-    
-}
-/*
-template <typename IO>
-void Gen<IO>::sendThread() {
-    size_t len = bufLens_send.size();
-    
-    for(int i=0;i<len;i++){
-
-        std::unique_lock<std::mutex> lck(mtx_send);
-        while(bufs_send[i]==nullptr) cd_send[i].wait(lck);
-
-        send_data_gen( &(bufLens_send[i]), sizeof(bufLens_send[0]) );
-        send_data_gen( bufs_send[i], sizeof(bufs_send[i][0])*bufLens_send[i] );
-        delete [] bufs_send[i];
-        bufs_send[i]=nullptr;
-    }
 
 }
-*/
+
 template <typename IO>
-void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package){
+void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package){
 
     bufs_send.assign(package*2+2,nullptr);
     bufLens_send.assign(package*2+2,0);
     size_t len = package*2+2;
 
-    // cd_send.assign(package*2+2,unique_ptr<condition_variable>(new condition_variable));
-    cout<<"package: "<<package<<endl;
     send_data_gen( &package, sizeof(int) );
 
     thread sendThread([&]() {
@@ -219,9 +182,6 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int p
             send_data_gen( bufs_send[i], sizeof(bufs_send[i][0])*bufLens_send[i] );
             delete [] bufs_send[i];
             bufs_send[i] = nullptr;
-
-
-            //cout<<i<<"th buf len: "<<bufLens_send<<endl;
         }
     });
 
@@ -234,7 +194,7 @@ void Gen<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int p
 }
 
 template <typename IO>
-void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
+void Writer<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
 
     uint64_t cir_param[6];
     cir_param[0] = circuit->details.numWires;
@@ -243,8 +203,7 @@ void Gen<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
     cir_param[3] = circuit->details.bitlengthInputA;
     cir_param[4] = circuit->details.bitlengthInputB;    
     cir_param[5] = circuit->details.bitlengthOutputs;
-    cout<<"tmp"<<circuit->gates[0].leftParentID<<endl;
-
+    
     send_data_gen( cir_param, (size_t)6*sizeof(uint64_t) );
 
 

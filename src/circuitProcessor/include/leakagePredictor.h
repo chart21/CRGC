@@ -30,7 +30,7 @@ void getPotentiallyIntermediaryGatesFromOutputMT2(CircuitDetails details, bool *
 
 void getCircuitLineofWireIndex(TransformedCircuit* circuit, uint_fast64_t* circuitLineOfWireIndex);
 
-void getLeakedInputsFromOutput(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs);
+void getLeakedInputsFromOutputSorted(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs);
 void getLeakedInputsFromOutputUnsorted(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t* circuitLineOfWireIndex);
 
 void getLeakedInputsFromOutputSortedMT(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs, uint_fast64_t numThreads);

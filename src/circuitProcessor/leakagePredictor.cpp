@@ -243,7 +243,7 @@ void getPotentiallyIntermediaryGatesFromOutputMT2(CircuitDetails details, bool *
 }
 
 //only works for circuits sorted by outputID
-void getLeakedInputsFromOutput(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs)
+void getLeakedInputsFromOutputSorted(TransformedCircuit *circuit, bool *po, std::vector<uint_fast64_t>* leakedInputs)
 {
 
     bool *addedGates[2] = {new bool[circuit->details.numWires](), new bool[circuit->details.numWires]()}; //one for each queue

@@ -2,6 +2,7 @@
 #define CIRCUIT_READER_H__
 
 #include "circuitStructs.h"
+
 #include <fstream>
 #include<vector>
 #define BUF_R 100000
@@ -21,14 +22,22 @@ TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetail
 
 void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath="");
 
+TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
+
+class Reader_base{
+public:
+    virtual void recv_data_eva(void * data, uint64_t nbyte)=0;
+    virtual void importBin(ShrinkedCircuit* &circuit, bool* &valArr)=0;
+    virtual void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr)=0;
+};
 
 template <typename IO>
-class Eva{ public:
+class Reader: public Reader_base{ public:
     IO *io = nullptr;
-    Eva(IO *io):io(io) {}
-    Eva() {}
+    Reader(IO *io):io(io) {}
+    Reader() {}
 
-    void recv_data_eva(void * data, uint64_t nbyte){
+    void recv_data_eva(void * data, uint64_t nbyte) override {
         size_t send = 0;
         while(send<nbyte){
             size_t n = nbyte-send>BUF_R? BUF_R : nbyte-send;
@@ -38,15 +47,13 @@ class Eva{ public:
             
         }
     }
-    
-    
-    void importBin(ShrinkedCircuit* &circuit, bool* &valArr);
-    TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std::vector<BristolGate> *gateVec, CircuitDetails details);
+      
+    void importBin(ShrinkedCircuit* &circuit, bool* &valArr) override;
 
-    /* import compressed Circuit */
-    void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr);
-    // void recvThread(size_t package, CircuitDetails details);
+    // import compressed Circuit 
+    void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr) override;
 
 };
+
 
 #endif

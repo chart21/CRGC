@@ -30,6 +30,7 @@ The evaluator (party B) performs the following steps:
 
 ## Results
 
+
 | Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
 |-----------------------------|-------------------------------|-------------------------------|-----------------------------|
 | 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 23.94%                      |
@@ -38,7 +39,6 @@ The evaluator (party B) performs the following steps:
 | AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 35.51%                      |
 | SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 33.88%                      |
 | SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
-
 
 
 | Function                    | Explanation | Evaluate speed (million gates/s)    | 
@@ -74,29 +74,38 @@ make -j
 ```
 
 ### Optional arguments
-``--party=< 0|1|2 >`` 1 for generator, 2 for evaluator 
 
-``--circuit=< circuit name >``
+``--circuit=< circuit name >`` name of the cpp function or file to convert to a CRGC
 
-``--type=< cpp|txt >`` only generator needs this option, to specify the original circuit format. cpp as default.
+``--type=< cpp|txt >`` "cpp": Convert cpp program to CRGC, "txt": convert bristol circuit stored as txt file to CRGC
 
 ``--inputa=< input >`` generator must specify input a, or input a will be random. This option make no sense to evaluator
 
 ``--inputb=< input >`` evaluator can specify input b, or it will be random.
 
-``--format=< emp|bristol >`` only make sense if circuit type is txt, apparently only generator needs this option.
+``--ip=< ip address >`` Target IP to send CRGC to. Irrelevant if Network is set to "off".
 
-``--thread=< thread >`` only generator needs this option, to specify how many threads are used to construct the circuit.
+``--port=< port >`` Target Port to send CRGC to. Irrelevant if Network is set to "off".
 
-``--disk`` if specify, generator writes the generated circuit to hard disk instead of transfering through network, evaluator reads from the disk. Data format can be specified, bin as default.
+``--format=< emp|bristol >`` Only relevant for circuits imported from a file. "bristol": circuits  stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC 
 
-``--bin`` if **--disk** is specified, ex/import circuit as binary, if **--disk** is not specified, transfer circuit through network in bin, in this case, generator and evaluator should both set as **--bin**. Be incompatible with **--txt** and **--compress**.
+``--thread=< thread >`` number of threads to use for leakage prediction and circuit construction, does not affect evaluation
 
-``--compress`` if **--disk** is specified, ex/import circuit as compressed file, if **--disk** is not specified, transfer circuit through network in compressed data, in this case, generator and evaluator should both set as **--compress**. Be incompatible with **--txt** and **--bin**.
+``--disk=< off|compressed|bin|txt >`` 
 
-``--txt`` if **--disk** is specified, ex/import circuit as rgc txt file, if **--disk** is not specified, this option makes no sense, circuit will be transferred through network in compressed format. Be incompatible with **--bin** and **--compress**.
+Generator: "off": Generator does not store CRGC locally after construction, "compress": Store CRGC as compressed file, "bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 
-``--compression=< compress threads >`` if **--comress** is set, thread number can be sepcified.
+Evaluator: If Network is set as "off": Import CRGC from "txt", "bin", or "compress" file. If Network is not "off" store CRGC as "txt", "bin", or "compress" file.
+
+
+``--network=< off|compressed|uncompressed >`` 
+Generator: Send an "uncompressed", or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
+
+Evaluator: Receive an "uncompressed", or "compressed" CRGC from the evaluator via network sockets. "off": Do not recive a CRGC via network. 
+
+
+
+``--compression=< compress threads >`` number of threads to use for compressing a CRGC.
 
 ### Example 
 
@@ -131,7 +140,6 @@ Sets this end as **evaluator**. Import the binary file **./circuits/myCircuit.bi
 
 ```
 ---TIMING--- 1046064us converting program to circuit
-read: 0
 ---INFO--- numGates: 9100000
 ---TIMING--- 41126us getting Parents of each Wire
 ---TIMING--- 63259us identifying potentially obfuscated fixed gates
@@ -154,14 +162,13 @@ read: 0
 ---Evaluation--- inB1181228270
 ---Evaluation--- out0
 connected
-tmp0
----TIMING--- 129515us send
+---TIMING--- 129515us sending RGC to Evaluator
 ```
 > ./build/generator --party=2 --circuit=query --bin
 
 ```
 connected
----TIMING--- 133045us receive
+---TIMING--- 133045us receiving RGC from Generator
 ---TIMING--- 53469us evaluate circuit
 ---Evaluation--- inA18446744073709551615
 ---Evaluation--- inB3287501720

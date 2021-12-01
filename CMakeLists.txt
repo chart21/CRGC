@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3)
-project(generator)
+project(crgc)
 
 include(CTest)
 enable_testing()
@@ -38,34 +38,36 @@ INCLUDE_DIRECTORIES(${EMP-OT_INCLUDE_DIRS}) #recently added
 # # Test cases
 # add_test_case_with_run(mult3)
 
+# set(SOURCES "src/generator-main.cp"; "src/evaluator-main.cpp")
+set(TARGETS "generator"; "evaluator")
+# add_executable(${PROJECT_NAME} src/generator-main.cpp)
 
-add_executable(${PROJECT_NAME} src/generator-main.cpp)
 #Testing macro
 
 
 add_subdirectory(src/circuitProcessor)
-
-#target_include_directories(${PROJECT_NAME} PUBLIC src/circuits)
-#target_link_directories(${PROJECT_NAME} PUBLIC src/circuits)
-
-
-target_include_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
-target_link_directories(${PROJECT_NAME} PUBLIC src/circuitProcessor)
-
-target_link_libraries(${PROJECT_NAME} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
-
-
 add_subdirectory(src/programs)
-target_include_directories(${PROJECT_NAME} PUBLIC src/programs)
-target_link_directories(${PROJECT_NAME} PUBLIC src/programs)
 
-target_link_libraries(${PROJECT_NAME} circuitLinker examplePrograms)
+foreach(TARGET IN LISTS TARGETS)
+    add_executable(${TARGET} src/${TARGET}-main.cpp)
+    target_include_directories(${TARGET} PUBLIC src)
+    target_link_directories(${TARGET} PUBLIC src)
+    target_include_directories(${TARGET} PUBLIC src/circuitProcessor)
+    target_link_directories(${TARGET} PUBLIC src/circuitProcessor)
+    target_link_libraries(${TARGET} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
+    
+    target_include_directories(${TARGET} PUBLIC src/programs)
+    target_link_directories(${TARGET} PUBLIC src/programs)
+    target_link_libraries(${TARGET} circuitLinker examplePrograms)
+    
+    target_link_libraries(${TARGET} ${EMP-OT_LIBRARIES})
+    target_include_directories(${TARGET} PUBLIC TurboPFor-Integer-Compression)
+    target_link_directories(${TARGET} PUBLIC TurboPFor-Integer-Compression)
+    target_link_libraries(${TARGET} cir ic)
 
-target_link_libraries(${PROJECT_NAME} ${EMP-OT_LIBRARIES})
+    
+endforeach(SOURCE IN LISTS TARGETS)
 
-target_include_directories(${PROJECT_NAME} PUBLIC TurboPFor-Integer-Compression)
-target_link_directories(${PROJECT_NAME} PUBLIC TurboPFor-Integer-Compression)
-target_link_libraries(${PROJECT_NAME} cir ic)
 #add_executable(generator src/circuitProcessor/helperFunctions.cpp src/circuitProcessor/circuitReader.cpp src/circuitProcessor/circuitEvaluator.cpp src/generator-main.cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
