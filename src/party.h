@@ -53,7 +53,8 @@ struct Party{
     std::string circuitFormat = CIRCUIT_FORMAT;
     std::string circuitName = CIRCUIT_NAME;
     std::string network = NETWORK;
-    std::string disk = DISK;
+    std::string store = STORE;
+    int compressThreads = COMRPRESS_THREADS;   
     
     int port = PORT;
 
@@ -62,27 +63,27 @@ struct Party{
     Reader_base *reader;
     Writer_base *writer;
 
-    void writeCircuit(string format, string print);
+    void writeCircuit(string format, string print, int thread);
     void readCircuit(string format, string print);
 };
 
-void forwardExportFunctions(Party *party, ShrinkedCircuit* &scir, bool* &valArr, bool bin){
+void forwardExportFunctions(Party *party, ShrinkedCircuit* &scir, bool* &valArr, bool bin, int thread){
     if(bin)
         party->writer->exportBin(scir, valArr);
     else
-        party->writer->exportCompressedCircuit(scir,valArr);
+        party->writer->exportCompressedCircuit(scir,valArr, thread);
     return;
 }
 
-void Party::writeCircuit(string format, string print){
+void Party::writeCircuit(string format, string print, int thread){
 
     if(format=="off") return;
     if (format=="bin" | format=="uncompressed") {
-        funcTime( print, forwardExportFunctions, this, circuitData.scir, circuitData.obfuscatedValArr, true);
+        funcTime( print, forwardExportFunctions, this, circuitData.scir, circuitData.obfuscatedValArr, true, 1);
         //this->writer->exportBin(Party::circuitData.scir,Party::circuitData.obfuscatedValArr);
     }
     else if(format=="compressed"){
-        funcTime( print, forwardExportFunctions, this, circuitData.scir, circuitData.obfuscatedValArr, false);
+        funcTime( print, forwardExportFunctions, this, circuitData.scir, circuitData.obfuscatedValArr, false, thread);
         //this->writer->exportCompressedCircuit(Party::circuitData.scir,Party::circuitData.obfuscatedValArr,this->compressThreads);
     }
     else if(format=="txt")

@@ -88,11 +88,12 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
         {"inputb", required_argument, NULL, 'b'},
         {"port", required_argument, NULL, 'p'},
         {"ip", required_argument, NULL, 'i'},
+        {"compression", required_argument, NULL, 'k'},
         {"network", required_argument, NULL, 'y'},
-        {"disk", required_argument, NULL, 'z'},
+        {"store", required_argument, NULL, 'z'},
         {NULL, 0, NULL, 0}
     };
-    int opt = getopt_long(argc, argv, "c:a:b:p:i:y:z:", long_options, NULL);
+    int opt = getopt_long(argc, argv, "c:a:b:p:i:k:y:z:", long_options, NULL);
     while (opt != -1) {
         switch (opt) {
         case 'c':
@@ -114,13 +115,17 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
         case 'i':
             party->ip_address = optarg;
             break;
+
+        case 'k':
+            party->compressThreads = std::stoi(optarg);
+            break;
         
         case 'y':
             party->network = optarg;
             break;
 
         case 'z':
-            party->disk = optarg;
+            party->store = optarg;
             break;
 
         default: /* '?' */
@@ -128,7 +133,7 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
                     argv[0]);
             exit(EXIT_FAILURE);
         }
-        opt = getopt_long(argc, argv, "c:a:b:p:i:y:z:", long_options, NULL);
+        opt = getopt_long(argc, argv, "c:a:b:p:i:k:y:z:", long_options, NULL);
     }
     
 }
@@ -141,10 +146,10 @@ int main(int argc, char *argv[])
     vector<char*> inputs(2,nullptr);
     parseEvaluatorCLIOptions(argc, argv, evaluator,inputs);
     if(evaluator->network=="off") {
-        std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->disk=="bin"? ".bin" : "_compressed.dat");
+        std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->store=="bin"? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),true );
         evaluator->reader = new Reader<emp::FileIO>(fio);
-        evaluator->readCircuit(evaluator->disk,"importing"); 
+        evaluator->readCircuit(evaluator->store,"importing"); 
         delete fio;
         
     }
@@ -158,12 +163,12 @@ int main(int argc, char *argv[])
     parseCLIArguments(inputs,evaluator);
     evaluator->evaluateObfuscatedCircuit();
 
-    if(evaluator->disk=="off") return 0; 
+    if(evaluator->store=="off") return 0; 
 
-    std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->disk=="bin"? ".bin" : "_compressed.dat");
+    std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->store=="bin"? ".bin" : "_compressed.dat");
     emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
     evaluator->writer = new Writer<emp::FileIO>(fio);
-    evaluator->writeCircuit(evaluator->disk,"exporting"); 
+    evaluator->writeCircuit(evaluator->store,"exporting",evaluator->compressThreads); 
     delete fio;
     
 
