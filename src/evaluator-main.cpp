@@ -151,6 +151,9 @@ int main(int argc, char *argv[])
         evaluator->reader = new Reader<emp::FileIO>(fio);
         evaluator->readCircuit(evaluator->store,"importing"); 
         delete fio;
+        parseCLIArguments(inputs,evaluator);
+        evaluator->evaluateObfuscatedCircuit();
+        return 0;
         
     }
     else{
@@ -159,9 +162,10 @@ int main(int argc, char *argv[])
         evaluator->reader = new Reader<emp::NetIO>(io);
         evaluator->readCircuit(evaluator->network,"receiving"); 
         delete io;
+        parseCLIArguments(inputs,evaluator);
+        evaluator->evaluateObfuscatedCircuit();
     }
-    parseCLIArguments(inputs,evaluator);
-    evaluator->evaluateObfuscatedCircuit();
+    
 
     if(evaluator->store=="off") return 0; 
 

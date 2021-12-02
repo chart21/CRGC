@@ -30,8 +30,11 @@ using namespace std;
 
 
 std::mutex mtx_send;
+std::mutex mtx_id;
 vector<unsigned char*> bufs_send;
 vector<uint32_t> bufLens_send;
+vector<uint32_t> id_send;
+int last_id=-1;
 vector<condition_variable> cd_send(100);
 
 void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
@@ -64,15 +67,25 @@ void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
     if(l%2!=0) inTable[l>>1]=gate;
 
     size_t olg1, olg2;
+    int cur_id = 0;
+    //bufs_send[offset*2+1] = encHlp64(in,l*2,&olg1,TYPE);
+    //bufLens_send[offset*2+1] = (uint32_t)olg1;
+    unsigned char* buf_tmp1 = encHlp64(in,l*2,&olg1,TYPE);
+    unsigned char* buf_tmp2 = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg2,TYPE);
+    
+    mtx_id.lock();
+    last_id++;
+    cur_id = last_id;
+    mtx_id.unlock();
 
-    bufs_send[offset*2+1] = encHlp64(in,l*2,&olg1,TYPE);
-    bufLens_send[offset*2+1] = (uint32_t)olg1;
-    cd_send[offset*2+1].notify_one();
+    id_send[cur_id] = offset;
+    bufs_send[cur_id*2] = buf_tmp1;
+    bufLens_send[cur_id*2] = (uint32_t)olg1;
+    //cd_send[offset*2+1].notify_one();
 
-
-    bufs_send[offset*2+2] = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg2,TYPE);
-    bufLens_send[offset*2+2] = (uint32_t)olg2;
-    cd_send[offset*2+2].notify_one();
+    bufs_send[cur_id*2+1] = buf_tmp2;
+    bufLens_send[cur_id*2+1] = (uint32_t)olg2;
+    cd_send[cur_id].notify_one();
 
     delete [] in;
     delete [] inTable;
@@ -80,46 +93,46 @@ void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
 
 
 void compressObfuscatedInput(bool *valArr, uint_fast64_t lenA, int len){
-    size_t l;
-    uint8_t *inValArr = new uint8_t[ROUND_UP(lenA,64)];
-    std::copy(valArr,valArr+lenA,inValArr);
+    // size_t l;
+    // uint8_t *inValArr = new uint8_t[ROUND_UP(lenA,64)];
+    // std::copy(valArr,valArr+lenA,inValArr);
 
-    bufs_send[len-1] = encHlp8(inValArr,lenA,&l,TYPE);
-    bufLens_send[len-1] = (uint32_t)l;
-    cd_send[len-1].notify_one();
-    delete [] inValArr;
+    // bufs_send[len-1] = encHlp8(inValArr,lenA,&l,TYPE);
+    // bufLens_send[len-1] = (uint32_t)l;
+    // cd_send[len-1].notify_one();
+    // delete [] inValArr;
 }
 
 
 void compressShrinkedCircuit(ShrinkedCircuit* cir, int package){
-    uint64_t inDetails[ROUND_UP(DETAILS_NUM,64)];
-    inDetails[0] = cir->details.numWires;
-	inDetails[1] = cir->details.numGates;
-    inDetails[2] = cir->details.numOutputs;
-    inDetails[3] = cir->details.bitlengthInputA;
-    inDetails[4] = cir->details.bitlengthInputB;    
-    inDetails[5] = cir->details.bitlengthOutputs;
+    // uint64_t inDetails[ROUND_UP(DETAILS_NUM,64)];
+    // inDetails[0] = cir->details.numWires;
+	// inDetails[1] = cir->details.numGates;
+    // inDetails[2] = cir->details.numOutputs;
+    // inDetails[3] = cir->details.bitlengthInputA;
+    // inDetails[4] = cir->details.bitlengthInputB;    
+    // inDetails[5] = cir->details.bitlengthOutputs;
 
-    size_t old;
+    // size_t old;
 
-    bufs_send[0] = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
-    bufLens_send[0] = old;
-    cd_send[0].notify_one();
+    // bufs_send[0] = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
+    // bufLens_send[0] = old;
+    // cd_send[0].notify_one();
 
-    size_t seg = SEG(cir->details.numGates,package);
-    seg = seg%2==0?seg:seg+1;            
-    vector<thread> threads;    
-    int ll = cir->details.numGates;
+    // size_t seg = SEG(cir->details.numGates,package);
+    // seg = seg%2==0?seg:seg+1;            
+    // vector<thread> threads;    
+    // int ll = cir->details.numGates;
     
-    for(int i=0;i<package;i++) {
-        size_t l = ll>seg?seg:ll;
-        threads.push_back(thread(encThread, cir->gates+i*seg, l, i));
-        ll-=seg;
-    }
+    // for(int i=0;i<package;i++) {
+    //     size_t l = ll>seg?seg:ll;
+    //     threads.push_back(thread(encThread, cir->gates+i*seg, l, i));
+    //     ll-=seg;
+    // }
 
-    for (auto &th:threads) {
-        th.join();
-    }
+    // for (auto &th:threads) {
+    //     th.join();
+    // }
 }
 
 
@@ -167,28 +180,85 @@ void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::str
 template <typename IO>
 void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package){
 
-    bufs_send.assign(package*2+2,nullptr);
-    bufLens_send.assign(package*2+2,0);
-    size_t len = package*2+2;
+    bufs_send.assign(package*2,nullptr);
+    bufLens_send.assign(package*2,0);
+    id_send.assign(package,0);
+
+    //size_t len = package*2+2;
 
     send_data_gen( &package, sizeof(int) );
 
+    uint64_t inDetails[ROUND_UP(DETAILS_NUM,64)];
+    inDetails[0] = cir->details.numWires;
+	inDetails[1] = cir->details.numGates;
+    inDetails[2] = cir->details.numOutputs;
+    inDetails[3] = cir->details.bitlengthInputA;
+    inDetails[4] = cir->details.bitlengthInputB;    
+    inDetails[5] = cir->details.bitlengthOutputs;
+
+    size_t old;
+
+    unsigned char *buf_detail = encHlp64(inDetails,DETAILS_NUM,&old,TYPE);
+    uint32_t bufLen_detail = old;
+    send_data_gen( &bufLen_detail, sizeof(bufLen_detail) );
+    send_data_gen( buf_detail, sizeof(buf_detail[0])*bufLen_detail );
+
+    //delete [] buf_detail;
+    //buf_detail = nullptr;
+
+    size_t seg = SEG(cir->details.numGates,package);
+    seg = seg%2==0?seg:seg+1; 
+    //size_t residue = cir->details.numGates%seg;
+
+    vector<thread> threads;    
+    int ll = cir->details.numGates;
+    
+    for(int i=0;i<package;i++) {
+        size_t l = ll>seg?seg:ll;
+        threads.push_back(thread(encThread, cir->gates+i*seg, l, i));
+        ll-=seg;
+    }
+
     thread sendThread([&]() {
-        for(int i=0;i<len;i++){
+        for(int i=0;i<package;i++){
             std::unique_lock<std::mutex> lck(mtx_send);
-            while(bufs_send[i]==nullptr) cd_send[i].wait(lck);
+            while(bufs_send[i*2+1]==nullptr) cd_send[i].wait(lck);
 
-            send_data_gen( &(bufLens_send[i]), sizeof(bufLens_send[i]) );
-            send_data_gen( bufs_send[i], sizeof(bufs_send[i][0])*bufLens_send[i] );
-            delete [] bufs_send[i];
-            bufs_send[i] = nullptr;
+            send_data_gen( &(id_send[i]), sizeof(id_send[i]) );
+
+            send_data_gen( &(bufLens_send[i*2]), sizeof(bufLens_send[i*2]) );
+            send_data_gen( bufs_send[i*2], sizeof(bufs_send[i*2][0])*bufLens_send[i*2] );
+            delete [] bufs_send[i*2];
+            bufs_send[i*2] = nullptr;
+
+            send_data_gen( &(bufLens_send[i*2+1]), sizeof(bufLens_send[i*2+1]) );
+            send_data_gen( bufs_send[i*2+1], sizeof(bufs_send[i*2][0])*bufLens_send[i*2+1] );
+            delete [] bufs_send[i*2+1];
+            bufs_send[i*2+1] = nullptr;
         }
-    });
-    compressShrinkedCircuit(cir, package);
 
-    if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, len);
-    else {bufLens_send[len-1] = -1; }
+    });
+    // compressShrinkedCircuit(cir, package);
+    for (auto &th:threads) {
+        th.join();
+    }
     sendThread.join();
+
+    size_t l;
+    uint8_t *inValArr = new uint8_t[ROUND_UP(cir->details.bitlengthInputA,64)];
+    std::copy(valArr,valArr+cir->details.bitlengthInputA,inValArr);
+    unsigned char *buf_inputa = encHlp8(inValArr,cir->details.bitlengthInputA,&l,TYPE);
+    uint32_t bufLen_inputa = (uint32_t)l;
+    delete [] inValArr;
+    inValArr = nullptr;
+
+    send_data_gen( &bufLen_inputa, sizeof(bufLen_inputa) );
+    send_data_gen( buf_inputa, sizeof(buf_inputa[0])*bufLen_inputa );
+    delete [] buf_inputa;
+    buf_inputa = nullptr;
+
+    // if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, len);
+    // else {bufLens_send[len-1] = -1; }
   
 }
 
