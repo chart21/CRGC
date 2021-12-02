@@ -9,7 +9,7 @@
 //Generator: Send an "uncompressed", or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
 //Evaluator: Receive an "uncompressed", or "compressed" CRGC from the evaluator via network sockets. "off": Do not recive a CRGC via network. 
 
-#define IP "127.0.0.1" //Target IP to send CRGC to. Irrelevant if Network is set to "off".
+#define IP "91.45.199.250" //Target IP to send CRGC to. Irrelevant if Network is set to "off".
 #define PORT 8080 //Target Port to send CRGC to. Irrelevant if Network is set to "off".
 
 #define STORE "off" 
