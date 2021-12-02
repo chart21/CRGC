@@ -184,7 +184,6 @@ void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, in
             bufs_send[i] = nullptr;
         }
     });
-
     compressShrinkedCircuit(cir, package);
 
     if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, len);
