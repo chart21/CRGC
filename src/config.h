@@ -12,7 +12,7 @@
 #define IP "91.45.199.250" //Target IP to send CRGC to. Irrelevant if Network is set to "off".
 #define PORT 8080 //Target Port to send CRGC to. Irrelevant if Network is set to "off".
 
-#define DISK "off" 
+#define STORE "off" 
 //Generator: "off": Generator does not store CRGC locally after construction, "compress": Store CRGC as compressed file, "bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 //Evaluator: If Network is set as "off": Import CRGC from "txt", "bin", or "compressed" file. If Network is not "off" store CRGC as "txt", "bin", or "compressed" file.
 

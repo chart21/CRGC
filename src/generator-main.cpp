@@ -10,8 +10,7 @@
 
 class Generator: public Party {
 public:
-    uint_fast64_t numThreads = NUM_THREADS; 
-    int compressThreads = COMRPRESS_THREADS;    
+    uint_fast64_t numThreads = NUM_THREADS;  
     
 
     void loadTransformedCircuit();
@@ -225,7 +224,7 @@ void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<c
         {"thread", required_argument, NULL, 'n'},
         {"compression", required_argument, NULL, 'k'},
         {"network", required_argument, NULL, 'y'},
-        {"disk", required_argument, NULL, 'z'},
+        {"store", required_argument, NULL, 'z'},
         {NULL, 0, NULL, 0}
     };
     int opt = getopt_long(argc, argv, "c:t:a:b:f:i:h:n:k:y:z:", long_options, NULL);
@@ -268,7 +267,7 @@ void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<c
             break;
 
         case 'z':
-            party->disk = optarg;
+            party->store = optarg;
             break;
 
         default: /* '?' */
@@ -306,15 +305,15 @@ int main(int argc, char *argv[])
     if(generator->network!="off") {
         emp::NetIO * io = new emp::NetIO( nullptr, generator->port); //generator doesn't need server address
         generator->writer = new Writer<emp::NetIO>(io);
-        generator->writeCircuit(generator->network,"sending");
+        generator->writeCircuit(generator->network,"sending",generator->compressThreads);
         delete io;
     }
 
-    if(generator->disk!="off") {
-        std::string filepath = CIRCUITPATH + generator->circuitName+(generator->disk=="bin"? ".bin" : "_compressed.dat");
+    if(generator->store!="off") {
+        std::string filepath = CIRCUITPATH + generator->circuitName+(generator->store=="bin"? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
         generator->writer = new Writer<emp::FileIO>(fio);
-        generator->writeCircuit(generator->disk,"exporting"); 
+        generator->writeCircuit(generator->store,"exporting",generator->compressThreads); 
         delete fio;
     }
     delete generator;
