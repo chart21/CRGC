@@ -1,7 +1,7 @@
 # Completely Reusable Garbled Circuit (CRGC) Generator C++ Version 
 
 
-Transform C++ functions and boolean circuits stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into CRGC. Our program can transform high-level source code to a CRGC using:
+Transform C++ functions and boolean circuits stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into CRGCs. Our program can transform high-level source code to a CRGC using:
 1. Any C++ file imported into this library
 2. Any boolean circuit compiled from C++ code using [emp-toolkit](https://github.com/emp-toolkit)
 3. Any boolean circuit compiled from C code using [CBMC-GC-2](https://gitlab.com/securityengineering/CBMC-GC-2/-/tree/master)
@@ -16,66 +16,60 @@ The generator executable (party A) performs the following steps:
 
 1. It imports a C++ function and converts it to a boolean circuit or imports a boolean circuit directly.
 2. It analyzes the leakage that a CRGC will have. It calculates how many gates can be perfectly obfuscated (zero-knowledge) and which input bits may be leaked when an evaluator obtains the transformed circuit. 
-3. It evaluates the boolean circuit with two sample inputs and stores the result.
-4. It transforms the boolean circuit into a CRGC through different obfuscation techniques. It obfuscates party A's input.
-5. It evaluates the CRGC with party A's obfuscated input and the sample plain input for party B.
-6. It assesses whether the circuit was generated correctly (i.e., the output of step 2 and step 4 match).
-7. It provides further analysis of the CRGC constructed specifically for party A's input.
-8. It sends the CRGC to the evaluator via network sockets, or save it as local binary file.
+3. It transforms the boolean circuit into a CRGC through different obfuscation techniques. It obfuscates party A's input.
+4. It evaluates the CRGC with party A's obfuscated input and the sample plain input for party B.
+5. It sends the CRGC to the evaluator via network sockets or saves it as a local file. Optionally, it can compress the CRGC before sending or storing it.
 
 The evaluator (party B) performs the following steps:
 
 1. It receives or imports a CRGC and obfuscated input of party A.
 2. It evaluates the CRGC with any plain input from party B.
+3. It compresses and stores the CRGC for future use.
 
 ## Results
 
+We provide a set of circuits as an example. The **src/circuits** folder contains basic boolean circuits stored in bristol fashion: **adder64**, **sub64**, and **sha256**. The **src/programs** folder contains C++ files implementing example programs such as Set Intersection and Linear Search.   
 
-| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Circuit similarity (varies) |
+| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Evaluation Speed (µs) |
 |-----------------------------|-------------------------------|-------------------------------|-----------------------------|
-| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 23.94%                      |
-| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 26.65%                      |
-| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 31.84%                      |
-| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 35.51%                      |
-| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 33.88%                      |
-| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 33.17%                      |
+| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 8                     |
+| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 8                      |
+| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 149                      |
+| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 185                      |
+| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 536                      |
+| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 1450                      |
 
 
-| Function                    | Explanation | Evaluate speed (million gates/s)    | 
+| Function                    | Explanation | Evaluation speed (million gates/s)    | 
 |-----------------------------|-------------------------------|-------------------------------|
-| Set-Intersect 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 191.614 | 
-| Linear Search and arithmetics 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 156.897 | 
-| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 185.076  |
+| Set Intersection 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 198 | 
+| Linear Search 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 193 | 
+| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 207  |
 
 
-- **Evaluate speed**: Benchmark two endpoints are AWS instance with type m5zn.metal, 100Gbits bandwidth. Use 100 compression threads through network transfer.
+
 
 
 ## Getting Started
-Set up repository locally:
+
+Commands may require sudo. Set up repository automatically:
 ```
 ./setup.sh
 ```
-Set up repository in a Docker container:
+Alternatively, set up the repository in a Docker container:
 ```
 docker build -t crgc:latest .
 docker run -it crgc:latest
 ```
-### Manually
+### Set up repository manually
 
-First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repo, you can either run 
+First, install emp toolkit [emp-toolkit](https://github.com/emp-toolkit). Afterward, clone our repository.
 
 ```
 git clone --recurse-submodules https://github.com/chart21/Reusable-Garbled-Circuit-Generator-CPP.git
 ```
 
-or initialize and fetch the [TurboPFor](https://github.com/firebolt007/TurboPFor-Integer-Compression.git) submodule, which (adapted from the repository [TurboPFor](https://github.com/powturbo/TurboPFor-Integer-Compression.git)) manually after running git clone
-
-```
-git submodule update --init --recursive
-```
-
-then run the following codes
+In the project folder run:
 
 ```
 cmake . -B ./build
@@ -84,63 +78,58 @@ make -j
 ```
 
 ### Optional arguments
-Our library provides a generator and an evaluator executable that come with the following optional arguments.
+Our library provides a generator and an evaluator executable that come with the following optional arguments. All parameters can also be modified in **src/config.h**.
 #### Generator
 
-``--circuit=< circuit name >`` name of the cpp function or file to convert to a CRGC.
+``--circuit=< circuit name >`` Name of the cpp function or file to convert to a CRGC.
 
-``--type=< cpp|txt >`` "cpp": Convert cpp program to CRGC, "txt": convert bristol circuit stored as txt file to CRGC
+``--type=< cpp|txt >`` "cpp": Convert C++ program to a CRGC, "txt": Convert a bristol circuit stored as txt file to a CRGC.
 
-``--format=< emp|bristol >`` Only relevant for circuits imported from a txt file. "bristol": circuits  stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC 
+``--format=< emp|bristol >`` Only relevant for circuits imported from a txt file. "bristol": Circuits stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC. 
 
-``--thread=< thread >`` Number of threads to use for leakage prediction and circuit construction, does not affect evaluation.
+``--thread=< thread >`` Number of threads to use for leakage prediction and circuit construction.
 
 ``--inputa=< input >`` "r": Generate a random generator input, FILENAME: Import the generator input from a txt file (input is treated as binary value), Integer: Set argument as generator input (input is treated as integer value).
 
 ``--inputb=< input >`` Not relevant. Specify an exemplary input evaluator may query. "r": Generate a random evaluator input, FILENAME: Import the evaluator input from a txt file (input is treated as binary value), Integer: Set argument as evaluator input (input is treated as integer value).
 
-``--network=< off|compressed|uncompressed >`` Send an "uncompressed", or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
+``--network=< off|compressed|uncompressed >`` Send an "uncompressed" or "compressed" CRGC to the evaluator via network sockets. "off": Do not send CRGC to the evaluator. 
 
-``--port=< port >`` Target port to send CRGC to. Irrelevant if Network is set to "off".
+``--port=< port >`` Port to listen for the evaluator to connect. Irrelevant if --network is set to "off".
 
+``--store=< off|compressed|bin|txt >`` "off": Generator does not store CRGC locally after construction, "compressed": Store CRGC as compressed file after construction,"bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 
-``--disk=< off|compressed|bin|txt >`` 
-
-"off": Generator does not store CRGC locally after construction. 
-
-"compressed": Store CRGC as compressed file after construction,"bin": Store CRGC as bin file,
-"txt": Store CRGC as txt file 
-
-``--compression=< compress threads >`` number of threads to use for compressing a CRGC.
+``--compression=< compress threads >`` number of threads to use for compressing the CRGC.
 
 #### Evaluator
-``--ip=< ip address >`` Generator's IP to receive CRGC from. Irrelevant if Network is set to "off".
 
-``--port=< port >`` Generator's Port to receive CRGC from. Irrelevant if Network is set to "off".
+``--ip=< ip address >`` Generator's IP address to receive the CRGC from. Irrelevant if --network is set to "off".
 
-``--disk=< off|compressed|bin|txt >`` If Network is set as "off": Import CRGC from a local "txt", "bin", or "compressed" file. If Network is not "off" store CRGC as "txt", "bin", or "compressed" file.
+``--port=< port >`` Generator's Port to receive the CRGC from. Irrelevant if --network is set to "off".
 
-``--network=< off|compressed|uncompressed >`` Receive an "uncompressed", or "compressed" CRGC from the evaluator via network sockets. "off": Do not recive a CRGC via network. 
+``--store=< off|compressed|bin|txt >`` If Network is set as "off": Import a CRGC from a local "txt", "bin", or "compressed" file. If Network is not "off": Store CRGC as "txt", "bin", or "compressed" file.
 
-### Example 
+``--network=< off|compressed|uncompressed >`` Receive an "uncompressed" or "compressed" CRGC from the evaluator via network sockets. "off": Do not receive a CRGC via the network. 
+
+### Executables explained 
 
 #### generator executable
 ```
-./build/generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=100
+./build/generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=30
 ```
 
-Act as the **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input assumed to be from party B. Then the generator listens to a connection from the evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with its obfuscated input A in **compressed** format. The data is compressed using **100** threads.
+Act as the **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input assumed to be from party B. Then, the generator listens to a connection from the evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with its obfuscated input A in **compressed** format. The circuit is compressed using **30** threads.
 
 
 #### evalator executable
 
 ```
-./build/evaluator --circuit=myCircuit --inputb=20 --network=compressed --disk=bin
+./build/evaluator --circuit=myCircuit --inputb=20 --network=compressed --store=bin
 ```
-Act as the **evaluator**. Receive a **compressed** CRGC from the generator over the network. Evaluate the circuit with an evaluator input of **20**. Store the CRGC as a **.bin** file on the local harddrive.
+Act as the **evaluator**. Receive a **compressed** CRGC from the generator over the network. Evaluate the circuit with an evaluator input of **20**. Store the CRGC as a **.bin** file on the local hard drive.
 
 ```
-./build/evaluator --circuit=myCircuit --inputb=30 --disk=bin
+./build/evaluator --circuit=myCircuit --inputb=30 --store=bin
 ```
 
 Act as the **evaluator**. Import the CRGC and obfuscated generator input from the local binary file **./circuits/myCircuit.bin**. Evaluate the circuit with input **30** of Party B.
@@ -193,19 +182,23 @@ connected
 
 ```
 ---TIMING--- 123ms importing
+---TIMING--- 47ms evaluate circuit
+---Evaluation--- inA18446744073709551615
+---Evaluation--- inB20
+---Evaluation--- out0
 ```
 
 ### Compiling a C++ function to a reusable garbled circuit using our library
 
 You can directly convert C++ functions to a boolean circuit and a CRGC using our library. We use a slightly modified version of [emp-toolkit](https://github.com/emp-toolkit). Simply follow these steps:
 
-1. Add your cpp file and header to the **program folder**. include your header in **circuitLinker.cpp**. Look at the existing files for inspiration. Alternatively you can add your function directly to the **circuitLinker.cpp** file.
-2. Link your file to our library by adding it to both the the current folder's **CMakeLists.txt** aswell as the main directory's target_link_libraries (line 61 in **CMakeLists.txt**).
+1. Add your cpp file and header to the **program folder**. include your header in **circuitLinker.cpp**. Look at the existing files for inspiration. Alternatively, you can add your function directly to the **circuitLinker.cpp** file.
+2. Link your file to our library by adding it to both the current folder's **CMakeLists.txt** as well as the main directory's target_link_libraries (line 61 in **CMakeLists.txt**).
 
 
 Run cmake, make, and the following command to convert your program into a CRGC:  
 ```
-./build/generator --party=1 --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
+./build/generator --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
 ```
 
 
@@ -236,7 +229,7 @@ This saves a boolean circuit.txt file that you can use to generate a reusable ga
 
 
 ```
-./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
+./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
 ```
 
 ### Compiling a C function to a reusable garbled circuit using CBMC-GC2
@@ -262,5 +255,5 @@ make
 This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-./build/generator --party=1 --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
+./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
 ```
