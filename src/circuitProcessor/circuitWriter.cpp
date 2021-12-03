@@ -37,7 +37,7 @@ vector<uint32_t> id_send;
 int last_id=-1;
 vector<condition_variable> cd_send(100);
 
-void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
+void encThread( ShrinkedGate* gates_in, size_t l, size_t offset, bool store ){
 
     uint64_t* in = new uint64_t[ROUND_UP(l*2,64)];
     uint8_t* inTable = new uint8_t[ROUND_UP((l>>1)+1,8)];
@@ -72,11 +72,14 @@ void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
     //bufLens_send[offset*2+1] = (uint32_t)olg1;
     unsigned char* buf_tmp1 = encHlp64(in,l*2,&olg1,TYPE);
     unsigned char* buf_tmp2 = encHlp8(inTable,l%2==0?l>>1:(l>>1)+1,&olg2,TYPE);
-    
-    mtx_id.lock();
-    last_id++;
-    cur_id = last_id;
-    mtx_id.unlock();
+
+    if(store==false) {
+        mtx_id.lock();
+        last_id++;
+        cur_id = last_id;
+        mtx_id.unlock();
+    }
+    else cur_id=offset;
 
     id_send[cur_id] = offset;
     bufs_send[cur_id*2] = buf_tmp1;
@@ -85,7 +88,10 @@ void encThread( ShrinkedGate* gates_in, size_t l, size_t offset ){
 
     bufs_send[cur_id*2+1] = buf_tmp2;
     bufLens_send[cur_id*2+1] = (uint32_t)olg2;
-    cd_send[cur_id].notify_one();
+    if(store==false) { 
+        id_send[cur_id] = offset;
+        cd_send[cur_id].notify_one();
+    }
 
     delete [] in;
     delete [] inTable;
@@ -215,17 +221,14 @@ void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, in
     
     for(int i=0;i<package;i++) {
         size_t l = ll>seg?seg:ll;
-        threads.push_back(thread(encThread, cir->gates+i*seg, l, i));
+        threads.push_back(thread(encThread, cir->gates+i*seg, l, i,store));
         ll-=seg;
     }
-
-    thread sendThread([&]() {
-        for(int i=0;i<package;i++){
-            std::unique_lock<std::mutex> lck(mtx_send);
-            while(bufs_send[i*2+1]==nullptr) cd_send[i].wait(lck);
-
-            send_data_gen( &(id_send[i]), sizeof(id_send[i]) );
-
+    if(store==true) {
+        for (auto &th:threads) {
+            th.join();
+        }
+        for(int i=0;i<package;i++){      
             send_data_gen( &(bufLens_send[i*2]), sizeof(bufLens_send[i*2]) );
             send_data_gen( bufs_send[i*2], sizeof(bufs_send[i*2][0])*bufLens_send[i*2] );
             delete [] bufs_send[i*2];
@@ -236,13 +239,32 @@ void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, in
             delete [] bufs_send[i*2+1];
             bufs_send[i*2+1] = nullptr;
         }
-
-    });
-    // compressShrinkedCircuit(cir, package);
-    for (auto &th:threads) {
-        th.join();
     }
-    sendThread.join();
+    else {
+        thread sendThread([&]() {
+            for(int i=0;i<package;i++){
+                    std::unique_lock<std::mutex> lck(mtx_send);
+                    while(bufs_send[i*2+1]==nullptr) cd_send[i].wait(lck);
+                    send_data_gen( &(id_send[i]), sizeof(id_send[i]) );  
+
+                send_data_gen( &(bufLens_send[i*2]), sizeof(bufLens_send[i*2]) );
+                send_data_gen( bufs_send[i*2], sizeof(bufs_send[i*2][0])*bufLens_send[i*2] );
+                delete [] bufs_send[i*2];
+                bufs_send[i*2] = nullptr;
+
+                send_data_gen( &(bufLens_send[i*2+1]), sizeof(bufLens_send[i*2+1]) );
+                send_data_gen( bufs_send[i*2+1], sizeof(bufs_send[i*2][0])*bufLens_send[i*2+1] );
+                delete [] bufs_send[i*2+1];
+                bufs_send[i*2+1] = nullptr;
+            }
+
+        });
+        for (auto &th:threads) {
+            th.join();
+        }
+        sendThread.join();
+    }
+    
 
     size_t l;
     uint8_t *inValArr = new uint8_t[ROUND_UP(cir->details.bitlengthInputA,64)];
@@ -256,11 +278,9 @@ void Writer<IO>::exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, in
     send_data_gen( buf_inputa, sizeof(buf_inputa[0])*bufLen_inputa );
     delete [] buf_inputa;
     buf_inputa = nullptr;
-
-    // if(valArr) compressObfuscatedInput(valArr, cir->details.bitlengthInputA, len);
-    // else {bufLens_send[len-1] = -1; }
   
 }
+
 
 template <typename IO>
 void Writer<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){

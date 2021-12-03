@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     if(evaluator->network=="off") {
         std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->store=="bin"? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),true );
-        evaluator->reader = new Reader<emp::FileIO>(fio);
+        evaluator->reader = new Reader<emp::FileIO>(fio,true);
         evaluator->readCircuit(evaluator->store,"importing"); 
         delete fio;
         parseCLIArguments(inputs,evaluator);
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
     std::string filepath = CIRCUITPATH + evaluator->circuitName+(evaluator->store=="bin"? ".bin" : "_compressed.dat");
     emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
-    evaluator->writer = new Writer<emp::FileIO>(fio);
+    evaluator->writer = new Writer<emp::FileIO>(fio,true);
     evaluator->writeCircuit(evaluator->store,"exporting",evaluator->compressThreads); 
     delete fio;
     

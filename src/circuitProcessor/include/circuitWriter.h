@@ -14,6 +14,8 @@ void exportObfuscatedInput(bool* valArr, const CircuitDetails &details, std::str
 
 class Writer_base{
 public:
+    bool store = false;
+    Writer_base(bool store=false):store(store) {}
     virtual void send_data_gen(const void * data, uint64_t nbyte)=0;
     virtual void exportBin(ShrinkedCircuit* circuit, bool* valArr)=0;
     virtual void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1)=0;
@@ -23,8 +25,7 @@ template <typename IO>
 class Writer: public Writer_base {
 public:
     IO *io = nullptr;
-
-    Writer(IO *io):io(io) {}
+    Writer(IO *io,bool store=false):io(io),Writer_base(store) {}
     Writer() {}
 
     void send_data_gen(const void * data, uint64_t nbyte) override{
@@ -42,6 +43,7 @@ public:
     
     /* export compressed circuit to HDD */
     void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1) override;
+
     // void sendThread();
 };
 #endif

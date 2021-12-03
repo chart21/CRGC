@@ -26,6 +26,8 @@ TransformedCircuit *importTransformedCircuitExNotForLeakagePredictionFromRAM(std
 
 class Reader_base{
 public:
+    bool store=false;
+    Reader_base(bool store=false):store(store) {}
     virtual void recv_data_eva(void * data, uint64_t nbyte)=0;
     virtual void importBin(ShrinkedCircuit* &circuit, bool* &valArr)=0;
     virtual void importCompressedCircuit(ShrinkedCircuit* &circuit, bool* &valArr)=0;
@@ -34,7 +36,7 @@ public:
 template <typename IO>
 class Reader: public Reader_base{ public:
     IO *io = nullptr;
-    Reader(IO *io):io(io) {}
+    Reader(IO *io, bool store=false):io(io),Reader_base(store) {}
     Reader() {}
 
     void recv_data_eva(void * data, uint64_t nbyte) override {

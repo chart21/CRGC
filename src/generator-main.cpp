@@ -312,7 +312,7 @@ int main(int argc, char *argv[])
     if(generator->store!="off") {
         std::string filepath = CIRCUITPATH + generator->circuitName+(generator->store=="bin"? ".bin" : "_compressed.dat");
         emp::FileIO *fio = new emp::FileIO( filepath.c_str(),false );
-        generator->writer = new Writer<emp::FileIO>(fio);
+        generator->writer = new Writer<emp::FileIO>(fio,true);
         generator->writeCircuit(generator->store,"exporting",generator->compressThreads); 
         delete fio;
     }
