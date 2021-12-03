@@ -99,7 +99,7 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ``--store=< off|compressed|bin|txt >`` "off": Generator does not store CRGC locally after construction, "compressed": Store CRGC as compressed file after construction,"bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 
-``--compression=< compress threads >`` number of threads to use for compressing the CRGC.
+``--compression=< compress threads >`` Number of threads to use for compressing the CRGC.
 
 #### Evaluator
 
@@ -107,7 +107,7 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ``--port=< port >`` Generator's Port to receive the CRGC from. Irrelevant if --network is set to "off".
 
-``--store=< off|compressed|bin|txt >`` If Network is set as "off": Import a CRGC from a local "txt", "bin", or "compressed" file. If Network is not "off": Store CRGC as "txt", "bin", or "compressed" file.
+``--store=< off|compressed|bin|txt >`` If --network is set as "off": Import a CRGC from a local "txt", "bin", or "compressed" file. If --network is not "off": Store CRGC as "txt", "bin", or "compressed" file.
 
 ``--network=< off|compressed|uncompressed >`` Receive an "uncompressed" or "compressed" CRGC from the evaluator via network sockets. "off": Do not receive a CRGC via the network. 
 
@@ -137,7 +137,7 @@ Act as the **evaluator**. Import the CRGC and obfuscated generator input from th
 
 #### Example Outputs
 
-
+Convert the **query** C++ function to a CRGC. Send it **uncompressed** over the network to the evaluator.
 > ./generator --circuit=query --network=uncompressed
 
 
@@ -167,7 +167,9 @@ Act as the **evaluator**. Import the CRGC and obfuscated generator input from th
 connected
 ---TIMING--- 133ms sending
 ```
-> ./evaluator --circuit=query --network=uncompressed --disk=bin
+
+Receive an uncompressed CRGC over the network. Evaluate it and store it as an uncompressed **bin** file.
+> ./evaluator --circuit=query --network=uncompressed --store=bin
 
 ```
 connected
@@ -178,15 +180,20 @@ connected
 ---Evaluation--- out0
 ---TIMING--- 124ms exporting
 ```
+
+Import the **query** CRGC stored as a **bin** file. 
 > ./evaluator --circuit=query --network=off --disk=bin
 
 ```
----TIMING--- 123ms importing
+---TIMING--- 96ms importing
 ---TIMING--- 47ms evaluate circuit
 ---Evaluation--- inA18446744073709551615
 ---Evaluation--- inB20
 ---Evaluation--- out0
 ```
+
+
+> ./generator --circuit=adder64 --type=txt --format=bristol
 
 ### Compiling a C++ function to a reusable garbled circuit using our library
 
