@@ -181,7 +181,7 @@ connected
 ---TIMING--- 124ms exporting
 ```
 
-Import the **query** CRGC stored as a **bin** file. 
+Import the **query** CRGC stored as a **bin** file and evaluate it. 
 > ./evaluator --circuit=query --network=off --disk=bin
 
 ```
@@ -192,8 +192,8 @@ Import the **query** CRGC stored as a **bin** file.
 ---Evaluation--- out0
 ```
 
-
-> ./generator --circuit=adder64 --type=txt --format=bristol
+Import the boolean circuit **adder64** stored as a **txt** file in **bristol** fashion. Convert it to a CRGC, compress it, and send it over the network to the evaluator.
+> ./generator --circuit=adder64 --type=txt --format=bristol --network=compressed 
 
 ### Compiling a C++ function to a reusable garbled circuit using our library
 
