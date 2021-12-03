@@ -115,21 +115,27 @@ Our library provides a generator and an evaluator executable that come with the 
 
 #### generator executable
 ```
-./build/generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=30
+./generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=30
 ```
 
 Act as the **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input assumed to be from party B. Then, the generator listens to a connection from the evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with its obfuscated input A in **compressed** format. The circuit is compressed using **30** threads.
 
 
+```
+./generator --circuit=adder64 --type=txt --format=bristol --network=compressed 
+```
+
+Import the boolean circuit **adder64** stored as a **txt** file in **bristol** fashion. Convert it to a CRGC, compress it, and send it over the network to the evaluator.
+
 #### evalator executable
 
 ```
-./build/evaluator --circuit=myCircuit --inputb=20 --network=compressed --store=bin
+./evaluator --circuit=myCircuit --inputb=20 --network=compressed --store=bin
 ```
 Act as the **evaluator**. Receive a **compressed** CRGC from the generator over the network. Evaluate the circuit with an evaluator input of **20**. Store the CRGC as a **.bin** file on the local hard drive.
 
 ```
-./build/evaluator --circuit=myCircuit --inputb=30 --store=bin
+./evaluator --circuit=myCircuit --inputb=30 --store=bin
 ```
 
 Act as the **evaluator**. Import the CRGC and obfuscated generator input from the local binary file **./circuits/myCircuit.bin**. Evaluate the circuit with input **30** of Party B.
@@ -192,8 +198,7 @@ Import the **query** CRGC stored as a **bin** file and evaluate it.
 ---Evaluation--- out0
 ```
 
-Import the boolean circuit **adder64** stored as a **txt** file in **bristol** fashion. Convert it to a CRGC, compress it, and send it over the network to the evaluator.
-> ./generator --circuit=adder64 --type=txt --format=bristol --network=compressed 
+
 
 ### Compiling a C++ function to a reusable garbled circuit using our library
 
@@ -205,7 +210,7 @@ You can directly convert C++ functions to a boolean circuit and a CRGC using our
 
 Run cmake, make, and the following command to convert your program into a CRGC:  
 ```
-./build/generator --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
 ```
 
 
@@ -236,7 +241,7 @@ This saves a boolean circuit.txt file that you can use to generate a reusable ga
 
 
 ```
-./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
 ```
 
 ### Compiling a C function to a reusable garbled circuit using CBMC-GC2
@@ -262,5 +267,5 @@ make
 This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-./build/generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
 ```
