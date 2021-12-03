@@ -593,17 +593,25 @@ TransformedCircuit* importTransformedCircuitExNotForLeakagePredictionFromRAM(std
 }
 
 
-void decThread(ShrinkedGate* gates_0, size_t seg, size_t residue, int package, int offset){
+void decThread(ShrinkedGate* gates_0, size_t seg, size_t residue, int package, int offset, bool store){
     size_t olg=0;
     size_t g_pr=0;
     size_t t_pr=0;
 
-
-    std::unique_lock<std::mutex> lck(mtx_recv[offset]);
-    while(bufs_recv[offset*2+1]==nullptr) cd_recv[offset].wait(lck); // what if cd_recv satisfied but keep looping
-
-    ShrinkedGate* gates = gates_0 + id_recv[offset]*seg;
-    size_t l = (id_recv[offset]==package-1)?residue:seg;
+    ShrinkedGate* gates;
+    size_t l;
+    if(store==false) {
+        std::unique_lock<std::mutex> lck(mtx_recv[offset]);
+        while(bufs_recv[offset*2+1]==nullptr) cd_recv[offset].wait(lck); // what if cd_recv satisfied but keep looping
+        gates = gates_0 + id_recv[offset]*seg;
+        l = (id_recv[offset]==package-1)?residue:seg;
+    }
+    else{
+        gates = gates_0 + offset*seg;
+        l = (offset==package-1)?residue:seg;
+    }
+    
+    
     size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
 
     uint64_t* outGates=decHlp64( bufs_recv[offset*2], l*2, &olg,TYPE);
@@ -703,15 +711,15 @@ void Reader<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
     details.bitlengthInputB = outDetails[4];
     details.bitlengthOutputs = outDetails[5];
 
+    scir = new ShrinkedCircuit(details);
+
     size_t seg = SEG(details.numGates,package);
     seg = seg%2==0?seg:seg+1;
     size_t residue = details.numGates%seg;
-
-    thread recvThread([&]() {
-        //int ll = details.numGates;
-        for(int j=0;j<package;j++){      
-            recv_data_eva( &(id_recv[j]), sizeof(id_recv[0]) );
-            size_t l = id_recv[j]==(package-1)?residue:seg;
+    if(store==true) {
+        for(int j=0;j<package;j++){
+            size_t l=seg;
+            if(j==package-1) l=residue;
 
             bufs_recv[j*2] = new unsigned char[P4NENC_BOUND(l*2,64)];
             recv_data_eva( &(bufLens_recv[j*2]),sizeof(bufLens_recv[j*2]));
@@ -723,26 +731,49 @@ void Reader<IO>::importCompressedCircuit(ShrinkedCircuit* &scir, bool* &valArr){
             bufs_recv[1+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
             recv_data_eva( &(bufLens_recv[1+j*2]),sizeof(bufLens_recv[1+j*2]));
             recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
-
-            cd_recv[j].notify_one();
-
         }
-        
-    });
-
-    scir = new ShrinkedCircuit(details);
-
-    vector<thread> threads;
-    for(int i=0;i<package;i++){
-        //size_t l = ll>seg?seg:ll;
-        threads.push_back(thread(decThread,scir->gates,seg,residue,package,i));
-        //ll-=seg;
+        vector<thread> threads;
+        for(int i=0;i<package;i++){
+            threads.push_back(thread(decThread,scir->gates,seg,residue,package,i,this->store));
+        }    
+        for(auto &th:threads) {
+            th.join();
+        }
     }
+    else {
+        thread recvThread([&]() {
+            for(int j=0;j<package;j++){
+                size_t l=seg;
+                if(store==false) {
+                    recv_data_eva( &(id_recv[j]), sizeof(id_recv[0]) );
+                    l = id_recv[j]==(package-1)?residue:seg;
+                }
+                else if(j==package-1) l=residue;
 
-    // scir = decompressShrinkedCircuit( package, details);
-    recvThread.join();
-    for(auto &th:threads) {
-        th.join();
+                bufs_recv[j*2] = new unsigned char[P4NENC_BOUND(l*2,64)];
+                recv_data_eva( &(bufLens_recv[j*2]),sizeof(bufLens_recv[j*2]));
+                recv_data_eva( bufs_recv[j*2], sizeof(bufs_recv[j*2][0])*bufLens_recv[j*2] );
+
+
+                size_t tbll = l%2==0 ? l>>1 : (l>>1)+1;
+
+                bufs_recv[1+j*2] = new unsigned char[P4NENC_BOUND( tbll ,8)];
+                recv_data_eva( &(bufLens_recv[1+j*2]),sizeof(bufLens_recv[1+j*2]));
+                recv_data_eva( bufs_recv[1+j*2], sizeof(bufs_recv[1+j*2][0])*bufLens_recv[1+j*2] );
+
+                cd_recv[j].notify_one();
+
+            }
+            
+        });
+        vector<thread> threads;
+        for(int i=0;i<package;i++){
+            threads.push_back(thread(decThread,scir->gates,seg,residue,package,i,this->store));
+        }
+        recvThread.join();
+        for(auto &th:threads) {
+            th.join();
+        }
     }
 
     
