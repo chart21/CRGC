@@ -53,7 +53,7 @@ auto funcTime(std::string printText, F func, Args &&...args)
     auto time = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::high_resolution_clock::now() - t1)
                     .count();
-    std::cout << "---TIMING--- " << time << "ms " << printText << '\n';
+    std::cout << "---TIMING--- " << time << "us " << printText << '\n';
 #endif
     return time;
 }
