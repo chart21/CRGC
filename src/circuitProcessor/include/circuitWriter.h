@@ -45,5 +45,7 @@ public:
     void exportCompressedCircuit( ShrinkedCircuit* cir, bool* valArr, int package=1) override;
 
     // void sendThread();
+
+    void exportCompilableCircuit(TransformedCircuit* circuit, std::string destinationPath);
 };
 #endif
