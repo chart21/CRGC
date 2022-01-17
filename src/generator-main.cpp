@@ -174,7 +174,8 @@ void Generator::obfuscateCircuit(uint_fast64_t *parents)
 void Generator::verifyIntegrityOfObfuscatedCircuit()
 {
     auto outputRGC = new bool[circuitData.circuit->details.bitlengthOutputs * circuitData.circuit->details.numOutputs];
-    evaluateTransformedCircuit(circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
+    //evaluateTransformedCircuit(circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
+    funcTime("evaluate circuit 2", evaluateTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
     if (equalBoolArr(outputRGC, circuitData.output, circuitData.circuit->details.bitlengthOutputs))
         std::cout << "---Success--- Evaluation of original circuit and constructed RGC are equal" << '\n';
     else
@@ -187,6 +188,8 @@ void Generator::verifyIntegrityOfObfuscatedCircuit()
     std::cout << "---Evaluation--- inB" << inB << "\n";
     std::cout << "---Evaluation--- out" << iout << "\n";
     delete[] outputRGC;
+
+    exportCompilableCircuit(circuitData.circuit,CIRCUITPATH ,circuitData.circuit->details, circuitData.obfuscatedValArr);
 }
 
 void Generator::verifyIntegrityOfExportedRGC()
@@ -299,6 +302,8 @@ int main(int argc, char *argv[])
     generator->obfuscateCircuit(parents);
    
     generator->verifyIntegrityOfObfuscatedCircuit();
+
+    
     
     generator->circuitData.scir = transformCircuitToShrinkedCircuit(generator->circuitData.circuit);
     
