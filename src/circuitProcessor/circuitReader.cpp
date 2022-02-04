@@ -201,37 +201,37 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
                 uint_fast64_t output = std::stoul(gateElements[4]);
                 char gateType = gateElements[5][0];
 
-                bool truthTable[2][2];
-                if (gateType == 'X')
-                    bool truthTable[2][2] = {{0, 1}, {1, 0}};
-                else if (gateType == 'A')
-                    bool truthTable[2][2] = {{0, 0}, {0, 1}};
-                else if (gateType == 'O')
-                    bool truthTable[2][2] = {{0, 1}, {1, 1}};
-
-                // if there are problems with above syntax:
                 // bool truthTable[2][2];
                 // if (gateType == 'X')
-                // {
-                //     truthTable[0][0] = 0;
-                //     truthTable[0][1] = 1;
-                //     truthTable[1][0] = 1;
-                //     truthTable[1][1] = 0;
-                // }
+                //     bool truthTable[2][2] = {{0, 1}, {1, 0}};
                 // else if (gateType == 'A')
-                // {
-                //     truthTable[0][0] = 0;
-                //     truthTable[0][1] = 0;
-                //     truthTable[1][0] = 0;
-                //     truthTable[1][1] = 1;
-                // }
+                //     bool truthTable[2][2] = {{0, 0}, {0, 1}};
                 // else if (gateType == 'O')
-                // {
-                //     truthTable[0][0] = 0;
-                //     truthTable[0][1] = 1;
-                //     truthTable[1][0] = 1;
-                //     truthTable[1][1] = 1;
-                // }
+                //     bool truthTable[2][2] = {{0, 1}, {1, 1}};
+
+                // if there are problems with above syntax:
+                bool truthTable[2][2];
+                if (gateType == 'X')
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 1;
+                    truthTable[1][0] = 1;
+                    truthTable[1][1] = 0;
+                }
+                else if (gateType == 'A')
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 0;
+                    truthTable[1][0] = 0;
+                    truthTable[1][1] = 1;
+                }
+                else if (gateType == 'O')
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 1;
+                    truthTable[1][0] = 1;
+                    truthTable[1][1] = 1;
+                }
 
                 if (flipped[leftParent])
                     swapLeftParent(truthTable);
@@ -270,14 +270,16 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     delete[] adjustedWire;
 
     TransformedCircuit *circuit = new TransformedCircuit(details);
-    TransformedGate *transformedGates = circuit->gates;
+    //TransformedGate *transformedGates = circuit->gates;
+    circuit->gates = gates;
 
-    for (auto i = 0; i < details.numGates; i++)
-    {
-        transformedGates[i] = gates[i];
-    }
-    cout<<"read: "<<gates[0].truthTable[0][1]<<endl;
-    delete[] gates;
+    // for (auto i = 0; i < details.numGates; i++)
+    // {
+    //     circuit->gates[i] = gates[i];
+    // }
+
+    
+    //delete[] gates;
     return circuit;
 }
 
@@ -404,9 +406,11 @@ TransformedCircuit* importTransformedCircuit(std::string filepath, CircuitDetail
         std::vector<std::string> gateElements;
         splitString(line, gateElements);
         gates[gateCounter] = TransformedGate{std::stoul(gateElements[0]), std::stoul(gateElements[1]), std::stoul(gateElements[2]), {{gateElements[3][0] == '1', gateElements[3][1] == '1'}, {gateElements[3][2] == '1', gateElements[3][3] == '1'}}};
+        
         gateCounter++;
-    }
-    circuit->gates = gates;
+        
+    }    
+    circuit->gates = gates;    
     return circuit;
 }
 
@@ -534,14 +538,28 @@ TransformedCircuit* importTransformedCircuitExNotForLeakagePredictionFromRAM(std
             uint_fast64_t output = (*gateVec)[i].outputID;
             char type = (*gateVec)[i].truthTable;
 
-            bool truthTable[2][2];
-                
+              bool truthTable[2][2];
                 if (type == 'X')
-                    bool truthTable[2][2] = {{0, 1}, {1, 0}};
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 1;
+                    truthTable[1][0] = 1;
+                    truthTable[1][1] = 0;
+                }
                 else if (type == 'A')
-                    bool truthTable[2][2] = {{0, 0}, {0, 1}};
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 0;
+                    truthTable[1][0] = 0;
+                    truthTable[1][1] = 1;
+                }
                 else if (type == 'O')
-                    bool truthTable[2][2] = {{0, 1}, {1, 1}};
+                {
+                    truthTable[0][0] = 0;
+                    truthTable[0][1] = 1;
+                    truthTable[1][0] = 1;
+                    truthTable[1][1] = 1;
+                }
 
             if (flipped[leftParent])
                 swapLeftParent(truthTable);
@@ -823,14 +841,17 @@ void Reader<IO>::importBin(ShrinkedCircuit* &circuit, bool* &valArr){
 void importObfuscatedInput(bool* &valArr, const CircuitDetails &details, std::string destinationPath){
 
     if(!destinationPath.empty()){
-        std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");
+        std::ifstream outputFile (destinationPath + "_rgc_inputA.txt");        
+        valArr = new bool[details.bitlengthInputA];
         for (auto i = 0; i < details.bitlengthInputA; i++)
         {
-            outputFile >> valArr[i];
+            char curr;
+            outputFile >> curr;
+            valArr[i] = curr == '1';
+           
         }
         outputFile.close();
-    }
-
+    }    
     return;
 
 }

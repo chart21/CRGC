@@ -48,7 +48,9 @@ void getFlippedCircuit(TransformedCircuit* circuit, bool* flipped)
             flipped[circuit->gates[i].outputID] = 1;
         }
         else
-            flipped[circuit->gates[i].outputID] = 0;      
+            flipped[circuit->gates[i].outputID] = 0;    
+                     
+    
     }
 
 }

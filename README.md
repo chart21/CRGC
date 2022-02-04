@@ -32,19 +32,19 @@ We provide a set of circuits as an example. The **src/circuits** folder contains
 
 | Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Evaluation Speed (µs) |
 |-----------------------------|-------------------------------|-------------------------------|-----------------------------|
-| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 8                     |
-| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 8                      |
-| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 149                      |
-| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 185                      |
-| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 536                      |
-| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 1450                      |
+| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 2                     |
+| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 2                      |
+| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 36                      |
+| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 94                      |
+| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 205                      |
+| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 551                      |
 
 
 | Function                    | Explanation | Evaluation speed (million gates/s)    | 
 |-----------------------------|-------------------------------|-------------------------------|
-| Set Intersection 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 198 | 
-| Linear Search 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 193 | 
-| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 207  |
+| Set Intersection 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 351 | 
+| Linear Search 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 395 | 
+| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 329  |
 
 
 
@@ -87,7 +87,7 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ``--format=< emp|bristol >`` Only relevant for circuits imported from a txt file. "bristol": Circuits stored in bristol fashion (https://homes.esat.kuleuven.be/~nsmart/MPC/), "emp": circuits exported from EMP SH2PC. 
 
-``--thread=< thread >`` Number of threads to use for leakage prediction and circuit construction.
+``--threads=< NUMBER >`` Number of threads to use for leakage prediction and circuit construction.
 
 ``--inputa=< input >`` "r": Generate a random generator input, FILENAME: Import the generator input from a txt file (input is treated as binary value), Integer: Set argument as generator input (input is treated as integer value).
 
@@ -99,7 +99,7 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ``--store=< off|compressed|bin|txt >`` "off": Generator does not store CRGC locally after construction, "compressed": Store CRGC as compressed file after construction,"bin": Store CRGC as bin file, "txt": Store CRGC as txt file 
 
-``--compression=< compress threads >`` Number of threads to use for compressing the CRGC.
+``--compression=< NUMBER >`` Number of threads to use for compressing the CRGC.
 
 #### Evaluator
 
@@ -111,11 +111,15 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ``--network=< off|compressed|uncompressed >`` Receive an "uncompressed" or "compressed" CRGC from the evaluator via network sockets. "off": Do not receive a CRGC via the network. 
 
+``--format=< emp|bristol >`` Only relevant for circuits that the generator compiled from a Bristol Fashion format. --format=bristol should be used with --store=txt
+
 ### Executables explained 
+
+Default compile flag is -Ofast for faster circuit construction and evaluation. If there are any errors consider removing the flag. The fastes options is usally to use **--network=compressed** and to enable threads for compression, e.g. **--compress=40**. Enabling threads for circuit construction, e.g. **--threads=20** does not always improve performance. Default settings are used if a parameter is not set and can be modified in **src/config.h**. CRGCs constructed from Bristol circuits can currently only be evaluated locally (--network=off).
 
 #### generator executable
 ```
-./generator --circuit=myCPPFunction --type=cpp --inputa=200 --thread=40 --network=compressed --compression=30
+./generator --circuit=myCPPFunction --type=cpp --inputa=200 --threads=40 --network=compressed --compression=30
 ```
 
 Act as the **generator**. Transforms my **myCPPFunction.cpp** from the program folder with secret input **200** of party A into a CRGC using **40** Threads. Tests the integrity of the circuit's logic with a random input assumed to be from party B. Then, the generator listens to a connection from the evaluator. If it's connected successfully, the generator transfers the generated obfuscated circuit with its obfuscated input A in **compressed** format. The circuit is compressed using **30** threads.
@@ -188,13 +192,13 @@ connected
 ```
 
 Import the **query** CRGC stored as a **bin** file and evaluate it. 
-> ./evaluator --circuit=query --network=off --disk=bin
+> ./evaluator --circuit=query --network=off --store=bin
 
 ```
----TIMING--- 96ms importing
----TIMING--- 47ms evaluate circuit
+---TIMING--- 116ms importing
+---TIMING--- 29ms evaluate circuit
 ---Evaluation--- inA18446744073709551615
----Evaluation--- inB20
+---Evaluation--- inB4286495333
 ---Evaluation--- out0
 ```
 
@@ -210,7 +214,7 @@ You can directly convert C++ functions to a boolean circuit and a CRGC using our
 
 Run cmake, make, and the following command to convert your program into a CRGC:  
 ```
-./generator --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CPP FILE> --type=cpp --inputa=<inputA> --threads=<number of Threads>
 ```
 
 
@@ -241,7 +245,7 @@ This saves a boolean circuit.txt file that you can use to generate a reusable ga
 
 
 ```
-./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA> --format=emp --threads=<number of Threads>
 ```
 
 ### Compiling a C function to a reusable garbled circuit using CBMC-GC2
@@ -267,5 +271,5 @@ make
 This saves a bristol_circuit.txt file that you can use to generate a CRGC. Save it to the **circuits folder** of this project and run:
 
 ```
-./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --thread=<number of Threads>
+./generator --circuit=<FILENAME OF YOUR CIRCUIT FILE> --type=txt --inputa=<inputA>  --format=bristol --threads=<number of Threads>
 ```

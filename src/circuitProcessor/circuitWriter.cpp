@@ -13,6 +13,8 @@
 #include <condition_variable>
 #include <memory>
 
+#include <string>
+
 #define TBL_SHR
 //#define BP
 #define SEG(n,th) (n+th-n%th)/th
@@ -301,3 +303,148 @@ void Writer<IO>::exportBin(ShrinkedCircuit* circuit, bool* valArr){
     
     return;
 }
+
+
+void exportCompilableCircuit(TransformedCircuit* circuit, std::string destinationPath, const CircuitDetails &details, bool* valArr)
+{
+
+    std::ofstream circuitFile (destinationPath + "_compilable.cpp");
+
+
+    circuitFile << "#include <iostream> \n";
+    circuitFile << "#include <chrono> \n";
+    circuitFile << "#define o(i, j) output[(i)*" + std::to_string(details.bitlengthOutputs) + " + (j)]\n";
+    circuitFile << "int main(int argc, char *argv[]){ \n";
+    circuitFile << "auto output = new bool[" + std::to_string(details.bitlengthOutputs) +"]; \n";
+    circuitFile << "auto e = new bool[" + std::to_string(circuit->details.numWires) +"]; \n";
+    
+    for (auto i = 0; i < details.bitlengthInputA; i++)
+        {
+           circuitFile << "e[" + std::to_string(i) + "] =" + std::to_string(valArr[details.bitlengthInputA - 1 - i]) + "; \n";
+        }
+
+    circuitFile <<  "uint_fast64_t inputB= std::stoul(argv[1]); \n";
+    circuitFile << "for (auto i = 0; i < "+ std::to_string(details.bitlengthInputB) +"; i++) \n";
+    circuitFile <<  "{    \n";
+    circuitFile <<     "e["+ std::to_string(details.bitlengthInputA + details.bitlengthInputB) +"-i-1] = inputB & 1; \n";
+    circuitFile <<     "inputB/= 2; \n";
+    circuitFile <<  "  }  \n";
+
+    circuitFile << "std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now(); \n";
+
+    
+
+    for(auto i = 0; i < circuit->details.numGates; i++)
+    {
+        std::string operand = "e[" + std::to_string(circuit->gates[i].outputID) + "] = ";
+        
+
+        uint_fast8_t truthTable = 0;
+        truthTable+= circuit->gates[i].truthTable[0][0] << 3;
+        truthTable+= circuit->gates[i].truthTable[0][1] << 2;
+        truthTable+= circuit->gates[i].truthTable[1][0] << 1;
+        truthTable+= circuit->gates[i].truthTable[1][1];   
+            
+            switch (truthTable)
+    {
+
+    case 0:
+        operand += std::to_string(0);
+        break;
+    case 1:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]" + "&&" + "e[" + std::to_string(circuit->gates[i].rightParentID) + "]" ; //0001
+        break;
+    case 2:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]" + "&&" + "!" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //0010
+        break;
+    case 3:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]" ; //0011
+        break;
+    case 4:
+        operand += "! e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "&&" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //0100
+        break;
+    case 5:
+        operand += "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //0101
+        break;
+    case 6:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "!=" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //0110
+        break;
+
+    case 7:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "||" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //0111
+        break;
+
+    case 8:
+        operand += "! e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "&&" + "!" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1000
+        break;
+
+    case 9:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "==" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1001
+        break;
+
+    case 10:
+        operand += "! e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1010
+        break;
+
+    case 11:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "||" + "!" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1011
+        break;
+
+    case 12:
+        operand += "! e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"; //1100
+        break;
+
+    case 13:
+        operand += "! e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "||" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1101
+        break;
+
+    case 14:
+        operand += "e[" +  std::to_string(circuit->gates[i].leftParentID) + "]"  + "&&" + "!" + "e[" +  std::to_string(circuit->gates[i].rightParentID) + "]" ; //1110
+        break;
+
+    case 15:
+        operand += "e[" +  std::to_string(1) + "]"; //1111
+        break;
+}
+
+    circuitFile << operand << "; \n" ;
+       
+    }
+
+    circuitFile << "for (auto i = 0; i < "+ std::to_string(details.numOutputs) + "; i++) \n";
+    circuitFile << "{ \n";
+    circuitFile << "    for (auto j = 0; j < "+ std::to_string(details.bitlengthOutputs) +"; j++) \n";
+    circuitFile << "    { \n";
+    circuitFile << "        o(i, j) = e["+ std::to_string(details.numWires) +" - 1 - j - "+ std::to_string(details.bitlengthOutputs) +" * i]; \n";
+            
+    circuitFile << "    } \n";
+     
+    circuitFile << "} \n";
+
+    circuitFile <<   "delete[] e; \n ";
+
+    circuitFile << "auto time = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - t1).count(); \n";
+    circuitFile << "std::cout << time << std::endl; \n";
+
+             
+
+
+    circuitFile << "uint_fast64_t result = 0; \n ";
+    circuitFile << "uint_fast64_t tmp; \n ";
+    circuitFile << "for (auto i = 0; i < "+ std::to_string(details.bitlengthOutputs) +"; i++) \n ";
+    circuitFile << "{ \n ";
+    circuitFile << "tmp = output[i]; \n ";
+    circuitFile << "result |= tmp << ("+ std::to_string(details.bitlengthOutputs) +" - i - 1);  \n ";   
+    circuitFile << "} \n ";
+    circuitFile << "std::cout << result << std::endl; \n";
+
+    circuitFile << "return 0; \n";
+    circuitFile << '}';
+
+
+    circuitFile.close();
+
+
+
+}
+
