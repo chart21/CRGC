@@ -76,7 +76,9 @@ void indentifyFixedGatesArr(TransformedCircuit* circuit, bool* inputA, bool* isO
        unobfuscatedValues[i] = inputA[circuit->details.bitlengthInputA-1-i];
        isObfuscated[i] = true;
     }
+    
 
+ 
     for(auto i = 0; i < circuit->details.numGates;i++)
     {
         auto leftParent = circuit->gates[i].leftParentID;
@@ -93,7 +95,7 @@ void indentifyFixedGatesArr(TransformedCircuit* circuit, bool* inputA, bool* isO
         {            
             if( isObfuscated[leftParent])
             {
-               auto leftParentTrueValue = unobfuscatedValues[leftParent];
+               bool leftParentTrueValue = unobfuscatedValues[leftParent];
                 if (circuit->gates[i].truthTable[leftParentTrueValue][0] == circuit->gates[i].truthTable[leftParentTrueValue][1] && outputWire < (circuit->details.numWires - circuit->details.numOutputs*circuit->details.bitlengthOutputs))
                     {
                         unobfuscatedValues[outputWire]= circuit->gates[i].truthTable[leftParentTrueValue][0]; 
@@ -101,14 +103,26 @@ void indentifyFixedGatesArr(TransformedCircuit* circuit, bool* inputA, bool* isO
                     }
                 else //recover integrity of gate
                 {
-                   circuit->gates[i].truthTable[not leftParentTrueValue][0] = circuit->gates[i].truthTable[leftParentTrueValue][0]; 
-                   circuit->gates[i].truthTable[not leftParentTrueValue][1] = circuit->gates[i].truthTable[leftParentTrueValue][1];
+                   //bool correctValues[] = {circuit->gates[i].truthTable[leftParentTrueValue][0], circuit->gates[i].truthTable[leftParentTrueValue][1]};
+                    //bool correctValues[] = {circuit->gates[i].truthTable[unobfuscatedValues[leftParent]][0],circuit->gates[i].truthTable[unobfuscatedValues[leftParent]][1]};
+                    //std::cout << circuit->gates[i].truthTable[! leftParentTrueValue][0] << "\n";
+                    //std::cout << circuit->gates[i].truthTable[! leftParentTrueValue][1] << "\n";
+                    // std::cout << leftParentTrueValue << "\n";
+                    // std::cout << circuit->gates[i].truthTable[0][0] << "\n";
+                    // std::cout << circuit->gates[i].truthTable[0][1] << "\n";
+                    // std::cout << circuit->gates[i].truthTable[1][0] << "\n";
+                    // std::cout << circuit->gates[i].truthTable[0][1] << "\n";
+                    // std::cout << circuit->gates[i].truthTable[leftParentTrueValue][0] << "\n";
+                    // std::cout << circuit->gates[i].truthTable[leftParentTrueValue][1] << "\n";
+                    // std::cout << "D" << "\n";
+                    circuit->gates[i].truthTable[! leftParentTrueValue][0] =  circuit->gates[i].truthTable[leftParentTrueValue][0]; 
+                    circuit->gates[i].truthTable[! leftParentTrueValue][1] =  circuit->gates[i].truthTable[leftParentTrueValue][1];
                 } 
 
             }
             if( isObfuscated[rightParent])
             {
-               auto rightParentTrueValue = unobfuscatedValues[rightParent];
+               bool rightParentTrueValue = unobfuscatedValues[rightParent];
                 if (circuit->gates[i].truthTable[0][rightParentTrueValue] == circuit->gates[i].truthTable[1][rightParentTrueValue] && (outputWire < circuit->details.numWires - circuit->details.numOutputs*circuit->details.bitlengthOutputs))
                     {
                         unobfuscatedValues[outputWire]= circuit->gates[i].truthTable[0][rightParentTrueValue];
@@ -116,13 +130,16 @@ void indentifyFixedGatesArr(TransformedCircuit* circuit, bool* inputA, bool* isO
                     }
                 else //recover integrity of gate
                 {
-                    circuit->gates[i].truthTable[0][not rightParentTrueValue] = circuit->gates[i].truthTable[0][rightParentTrueValue];
-                    circuit->gates[i].truthTable[1][not rightParentTrueValue] = circuit->gates[i].truthTable[1][rightParentTrueValue];
+                    
+                    circuit->gates[i].truthTable[0][! rightParentTrueValue] = circuit->gates[i].truthTable[0][rightParentTrueValue];
+                    circuit->gates[i].truthTable[1][! rightParentTrueValue] = circuit->gates[i].truthTable[1][rightParentTrueValue];
                 } 
 
             }
         }
-             
+            
     }
     delete[] unobfuscatedValues;
+
+
 }

@@ -87,8 +87,10 @@ void Party::writeCircuit(string format, string print, int thread){
         //this->writer->exportCompressedCircuit(Party::circuitData.scir,Party::circuitData.obfuscatedValArr,this->compressThreads);
     }
     else if(format=="txt")
+    {
         exportCircuitSeparateFiles(Party::circuitData.circuit, CIRCUITPATH + this->circuitName);
-    
+        exportObfuscatedInput(circuitData.obfuscatedValArr, circuitData.circuit->details, CIRCUITPATH + this->circuitName);
+    }
 
 }
 

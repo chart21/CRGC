@@ -33,6 +33,9 @@ void Generator::loadTransformedCircuit()
         funcTime("converting program to circuit", generateCircuitRAM, &gateVec, &empDetails, false, circuitName);
         circuitData.circuit = importTransformedCircuitExNotForLeakagePredictionFromRAM(&gateVec, empDetails);
         std::vector<BristolGate>().swap(gateVec); //deallocate memory of vector
+
+
+
         std::cout << "---INFO--- numGates: " << circuitData.circuit->details.numGates << '\n';
     }
     else if (fileFormat == "txt")
@@ -46,6 +49,8 @@ void Generator::loadTransformedCircuit()
     circuitData.inputB = new bool[circuitData.circuit->details.bitlengthInputB];
     circuitData.output = new bool[circuitData.circuit->details.numOutputs * circuitData.circuit->details.bitlengthOutputs];
     circuitData.obfuscatedValArr = new bool[circuitData.circuit->details.bitlengthInputA];
+
+    //std::cout << "---INFO---";
 }
 
 void Generator::predictLeakage(uint_fast64_t *parents)
@@ -103,6 +108,8 @@ void Generator::predictLeakage(uint_fast64_t *parents)
         std::cout << leakedInputs[i] << '\n';
     }
     delete[] po;
+
+
 }
 
 
@@ -120,6 +127,7 @@ void Generator::evaluateCircuit()
     std::cout << "---Evaluation--- inA" << inA << "\n";
     std::cout << "---Evaluation--- inB" << inB << "\n";
     std::cout << "---Evaluation--- out" << iout << "\n";
+    //std::cout << "---Evaluation--- outBin" << circuitData.output << "\n";
 }
 
 void Generator::obfuscateCircuit(uint_fast64_t *parents)
@@ -189,7 +197,7 @@ void Generator::verifyIntegrityOfObfuscatedCircuit()
     std::cout << "---Evaluation--- out" << iout << "\n";
     delete[] outputRGC;
 
-    exportCompilableCircuit(circuitData.circuit,CIRCUITPATH ,circuitData.circuit->details, circuitData.obfuscatedValArr);
+    //exportCompilableCircuit(circuitData.circuit,CIRCUITPATH ,circuitData.circuit->details, circuitData.obfuscatedValArr);
 }
 
 void Generator::verifyIntegrityOfExportedRGC()
@@ -224,13 +232,13 @@ void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<c
         {"inputb", required_argument, NULL, 'b'},
         {"format", required_argument, NULL, 'f'},
         {"port", required_argument, NULL, 'i'},
-        {"thread", required_argument, NULL, 'n'},
+        {"threads", required_argument, NULL, 'p'},
         {"compression", required_argument, NULL, 'k'},
-        {"network", required_argument, NULL, 'y'},
-        {"store", required_argument, NULL, 'z'},
+        {"network", required_argument, NULL, 'n'},
+        {"store", required_argument, NULL, 's'},
         {NULL, 0, NULL, 0}
     };
-    int opt = getopt_long(argc, argv, "c:t:a:b:f:i:h:n:k:y:z:", long_options, NULL);
+    int opt = getopt_long(argc, argv, "c:t:a:b:f:i:h:p:k:n:s:", long_options, NULL);
     while (opt != -1) {
         switch (opt) {
         case 'c':
@@ -257,7 +265,7 @@ void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<c
             party->port = std::stoi(optarg);
             break;
 
-        case 'n':
+        case 'p':
             party->numThreads = std::stoul(optarg);
             break;
 
@@ -265,11 +273,11 @@ void parseGeneratorCLIOptions(int argc, char *argv[], Generator* party, vector<c
             party->compressThreads = std::stoi(optarg);
             break;
         
-        case 'y':
+        case 'n':
             party->network = optarg;
             break;
 
-        case 'z':
+        case 's':
             party->store = optarg;
             break;
 
