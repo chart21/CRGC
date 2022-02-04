@@ -35,8 +35,7 @@ void Evaluator::loadTransferredCircuit(TransformedCircuit* cir, bool *valArr)
 
 }
 
-void Evaluator::evaluateObfuscatedCircuit(){
-    std::cout << "---Evaluation--- out" << "\n";
+void Evaluator::evaluateObfuscatedCircuit(){    
     if(circuitFormat == "emp" || fileFormat == "cpp")
         funcTime("evaluate circuit", evaluateSortedTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, circuitData.output);
     else
