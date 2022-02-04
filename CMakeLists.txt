@@ -7,8 +7,9 @@ enable_testing()
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Ofast")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+
 #set(CMAKE_C_COMPILER "gcc")
 #set(CMAKE_CXX_COMPILER "g++")
 
@@ -62,7 +63,7 @@ foreach(TARGET IN LISTS TARGETS)
     target_link_directories(${TARGET} PUBLIC src)
     target_include_directories(${TARGET} PUBLIC src/circuitProcessor)
     target_link_directories(${TARGET} PUBLIC src/circuitProcessor)
-    target_link_libraries(${TARGET} helperFunctions circuitReader circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
+    target_link_libraries(${TARGET} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
     
     target_include_directories(${TARGET} PUBLIC src/programs)
     target_link_directories(${TARGET} PUBLIC src/programs)
@@ -74,7 +75,7 @@ foreach(TARGET IN LISTS TARGETS)
     target_link_libraries(${TARGET} cir ic)
 
     #add_compile_options(-Ofast)
-    target_link_libraries(${TARGET} circuitEvaluator)
+    #target_link_libraries(${TARGET} circuitEvaluator)
 
     
 endforeach(SOURCE IN LISTS TARGETS)

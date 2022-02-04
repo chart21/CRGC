@@ -10,14 +10,12 @@
 #define output(i, j) output[(i)*circuit->details.bitlengthOutputs + (j)] //making 2D array index more natural
 
 void evaluateTransformedCircuit(TransformedCircuit *circuit, bool *inputA, bool *inputB, bool *output)
-{
-    
+{    
     auto evaluation = new bool[circuit->details.numWires];
 
     for (auto i = 0; i < circuit->details.bitlengthInputA; i++)
     {
-        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];
-        
+        evaluation[i] = inputA[circuit->details.bitlengthInputA - 1 - i];       
     }
     
     for (auto i = 0; i < circuit->details.bitlengthInputB; i++)
@@ -39,10 +37,8 @@ void evaluateTransformedCircuit(TransformedCircuit *circuit, bool *inputA, bool 
         for (auto j = 0; j < circuit->details.bitlengthOutputs; j++)
         {
             output(i, j) = evaluation[circuit->details.numWires - 1 - j - circuit->details.bitlengthOutputs * i];
-            // << output(i,j);
-            
-        }
-        //std::cout << std::endl;
+                       
+        }       
     }
 
     delete[] evaluation;
