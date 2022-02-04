@@ -115,6 +115,8 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ### Executables explained 
 
+Default compile flag is -Ofast for faster circuit construction and evaluation. If there are any errors consider removing the flag.
+
 #### generator executable
 ```
 ./generator --circuit=myCPPFunction --type=cpp --inputa=200 --threads=40 --network=compressed --compression=30
@@ -193,10 +195,10 @@ Import the **query** CRGC stored as a **bin** file and evaluate it.
 > ./evaluator --circuit=query --network=off --store=bin
 
 ```
----TIMING--- 96ms importing
----TIMING--- 47ms evaluate circuit
+---TIMING--- 116ms importing
+---TIMING--- 29ms evaluate circuit
 ---Evaluation--- inA18446744073709551615
----Evaluation--- inB20
+---Evaluation--- inB4286495333
 ---Evaluation--- out0
 ```
 
