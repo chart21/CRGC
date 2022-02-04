@@ -115,7 +115,7 @@ Our library provides a generator and an evaluator executable that come with the 
 
 ### Executables explained 
 
-Default compile flag is -Ofast for faster circuit construction and evaluation. If there are any errors consider removing the flag. The fastes options is usally to use **--network=compressed** and to enable threads for compression, e.g. **--compress=40**. Enabling threads for circuit construction, e.g. **--threads=20** does not always improve performance. Default settings are used if a parameter is not set and can be modified in **src/config.h**.
+Default compile flag is -Ofast for faster circuit construction and evaluation. If there are any errors consider removing the flag. The fastes options is usally to use **--network=compressed** and to enable threads for compression, e.g. **--compress=40**. Enabling threads for circuit construction, e.g. **--threads=20** does not always improve performance. Default settings are used if a parameter is not set and can be modified in **src/config.h**. CRGCs constructed from Bristol circuits can currently only be evaluated locally (--network=off).
 
 #### generator executable
 ```
