@@ -4,10 +4,15 @@ project(crgc)
 include(CTest)
 enable_testing()
 
-
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 #set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -Ofast")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O")
+#set(CMAKE_C_COMPILER "gcc")
+#set(CMAKE_CXX_COMPILER "g++")
+
+
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -48,13 +53,16 @@ set(TARGETS "generator"; "evaluator")
 add_subdirectory(src/circuitProcessor)
 add_subdirectory(src/programs)
 
+#set_source_files_properties(circuitEvaluator.cpp PROPERTIES COMPILE_FLAGS -O3)
+#add_compile_options(-O3)
+
 foreach(TARGET IN LISTS TARGETS)
     add_executable(${TARGET} src/${TARGET}-main.cpp)
     target_include_directories(${TARGET} PUBLIC src)
     target_link_directories(${TARGET} PUBLIC src)
     target_include_directories(${TARGET} PUBLIC src/circuitProcessor)
     target_link_directories(${TARGET} PUBLIC src/circuitProcessor)
-    target_link_libraries(${TARGET} helperFunctions circuitReader circuitEvaluator circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
+    target_link_libraries(${TARGET} helperFunctions circuitReader circuitFlipper circuitObfuscator circuitDetails circuitIntegrityBreaker circuitWriter circuitTransformer circuitCompressor leakagePredictor Threads::Threads)
     
     target_include_directories(${TARGET} PUBLIC src/programs)
     target_link_directories(${TARGET} PUBLIC src/programs)
@@ -64,6 +72,9 @@ foreach(TARGET IN LISTS TARGETS)
     target_include_directories(${TARGET} PUBLIC TurboPFor-Integer-Compression)
     target_link_directories(${TARGET} PUBLIC TurboPFor-Integer-Compression)
     target_link_libraries(${TARGET} cir ic)
+
+    #add_compile_options(-Ofast)
+    target_link_libraries(${TARGET} circuitEvaluator)
 
     
 endforeach(SOURCE IN LISTS TARGETS)

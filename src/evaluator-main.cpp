@@ -32,14 +32,16 @@ void Evaluator::loadTransferredCircuit(TransformedCircuit* cir, bool *valArr)
     circuitData.inputB = new bool[circuitData.circuit->details.bitlengthInputB];
     circuitData.output = new bool[circuitData.circuit->details.numOutputs * circuitData.circuit->details.bitlengthOutputs];
     circuitData.obfuscatedValArr = valArr;
+
 }
 
 void Evaluator::evaluateObfuscatedCircuit(){
+    std::cout << "---Evaluation--- out" << "\n";
     if(circuitFormat == "emp" || fileFormat == "cpp")
         funcTime("evaluate circuit", evaluateSortedTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, circuitData.output);
     else
         funcTime("evaluate circuit", evaluateTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, circuitData.output);
-
+    
     auto inA = convertBoolArrToInt(circuitData.obfuscatedValArr, circuitData.circuit->details.bitlengthInputA);
     auto inB = convertBoolArrToInt(circuitData.inputB, circuitData.circuit->details.bitlengthInputB);
     auto iout = convertBoolArrToInt(circuitData.output, circuitData.circuit->details.bitlengthOutputs);
@@ -75,9 +77,14 @@ void Evaluator::readCircuit(string format,string print) {
         string filepath = CIRCUITPATH + this->circuitName;
         CircuitDetails details = importBristolCircuitDetails(filepath+"_rgc_details.txt","rgc");
         cir = importTransformedCircuit(filepath+"_rgc.txt", details);
+        
         importObfuscatedInput(valArr, details, filepath);
+        
         this->loadTransferredCircuit(cir,valArr);
+
+        
     }
+    
 }
 
 void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<char*> &inputs){
@@ -89,11 +96,12 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
         {"port", required_argument, NULL, 'p'},
         {"ip", required_argument, NULL, 'i'},
         {"compression", required_argument, NULL, 'k'},
-        {"network", required_argument, NULL, 'y'},
-        {"store", required_argument, NULL, 'z'},
+        {"network", required_argument, NULL, 'n'},
+        {"store", required_argument, NULL, 's'},
+        {"format", required_argument, NULL, 'f'},
         {NULL, 0, NULL, 0}
     };
-    int opt = getopt_long(argc, argv, "c:a:b:p:i:k:y:z:", long_options, NULL);
+    int opt = getopt_long(argc, argv, "c:a:b:p:i:k:n:s:f:", long_options, NULL);
     while (opt != -1) {
         switch (opt) {
         case 'c':
@@ -120,12 +128,16 @@ void parseEvaluatorCLIOptions(int argc, char *argv[], Evaluator* party, vector<c
             party->compressThreads = std::stoi(optarg);
             break;
         
-        case 'y':
+        case 'n':
             party->network = optarg;
             break;
 
-        case 'z':
+        case 's':
             party->store = optarg;
+            break;
+        
+        case 'f':
+            party->circuitFormat = optarg;
             break;
 
         default: /* '?' */
