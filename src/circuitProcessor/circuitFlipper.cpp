@@ -33,9 +33,6 @@ void getFlippedCircuit(TransformedCircuit* circuit, bool* flipped)
 
     for (auto i = 0; i < circuit->details.numGates; i++)   
     {
-
-
-
         //recover integrity
         if(flipped[circuit->gates[i].leftParentID])        
             swapLeftParent(circuit->gates[i].truthTable);
@@ -51,10 +48,8 @@ void getFlippedCircuit(TransformedCircuit* circuit, bool* flipped)
             flipped[circuit->gates[i].outputID] = 1;
         }
         else
-            flipped[circuit->gates[i].outputID] = 0;      
-    
-                        
-
+            flipped[circuit->gates[i].outputID] = 0;    
+                     
     
     }
 

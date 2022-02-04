@@ -278,9 +278,7 @@ TransformedCircuit* importBristolCircuitExNot(std::string filepath, CircuitDetai
     //     circuit->gates[i] = gates[i];
     // }
 
-
-
-    //cout<<"read: "<<gates[0].truthTable[0][1]<<endl;
+    
     //delete[] gates;
     return circuit;
 }

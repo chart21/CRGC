@@ -183,7 +183,7 @@ void Generator::verifyIntegrityOfObfuscatedCircuit()
 {
     auto outputRGC = new bool[circuitData.circuit->details.bitlengthOutputs * circuitData.circuit->details.numOutputs];
     //evaluateTransformedCircuit(circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
-    funcTime("evaluate circuit 2", evaluateTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
+    funcTime("evaluate created CRGC", evaluateTransformedCircuit, circuitData.circuit, circuitData.obfuscatedValArr, circuitData.inputB, outputRGC);
     if (equalBoolArr(outputRGC, circuitData.output, circuitData.circuit->details.bitlengthOutputs))
         std::cout << "---Success--- Evaluation of original circuit and constructed RGC are equal" << '\n';
     else

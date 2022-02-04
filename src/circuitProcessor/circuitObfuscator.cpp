@@ -102,19 +102,7 @@ void indentifyFixedGatesArr(TransformedCircuit* circuit, bool* inputA, bool* isO
                         isObfuscated[outputWire] = true;   
                     }
                 else //recover integrity of gate
-                {
-                   //bool correctValues[] = {circuit->gates[i].truthTable[leftParentTrueValue][0], circuit->gates[i].truthTable[leftParentTrueValue][1]};
-                    //bool correctValues[] = {circuit->gates[i].truthTable[unobfuscatedValues[leftParent]][0],circuit->gates[i].truthTable[unobfuscatedValues[leftParent]][1]};
-                    //std::cout << circuit->gates[i].truthTable[! leftParentTrueValue][0] << "\n";
-                    //std::cout << circuit->gates[i].truthTable[! leftParentTrueValue][1] << "\n";
-                    // std::cout << leftParentTrueValue << "\n";
-                    // std::cout << circuit->gates[i].truthTable[0][0] << "\n";
-                    // std::cout << circuit->gates[i].truthTable[0][1] << "\n";
-                    // std::cout << circuit->gates[i].truthTable[1][0] << "\n";
-                    // std::cout << circuit->gates[i].truthTable[0][1] << "\n";
-                    // std::cout << circuit->gates[i].truthTable[leftParentTrueValue][0] << "\n";
-                    // std::cout << circuit->gates[i].truthTable[leftParentTrueValue][1] << "\n";
-                    // std::cout << "D" << "\n";
+                { 
                     circuit->gates[i].truthTable[! leftParentTrueValue][0] =  circuit->gates[i].truthTable[leftParentTrueValue][0]; 
                     circuit->gates[i].truthTable[! leftParentTrueValue][1] =  circuit->gates[i].truthTable[leftParentTrueValue][1];
                 } 
