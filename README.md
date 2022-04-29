@@ -26,31 +26,11 @@ The evaluator (party B) performs the following steps:
 2. It evaluates the CRGC with any plain input from party B.
 3. It compresses and stores the CRGC for future use.
 
-## Results
-
-We provide a set of circuits as an example. The **src/circuits** folder contains basic boolean circuits stored in bristol fashion: **adder64**, **sub64**, and **sha256**. The **src/programs** folder contains C++ files implementing example programs such as Set Intersection and Linear Search.   
-
-| Function                    | Perfectly obfuscated gates    | Secret input bits of A leaked | Evaluation Speed (µs) |
-|-----------------------------|-------------------------------|-------------------------------|-----------------------------|
-| 64-bit Adder                | 249 out of 376 (66.22%)       | 1 out of 64 (1.56%)           | 2                     |
-| 64-bit Subtract             | 312 out of 439 (71.07%)       | 1 out of 64 (1.56%)           | 2                      |
-| 64x64 -> 64 bit Multiplier  | 13611 out of 13675 (99.53%)   | 2 out of 64 (3.13%)           | 36                      |
-| AES-256(k,m)                | 9367 out of 50666 (18.49%)    | 0 out of 256 (0%)             | 94                      |
-| SHA256                      | 39760 out of 135073 (29.44%)  | 0 out of 512 (0%)             | 205                      |
-| SHA512                      | 102704 out of 349617 (30.79%) | 0 out of 1024 (0%)            | 551                      |
-
-
-| Function                    | Explanation | Evaluation speed (million gates/s)    | 
-|-----------------------------|-------------------------------|-------------------------------|
-| Set Intersection 40000,40000 32-bit| A has 40000 32-bit inputs. B has 40000 32-bit inputs and wants to find the intersect of both Arrays | 351 | 
-| Linear Search 140000 32-bit| A has an array of 140000 indices. B wants to find a specific index. | 395 | 
-| Max element in a search window of a 386x386 32-bit 2D Array|  A has a 386x386 32-bit 2D Array with values. B wants to find the maximum value in a specified search window | 329  |
-
-
-
 
 
 ## Getting Started
+
+We provide a set of circuits as an example. The **src/circuits** folder contains basic boolean circuits stored in bristol fashion: **adder64**, **sub64**, and **sha256**. The **src/programs** folder contains C++ files implementing example programs such as Set Intersection and Linear Search.   
 
 Commands may require sudo. Set up repository automatically:
 ```
