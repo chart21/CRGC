@@ -1,7 +1,7 @@
 # CRGC - Completely Reusable Garbled Circuits with Predictable Input Leakage 
 
 
-Transform a C++ functions or a boolean circuit stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into a CRGC. This library can transform high-level source code to a CRGC using:
+Transform a C++ function or a boolean circuit stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into a CRGC. This library can transform high-level source code into a CRGC using:
 1. Any C++ file imported into this library
 2. Any boolean circuit compiled from C++ code using [emp-toolkit](https://github.com/emp-toolkit)
 3. Any boolean circuit compiled from C code using [CBMC-GC-2](https://gitlab.com/securityengineering/CBMC-GC-2/-/tree/master)
