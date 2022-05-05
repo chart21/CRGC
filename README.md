@@ -1,17 +1,17 @@
-# Completely Reusable Garbled Circuit (CRGC) Generator C++ Version 
+# CRGC - Completely Reusable Garbled Circuits with Predictable Input Leakage 
 
 
-Transform C++ functions and boolean circuits stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into CRGCs. Our program can transform high-level source code to a CRGC using:
+Transform a C++ functions or a boolean circuit stored in [Bristol Fashion](https://homes.esat.kuleuven.be/~nsmart/MPC/) into a CRGC. This library can transform high-level source code to a CRGC using:
 1. Any C++ file imported into this library
 2. Any boolean circuit compiled from C++ code using [emp-toolkit](https://github.com/emp-toolkit)
 3. Any boolean circuit compiled from C code using [CBMC-GC-2](https://gitlab.com/securityengineering/CBMC-GC-2/-/tree/master)
 
 
-Reusable garbled circuits constructed by this program do not rely on oblivious transfer or double encryption of each gate's truth table. Instead, we use different obfuscation techniques to obfuscate the circuit and the generator's secret input. 
+Reusable garbled circuits constructed by this program do not rely on oblivious transfer or double encryption of each gate's truth table. Instead, we use different information-theoretic obfuscation techniques to obfuscate the circuit and the generator's secret input. 
 
-Compared to Yao's Garbled Circuit protocol, the advantages are more efficient circuit evaluation and reusability of the constructed circuit for an arbitrary amount of evaluator inputs. The disadvantage of our approach is that a constructed circuit may leak some secret input bits and unobfuscated gates of the circuit to the evaluator. 
+Compared to Yao's Garbled Circuit protocol, the advantages are more efficient circuit evaluation and reusability of the constructed circuit for an arbitrary number of evaluator inputs. The disadvantage of our approach is that a constructed circuit may leak some secret input bits to the evaluator. The generator can predict the input leakage from a CRGC before constructing it.
 
-The generator can predict the leakage from a CRGC, assuming the worst case that the evaluator knows the exact construction of the boolean circuit beforehand. 
+ 
 The generator executable (party A) performs the following steps:
 
 1. It imports a C++ function and converts it to a boolean circuit or imports a boolean circuit directly.
